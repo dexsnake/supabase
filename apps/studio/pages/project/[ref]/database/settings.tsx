@@ -22,6 +22,7 @@ import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 import { DiskManagementPanelForm } from '@/components/interfaces/DiskManagement/DiskManagementPanelForm'
 import { BannedIPs } from '@/components/interfaces/Settings/Database/BannedIPs'
 import { DiskSizeConfiguration } from '@/components/interfaces/Settings/Database/DiskSizeConfiguration'
+import { JitDbAccessConfiguration } from '@/components/interfaces/Settings/Database/JitDatabaseAccess/JitDbAccessConfiguration'
 import { NetworkRestrictions } from '@/components/interfaces/Settings/Database/NetworkRestrictions/NetworkRestrictions'
 import { SSLConfiguration } from '@/components/interfaces/Settings/Database/SSLConfiguration'
 
@@ -50,6 +51,7 @@ const ProjectSettings: NextPageWithLayout = () => {
             <ResetDbPassword />
             <ConnectionPooling />
             <SSLConfiguration />
+            <JitDbAccessConfiguration />
             {showNewDiskManagementUI ? (
               // This form is hidden if Disk and Compute form is enabled, new form is on ./settings/compute-and-disk
               <DiskManagementPanelForm />
