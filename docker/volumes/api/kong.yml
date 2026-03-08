@@ -9,9 +9,11 @@ consumers:
   - username: anon
     keyauth_credentials:
       - key: $SUPABASE_ANON_KEY
+      - key: $SUPABASE_PUBLISHABLE_KEY
   - username: service_role
     keyauth_credentials:
       - key: $SUPABASE_SERVICE_KEY
+      - key: $SUPABASE_SECRET_KEY
 
 ###
 ### Access Control List
@@ -36,6 +38,7 @@ basicauth_credentials:
 services:
   ## Open Auth routes
   - name: auth-v1-open
+    _comment: 'Auth: /auth/v1/verify* -> http://auth:9999/verify*'
     url: http://auth:9999/verify
     routes:
       - name: auth-v1-open
@@ -45,6 +48,7 @@ services:
     plugins:
       - name: cors
   - name: auth-v1-open-callback
+    _comment: 'Auth: /auth/v1/callback* -> http://auth:9999/callback*'
     url: http://auth:9999/callback
     routes:
       - name: auth-v1-open-callback
@@ -54,6 +58,7 @@ services:
     plugins:
       - name: cors
   - name: auth-v1-open-authorize
+    _comment: 'Auth: /auth/v1/authorize* -> http://auth:9999/authorize*'
     url: http://auth:9999/authorize
     routes:
       - name: auth-v1-open-authorize
@@ -65,7 +70,7 @@ services:
 
   ## Secure Auth routes
   - name: auth-v1
-    _comment: 'GoTrue: /auth/v1/* -> http://auth:9999/*'
+    _comment: 'Auth: /auth/v1/* -> http://auth:9999/*'
     url: http://auth:9999/
     routes:
       - name: auth-v1-all
@@ -77,6 +82,14 @@ services:
       - name: key-auth
         config:
           hide_credentials: false
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
       - name: acl
         config:
           hide_groups_header: true
@@ -84,7 +97,7 @@ services:
             - admin
             - anon
 
-  ## Secure REST routes
+  ## Secure PostgREST routes
   - name: rest-v1
     _comment: 'PostgREST: /rest/v1/* -> http://rest:3000/*'
     url: http://rest:3000/
@@ -97,7 +110,15 @@ services:
       - name: cors
       - name: key-auth
         config:
-          hide_credentials: true
+          hide_credentials: false
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
       - name: acl
         config:
           hide_groups_header: true
@@ -118,12 +139,16 @@ services:
       - name: cors
       - name: key-auth
         config:
-          hide_credentials: true
+          hide_credentials: false
       - name: request-transformer
         config:
           add:
             headers:
-              - Content-Profile:graphql_public
+              - "Content-Profile: graphql_public"
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
       - name: acl
         config:
           hide_groups_header: true
@@ -146,14 +171,23 @@ services:
       - name: key-auth
         config:
           hide_credentials: false
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "x-api-key:$LUA_RT_WS_EXPR"
+          replace:
+            querystring:
+              - "apikey:$LUA_RT_WS_EXPR"
       - name: acl
         config:
           hide_groups_header: true
           allow:
             - admin
             - anon
+
   - name: realtime-v1-rest
-    _comment: 'Realtime: /realtime/v1/* -> ws://realtime:4000/socket/*'
+    _comment: 'Realtime: /realtime/v1/api/* -> http://realtime:4000/api/*'
     url: http://realtime-dev.supabase-realtime:4000/api
     protocol: http
     routes:
@@ -166,13 +200,36 @@ services:
       - name: key-auth
         config:
           hide_credentials: false
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
       - name: acl
         config:
           hide_groups_header: true
           allow:
             - admin
             - anon
-  ## Storage routes: the storage server manages its own auth
+
+  ## S3-compatible Storage endpoint (no Authorization header transformation)
+  ## S3 presigned URLs require the original AWS signature in the Authorization header
+  - name: storage-v1-s3
+    _comment: 'Storage S3: /storage/v1/s3/* -> http://storage:5000/s3/*'
+    url: http://storage:5000/s3
+    routes:
+      - name: storage-v1-s3-all
+        strip_path: true
+        paths:
+          - /storage/v1/s3/
+    plugins:
+      - name: cors
+
+  ## Regular storage API endpoint (with Authorization header transformation)
+  ## No key-auth - Storage manages its own auth
   - name: storage-v1
     _comment: 'Storage: /storage/v1/* -> http://storage:5000/*'
     url: http://storage:5000/
@@ -183,16 +240,37 @@ services:
           - /storage/v1/
     plugins:
       - name: cors
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
 
   ## Edge Functions routes
   - name: functions-v1
     _comment: 'Edge Functions: /functions/v1/* -> http://functions:9000/*'
     url: http://functions:9000/
+    read_timeout: 150000
     routes:
       - name: functions-v1-all
         strip_path: true
         paths:
           - /functions/v1/
+    plugins:
+      - name: cors
+
+  ## OAuth 2.0 Authorization Server Metadata (RFC 8414)
+  - name: well-known-oauth
+    _comment: 'Auth: /.well-known/oauth-authorization-server -> http://auth:9999/.well-known/oauth-authorization-server'
+    url: http://auth:9999/.well-known/oauth-authorization-server
+    routes:
+      - name: well-known-oauth
+        strip_path: true
+        paths:
+          - /.well-known/oauth-authorization-server
     plugins:
       - name: cors
 
