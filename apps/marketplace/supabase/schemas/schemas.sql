@@ -301,6 +301,13 @@ create policy "partners_select"
     public.is_admin_member()
     or public.is_partner_member(id)
     or public.is_reviewer_member()
+    or exists (
+      select 1
+      from public.items i
+      where i.partner_id = partners.id
+        and i.published = true
+        and public.item_latest_review_is_approved(i.id)
+    )
   );
 
 create policy "partners_insert"
@@ -437,6 +444,13 @@ create policy "category_items_select"
   using (
     public.is_admin_member()
     or public.is_reviewer_member()
+    or exists (
+      select 1
+      from public.items i
+      where i.id = category_items.item_id
+        and i.published = true
+        and public.item_latest_review_is_approved(i.id)
+    )
     or exists (
       select 1
       from public.items i
