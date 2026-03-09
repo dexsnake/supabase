@@ -229,7 +229,7 @@ services:
       - name: cors
 
   ## Regular storage API endpoint (with Authorization header transformation)
-  ## No key-auth - Storage manages its own auth
+  ## No key-auth.
   - name: storage-v1
     _comment: 'Storage: /storage/v1/* -> http://storage:5000/*'
     url: http://storage:5000/
