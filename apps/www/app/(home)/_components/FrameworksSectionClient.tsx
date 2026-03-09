@@ -1,12 +1,14 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
+import Link from 'next/link'
 import { useState } from 'react'
 import { cn } from 'ui'
 
 type Framework = {
   name: string
   icon: string
+  docsUrl: string
   darkHtml: string
   lightHtml: string
 }
@@ -70,7 +72,7 @@ export function FrameworksSectionClient({ frameworks }: { frameworks: Framework[
             </div>
 
             {/* Code area */}
-            <div className="h-[440px] overflow-auto">
+            <div className="relative h-[440px] overflow-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active.name}
@@ -85,6 +87,28 @@ export function FrameworksSectionClient({ frameworks }: { frameworks: Framework[
                   />
                 </motion.div>
               </AnimatePresence>
+              <Link
+                href={active.docsUrl}
+                className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-surface-100 border border-border px-3 py-1.5 text-xs text-foreground-light hover:text-foreground hover:bg-surface-200 transition-colors whitespace-nowrap"
+              >
+                Read docs for <span>{active.name}</span>
+                <svg
+                  width={12}
+                  height={12}
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="shrink-0"
+                >
+                  <path
+                    d="M3.5 2.5H9.5V8.5M9.5 2.5L2.5 9.5"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>

@@ -54,6 +54,7 @@ const frameworksList: {
   icon: string
   code: string
   lang: 'javascript' | 'dart' | 'svelte' | 'vue'
+  docsUrl: string
 }[] = [
   {
     name: 'React',
@@ -76,6 +77,7 @@ export default function App() {
   return <TodoList items={todos} />
 }`,
     lang: 'javascript' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/reactjs',
   },
   {
     name: 'Next.js',
@@ -95,6 +97,7 @@ export default async function Page() {
   return <TodoList items={todos} />
 }`,
     lang: 'javascript' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/nextjs',
   },
   {
     name: 'Flutter',
@@ -115,6 +118,7 @@ final data = await supabase
     .from('todos')
     .select('*');`,
     lang: 'dart' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/flutter',
   },
   {
     name: 'Svelte',
@@ -136,6 +140,7 @@ final data = await supabase
   }
 </script>`,
     lang: 'svelte' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/sveltekit',
   },
   {
     name: 'Vue',
@@ -158,6 +163,7 @@ onMounted(async () => {
 })
 </script>`,
     lang: 'vue' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/vuejs',
   },
   {
     name: 'Nuxt',
@@ -180,6 +186,7 @@ const { data: todos } = await useAsyncData(
   <TodoList :items="todos" />
 </template>`,
     lang: 'vue' as const,
+    docsUrl: '/docs/guides/getting-started/quickstarts/nuxtjs',
   },
 ]
 
@@ -194,6 +201,7 @@ export async function FrameworksSection() {
   const frameworks = frameworksList.map((fw) => ({
     name: fw.name,
     icon: fw.icon,
+    docsUrl: fw.docsUrl,
     darkHtml: hl.codeToHtml(fw.code, { lang: fw.lang, theme: 'supabase-dark' }),
     lightHtml: hl.codeToHtml(fw.code, { lang: fw.lang, theme: 'supabase-light' }),
   }))

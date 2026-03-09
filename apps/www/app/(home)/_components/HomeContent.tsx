@@ -42,13 +42,13 @@ export function HomeContent({ frameworksSlot }: { frameworksSlot: React.ReactNod
         <BuiltWithSupabaseSection />
       </section>
       <section>
-        <CommunitySection />
-      </section>
-      <section>
         <CustomerStoriesSection />
       </section>
       <section>
         <OpenSourceSection />
+      </section>
+      <section>
+        <CommunitySection />
       </section>
       <section>
         <CTASection />
