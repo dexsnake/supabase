@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test'
 
+import { useTestThrottling } from '../utils/debug.js'
 import {
   getMessageCount,
   joinChannel,
@@ -97,16 +98,15 @@ test.describe('Realtime Inspector', () => {
 
       await openBroadcastModal(page)
       await page.getByRole('button', { name: 'Confirm' }).click()
-      await expect(page.getByText('Successfully broadcasted message')).toBeVisible({
-        timeout: 10000,
-      })
+      await expect(page.getByText('Successfully broadcasted message')).toBeVisible()
+      await expect(page.getByText('Broadcast a message to all clients')).not.toBeVisible()
       await waitForRealtimeMessage(page, { timeout: 30000 })
 
       const messageRow = page.getByRole('row').filter({ hasText: 'broadcast' }).first()
-      await expect(messageRow).toBeVisible({ timeout: 5000 })
+      await expect(messageRow).toBeVisible()
       await messageRow.click()
 
-      await expect(page.getByText('Timestamp')).toBeVisible({ timeout: 5000 })
+      await expect(page.getByText('Timestamp')).toBeVisible()
 
       await leaveChannel(page)
     })
