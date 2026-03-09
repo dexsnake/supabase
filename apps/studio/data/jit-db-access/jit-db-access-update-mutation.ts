@@ -1,9 +1,9 @@
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-
-import type { ResponseError } from 'types'
-import { jitDbAccessKeys } from './keys'
 import { handleError, put } from 'data/fetchers'
+import { toast } from 'sonner'
+import type { ResponseError } from 'types'
+
+import { jitDbAccessKeys } from './keys'
 
 export type JitDbAccessUpdateVariables = {
   projectRef: string
@@ -48,7 +48,7 @@ export const useJitDbAccessUpdateMutation = ({
 
     async onSuccess(data, variables, context) {
       const { projectRef } = variables
-      await queryClient.invalidateQueries(jitDbAccessKeys.list(projectRef))
+      await queryClient.invalidateQueries({ queryKey: jitDbAccessKeys.list(projectRef) })
       await onSuccess?.(data, variables, context)
     },
     async onError(data, variables, context) {

@@ -18,6 +18,7 @@ export const useFeaturePreviews = (): FeaturePreview[] => {
   const tableEditorNewFilterBar = useFlag('tableEditorNewFilterBar')
   const pgDeltaDiffEnabled = useFlag('pgdeltaDiff')
   const platformWebhooksEnabled = useFlag('platformWebhooks')
+  const jitDbAccessEnabled = useFlag('jitDbAccess')
 
   return [
     {
@@ -60,11 +61,14 @@ export const useFeaturePreviews = (): FeaturePreview[] => {
     {
       key: LOCAL_STORAGE_KEYS.UI_PREVIEW_PLATFORM_WEBHOOKS,
       name: 'Platform webhooks',
+      key: LOCAL_STORAGE_KEYS.UI_PREVIEW_JIT_DB_ACCESS,
+      name: 'JIT database access',
       discussionsUrl: undefined,
       isNew: true,
       isPlatformOnly: true,
       isDefaultOptIn: false,
       enabled: platformWebhooksEnabled,
+      enabled: jitDbAccessEnabled,
     },
     {
       key: LOCAL_STORAGE_KEYS.UI_PREVIEW_API_SIDE_PANEL,

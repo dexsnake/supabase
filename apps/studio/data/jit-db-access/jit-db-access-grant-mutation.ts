@@ -1,14 +1,21 @@
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-
-import type { ResponseError } from 'types'
-import { jitDbAccessKeys } from './keys'
 import { handleError, put } from 'data/fetchers'
+import { toast } from 'sonner'
+import type { ResponseError } from 'types'
+
+import { jitDbAccessKeys } from './keys'
 
 export type JitDbAccessGrantVariables = {
   projectRef: string
   userId: string
-  roles: Array<{ role: string; expires_at?: number }> // Unix timestamp in seconds per role
+  roles: Array<{
+    role: string
+    expires_at?: number // Unix timestamp in seconds per role
+    allowed_networks?: {
+      allowed_cidrs?: Array<{ cidr: string }>
+      allowed_cidrs_v6?: Array<{ cidr: string }>
+    }
+  }>
 }
 
 export type JitDbAccessGrantResponse = {
@@ -50,7 +57,7 @@ export const useJitDbAccessGrantMutation = ({
 
     async onSuccess(data, variables, context) {
       const { projectRef } = variables
-      await queryClient.invalidateQueries(jitDbAccessKeys.members(projectRef))
+      await queryClient.invalidateQueries({ queryKey: jitDbAccessKeys.members(projectRef) })
       await onSuccess?.(data, variables, context)
     },
     async onError(data, variables, context) {
