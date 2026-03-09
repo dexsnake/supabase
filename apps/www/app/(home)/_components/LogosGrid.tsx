@@ -1,6 +1,5 @@
-'use client'
-
 import { ComponentProps } from 'react'
+
 import {
   BetasharesLogo,
   BoltLogo,
@@ -68,7 +67,10 @@ export function LogosGrid() {
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border py-10">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-y-10 gap-x-6 opacity-70">
             {gridLogos.map(({ name, Logo }) => (
-              <div key={name} className="flex items-center justify-center h-10 text-foreground-lighter">
+              <div
+                key={name}
+                className="flex items-center justify-center h-10 text-foreground-lighter"
+              >
                 <Logo className="h-8 lg:h-12 w-auto" />
               </div>
             ))}

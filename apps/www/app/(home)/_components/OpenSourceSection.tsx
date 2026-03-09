@@ -1,10 +1,10 @@
 'use client'
 
-import { animate, motion, useInView } from 'framer-motion'
-import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
-import { Button } from 'ui'
 import { useSendTelemetryEvent } from '~/lib/telemetry'
+import { motion, useInView } from 'framer-motion'
+import Link from 'next/link'
+import { useRef } from 'react'
+import { Button } from 'ui'
 
 // ── Contribution graph ──────────────────────────────────────────────────────
 
@@ -85,23 +85,14 @@ export function OpenSourceSection() {
   const inView = useInView(panelRef, { once: true, amount: 0.4 })
   const sendTelemetryEvent = useSendTelemetryEvent()
 
-  const [stars, setStars] = useState('0.0K')
-  useEffect(() => {
-    if (!inView) return
-    const controls = animate(0, 98400, {
-      duration: 2.2,
-      ease: 'easeOut',
-      onUpdate: (v: number) => setStars(`${(v / 1000).toFixed(1)}K`),
-    })
-    return controls.stop
-  }, [inView])
+  const stars = '98.4K'
 
   return (
     <div className="border-b border-border">
       <div className="mx-auto max-w-[var(--container-max-w,75rem)] pl-6 border-x border-border">
         <div className="grid grid-cols-1 md:grid-cols-3">
           {/* Main content — spans 2 cols */}
-          <div className="col-span-1 md:col-span-2 flex flex-col justify-center gap-6 py-24">
+          <div className="col-span-1 md:col-span-2 flex flex-col justify-between gap-6 py-20 min-h-[400px]">
             <div>
               <h2 className="text-4xl text-foreground text-balance">Open source from day one</h2>
               <p className="mt-4 max-w-lg text-sm leading-relaxed text-foreground-lighter">

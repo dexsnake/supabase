@@ -1,0 +1,57 @@
+'use client'
+
+import dynamic from 'next/dynamic'
+import getContent from '~/data/home/content'
+import { BuiltWithSupabaseSection } from './BuiltWithSupabaseSection'
+import { CommunitySection } from './CommunitySection'
+import { CTASection } from './CTASection'
+import { CustomerStoriesSection } from './CustomerStoriesSection'
+import { DashboardFeaturesSection } from './DashboardFeaturesSection'
+import { Hero } from './Hero'
+import { LogosGrid } from './LogosGrid'
+import { OpenSourceSection } from './OpenSourceSection'
+
+const Products = dynamic(() => import('~/components/Products/index'))
+
+function SectionBlock({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <section className={`border-b border-border ${className ?? ''}`}>{children}</section>
+}
+
+export function HomeContent({ frameworksSlot }: { frameworksSlot: React.ReactNode }) {
+  const content = getContent()
+
+  return (
+    <div className="[&_.container]:!max-w-[var(--container-max-w,75rem)] [&_.container]:!px-6">
+      <section>
+        <Hero />
+      </section>
+      <SectionBlock className="border-t border-b-0 border-border relative">
+        <div className="-translate-y-16">
+          <Products {...content.productsSection} />
+        </div>
+      </SectionBlock>
+      <section>
+        <LogosGrid />
+      </section>
+      <section>
+        <DashboardFeaturesSection {...content.dashboardFeatures} />
+      </section>
+      <section>{frameworksSlot}</section>
+      <section className="border-b border-border">
+        <BuiltWithSupabaseSection />
+      </section>
+      <section>
+        <CommunitySection />
+      </section>
+      <section>
+        <CustomerStoriesSection />
+      </section>
+      <section>
+        <OpenSourceSection />
+      </section>
+      <section>
+        <CTASection />
+      </section>
+    </div>
+  )
+}

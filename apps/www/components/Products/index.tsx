@@ -1,3 +1,5 @@
+'use client'
+
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import type { ProductType } from '~/data/MainProducts'
 import { useSendTelemetryEvent } from '~/lib/telemetry'

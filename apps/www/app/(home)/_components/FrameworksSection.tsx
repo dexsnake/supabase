@@ -1,107 +1,59 @@
-'use client'
+import { createHighlighter, type ThemeRegistration } from 'shiki'
+import { FrameworksSectionClient } from './FrameworksSectionClient'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
-import dart from 'react-syntax-highlighter/dist/cjs/languages/hljs/dart'
-import js from 'react-syntax-highlighter/dist/cjs/languages/hljs/javascript'
-import xml from 'react-syntax-highlighter/dist/cjs/languages/hljs/xml'
-import { cn } from 'ui'
+// ── Shiki themes ────────────────────────────────────────────────────────────
 
-// Supabase docs theme: purple keywords, green functions/constants, peach strings
-const supabaseDocsTheme = {
-  dark: {
-    hljs: {
-      display: 'block',
-      overflowX: 'auto' as const,
-      background: 'transparent',
-      color: '#ffffff',
-    },
-    'hljs-keyword': { color: '#bda4ff' },
-    'hljs-selector-tag': { color: '#bda4ff' },
-    'hljs-literal': { color: '#bda4ff' },
-    'hljs-strong': { color: '#bda4ff' },
-    'hljs-tag': { color: '#3ecf8e' },
-    'hljs-name': { color: '#3ecf8e' },
-    'hljs-title': { color: '#3ecf8e', fontWeight: 'normal' as const },
-    'hljs-type': { color: '#3ecf8e', fontWeight: 'normal' as const },
-    'hljs-built_in': { color: '#3ecf8e' },
-    'hljs-builtin-name': { color: '#3ecf8e' },
-    'hljs-section': { color: '#3ecf8e', fontWeight: 'normal' as const },
-    'hljs-attribute': { color: '#3ecf8e' },
-    'hljs-variable': { color: '#3ecf8e' },
-    'hljs-string': { color: '#ffcda1' },
-    'hljs-bullet': { color: '#ffcda1' },
-    'hljs-subst': { color: '#ffcda1' },
-    'hljs-emphasis': { color: '#ffcda1' },
-    'hljs-addition': { color: '#ffcda1' },
-    'hljs-template-tag': { color: '#ffcda1' },
-    'hljs-template-variable': { color: '#ffcda1' },
-    'hljs-selector-attr': { color: '#ffcda1' },
-    'hljs-selector-pseudo': { color: '#ffcda1' },
-    'hljs-symbol': { color: '#ffcda1' },
-    'hljs-regexp': { color: '#ffcda1' },
-    'hljs-link': { color: '#ffffff' },
-    'hljs-comment': { color: '#7e7e7e' },
-    'hljs-quote': { color: '#7e7e7e' },
-    'hljs-deletion': { color: '#7e7e7e' },
-    'hljs-meta': { color: '#7e7e7e' },
-    'hljs-code': { color: '#3ecf8e' },
-    'hljs-doctag': { fontWeight: 'normal' as const },
-    'hljs-selector-id': { fontWeight: 'normal' as const },
+const supabaseDark: ThemeRegistration = {
+  name: 'supabase-dark',
+  type: 'dark',
+  colors: {
+    'editor.background': '#00000000',
+    'editor.foreground': '#ffffff',
   },
-  light: {
-    hljs: {
-      display: 'block',
-      overflowX: 'auto' as const,
-      background: 'transparent',
-      color: '#1f1f1f',
-    },
-    'hljs-keyword': { color: '#6b35dc' },
-    'hljs-selector-tag': { color: '#6b35dc' },
-    'hljs-literal': { color: '#6b35dc' },
-    'hljs-strong': { color: '#6b35dc' },
-    'hljs-tag': { color: '#15593b' },
-    'hljs-name': { color: '#15593b' },
-    'hljs-title': { color: '#15593b', fontWeight: 'normal' as const },
-    'hljs-type': { color: '#15593b', fontWeight: 'normal' as const },
-    'hljs-built_in': { color: '#15593b' },
-    'hljs-builtin-name': { color: '#15593b' },
-    'hljs-section': { color: '#15593b', fontWeight: 'normal' as const },
-    'hljs-attribute': { color: '#15593b' },
-    'hljs-variable': { color: '#15593b' },
-    'hljs-string': { color: '#f1a10d' },
-    'hljs-bullet': { color: '#f1a10d' },
-    'hljs-subst': { color: '#f1a10d' },
-    'hljs-emphasis': { color: '#f1a10d' },
-    'hljs-addition': { color: '#f1a10d' },
-    'hljs-template-tag': { color: '#f1a10d' },
-    'hljs-template-variable': { color: '#f1a10d' },
-    'hljs-selector-attr': { color: '#f1a10d' },
-    'hljs-selector-pseudo': { color: '#f1a10d' },
-    'hljs-symbol': { color: '#f1a10d' },
-    'hljs-regexp': { color: '#f1a10d' },
-    'hljs-link': { color: '#1f1f1f' },
-    'hljs-comment': { color: '#7e7e7e' },
-    'hljs-quote': { color: '#7e7e7e' },
-    'hljs-deletion': { color: '#7e7e7e' },
-    'hljs-meta': { color: '#7e7e7e' },
-    'hljs-code': { color: '#15593b' },
-    'hljs-doctag': { fontWeight: 'normal' as const },
-    'hljs-selector-id': { fontWeight: 'normal' as const },
-  },
+  tokenColors: [
+    { scope: ['keyword', 'storage', 'storage.type', 'storage.modifier'], settings: { foreground: '#bda4ff' } },
+    { scope: ['entity.name.function', 'support.function', 'entity.name.tag', 'support.class.component'], settings: { foreground: '#3ecf8e' } },
+    { scope: ['constant', 'variable.other.constant', 'support.constant'], settings: { foreground: '#3ecf8e' } },
+    { scope: ['variable.other.property', 'support.type.property-name', 'meta.object-literal.key', 'entity.other.attribute-name'], settings: { foreground: '#3ecf8e' } },
+    { scope: ['string', 'string.quoted'], settings: { foreground: '#ffcda1' } },
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#7e7e7e' } },
+    { scope: ['variable.parameter'], settings: { foreground: '#ffffff' } },
+    { scope: ['punctuation'], settings: { foreground: '#ffffff' } },
+    { scope: ['constant.numeric'], settings: { foreground: '#ededed' } },
+    { scope: ['markup.underline.link'], settings: { foreground: '#ffffff' } },
+    { scope: ['markup.inserted'], settings: { foreground: '#3ecf8e' } },
+    { scope: ['markup.deleted'], settings: { foreground: '#F06A50' } },
+  ],
 }
 
-SyntaxHighlighter.registerLanguage('js', js)
-SyntaxHighlighter.registerLanguage('dart', dart)
-SyntaxHighlighter.registerLanguage('xml', xml)
+const supabaseLight: ThemeRegistration = {
+  name: 'supabase-light',
+  type: 'light',
+  colors: {
+    'editor.background': '#00000000',
+    'editor.foreground': '#525252',
+  },
+  tokenColors: [
+    { scope: ['keyword', 'storage', 'storage.type', 'storage.modifier'], settings: { foreground: '#6b35dc' } },
+    { scope: ['entity.name.function', 'support.function', 'entity.name.tag', 'support.class.component'], settings: { foreground: '#15593b' } },
+    { scope: ['constant', 'variable.other.constant', 'support.constant'], settings: { foreground: '#15593b' } },
+    { scope: ['variable.other.property', 'support.type.property-name', 'meta.object-literal.key', 'entity.other.attribute-name'], settings: { foreground: '#15593b' } },
+    { scope: ['string', 'string.quoted'], settings: { foreground: '#f1a10d' } },
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#7e7e7e' } },
+    { scope: ['variable.parameter'], settings: { foreground: '#525252' } },
+    { scope: ['punctuation'], settings: { foreground: '#a0a0a0' } },
+    { scope: ['constant.numeric'], settings: { foreground: '#525252' } },
+    { scope: ['markup.underline.link'], settings: { foreground: '#525252' } },
+  ],
+}
+
+// ── Framework data ──────────────────────────────────────────────────────────
 
 const frameworksList: {
   name: string
   icon: string
   code: string
-  lang: 'js' | 'dart' | 'xml'
+  lang: 'javascript' | 'dart' | 'svelte' | 'vue'
 }[] = [
   {
     name: 'React',
@@ -123,7 +75,7 @@ export default function App() {
 
   return <TodoList items={todos} />
 }`,
-    lang: 'js' as const,
+    lang: 'javascript' as const,
   },
   {
     name: 'Next.js',
@@ -142,7 +94,7 @@ export default async function Page() {
 
   return <TodoList items={todos} />
 }`,
-    lang: 'js' as const,
+    lang: 'javascript' as const,
   },
   {
     name: 'Flutter',
@@ -183,7 +135,7 @@ final data = await supabase
     todos = data
   }
 </script>`,
-    lang: 'xml' as const,
+    lang: 'svelte' as const,
   },
   {
     name: 'Vue',
@@ -205,7 +157,7 @@ onMounted(async () => {
   todos.value = data
 })
 </script>`,
-    lang: 'xml' as const,
+    lang: 'vue' as const,
   },
   {
     name: 'Nuxt',
@@ -227,105 +179,26 @@ const { data: todos } = await useAsyncData(
 <template>
   <TodoList :items="todos" />
 </template>`,
-    lang: 'xml' as const,
+    lang: 'vue' as const,
   },
 ]
 
-export function FrameworksSection() {
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme?.includes('dark') ?? false
-  const [activeIdx, setActiveIdx] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  const active = frameworksList[activeIdx]
+// ── Server component: pre-highlights all code ───────────────────────────────
 
-  useEffect(() => setMounted(true), [])
+export async function FrameworksSection() {
+  const hl = await createHighlighter({
+    themes: [supabaseDark, supabaseLight],
+    langs: ['javascript', 'dart', 'svelte', 'vue'],
+  })
 
-  return (
-    <div className="border-b border-border">
-      <div className="mx-auto max-w-[var(--container-max-w,75rem)] pl-6 border-x border-border">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-          {/* Left: title */}
-          <div className="flex items-center py-16 lg:py-24 pr-6">
-            <div className="text-2xl md:text-4xl text-foreground-lighter">
-              Use Supabase with{' '}
-              <span className="block">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={active.name}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1, transition: { duration: 0.25 } }}
-                    exit={{ y: 0, opacity: 0, transition: { duration: 0.1 } }}
-                    className="inline-block text-foreground"
-                  >
-                    {active.name}
-                  </motion.span>
-                </AnimatePresence>
-              </span>
-            </div>
-          </div>
+  const frameworks = frameworksList.map((fw) => ({
+    name: fw.name,
+    icon: fw.icon,
+    darkHtml: hl.codeToHtml(fw.code, { lang: fw.lang, theme: 'supabase-dark' }),
+    lightHtml: hl.codeToHtml(fw.code, { lang: fw.lang, theme: 'supabase-light' }),
+  }))
 
-          {/* Right: icon tabs + code */}
-          <div className="border-l border-border flex flex-col">
-            {/* 6-col icon row */}
-            <div className="grid grid-cols-6 border-b border-border">
-              {frameworksList.map((framework, index) => (
-                <button
-                  key={framework.name}
-                  onClick={() => setActiveIdx(index)}
-                  className={cn(
-                    'flex items-center justify-center py-4 border-r border-border last:border-r-0 transition-colors',
-                    index === activeIdx
-                      ? 'bg-surface-75 text-foreground'
-                      : 'text-foreground-muted hover:text-foreground-light hover:bg-surface-75/50'
-                  )}
-                >
-                  <svg
-                    width={28}
-                    height={28}
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    viewBox="0 0 61 61"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d={framework.icon} fill="currentColor" />
-                  </svg>
-                </button>
-              ))}
-            </div>
+  hl.dispose()
 
-            {/* Code area */}
-            <div className="h-[440px] overflow-auto">
-              {mounted && (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={active.name}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { duration: 0.15, delay: 0.05 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.05 } }}
-                  >
-                    {/* @ts-ignore */}
-                    <SyntaxHighlighter
-                      language={active.lang}
-                      style={isDark ? supabaseDocsTheme.dark : supabaseDocsTheme.light}
-                      customStyle={{
-                        margin: 0,
-                        padding: '1.5rem',
-                        background: 'transparent',
-                        fontSize: '0.8125rem',
-                        fontWeight: 500,
-                        lineHeight: 1.7,
-                      }}
-                    >
-                      {active.code}
-                    </SyntaxHighlighter>
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <FrameworksSectionClient frameworks={frameworks} />
 }

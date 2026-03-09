@@ -31,7 +31,13 @@ export function CommunitySection() {
             </Link>
           </Button>
         </div>
-        <div className="relative overflow-hidden max-h-[600px] pt-24">
+        <div
+          className="relative overflow-hidden max-h-[600px] pt-24"
+          style={{
+            maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+          }}
+        >
           <div className="flex gap-4 max-w-[1480px] mx-auto">
             {columns.map((col, colIdx) => (
               <div

@@ -9,7 +9,7 @@ import { cn } from 'ui'
 
 const dashboardStories = [
   {
-    logo: '/images/customers/logos/hyper.svg',
+    logo: '/images/customers/logos/hyper-icon.svg',
     name: 'Hyper',
     quote:
       'We store embeddings in a PostgreSQL database, hosted by Supabase, to perform a similarity search to identify the most relevant sections within the MDN.',
@@ -17,7 +17,7 @@ const dashboardStories = [
     slug: 'mozilla-mdn',
   },
   {
-    logo: '/images/customers/logos/chatbase.png',
+    logo: '/images/customers/logos/chatbase-icon.svg',
     name: 'Chatbase',
     quote:
       'The SQL Editor in Supabase is my favorite feature — it lets us run complex queries, debug issues, and iterate on our schema without ever leaving the browser.',
@@ -25,7 +25,7 @@ const dashboardStories = [
     slug: 'chatbase',
   },
   {
-    logo: '/images/customers/logos/markprompt.png',
+    logo: '/images/customers/logos/markprompt-icon.svg',
     name: 'Markprompt',
     quote:
       'Row Level Security in Supabase allows us to set granular access policies directly in Postgres, so our multi-tenant architecture stays secure by default.',
