@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import type { AuthorizedApp } from 'data/oauth/authorized-apps-query'
 import {
+  getAuthorizedAppDisplayData,
   getAuthorizedAppNames,
+  getConnectedAppsSentence,
   getConnectedAppsTitle,
+  getMockAuthorizedApps,
   isProjectRoute,
+  shouldDisableMockAuthorizedApps,
 } from './ProjectOAuthIntegrationsBanner.utils'
 
 const createAuthorizedApp = (overrides: Partial<AuthorizedApp>): AuthorizedApp => ({
@@ -50,6 +54,19 @@ describe('ProjectOAuthIntegrationsBanner utils', () => {
     })
   })
 
+  describe('getAuthorizedAppDisplayData', () => {
+    it('backfills icon from duplicate entries', () => {
+      const displayApps = getAuthorizedAppDisplayData([
+        createAuthorizedApp({ name: 'Figma', icon: null }),
+        createAuthorizedApp({ name: 'figma', icon: 'https://cdn.example.com/figma.png' }),
+      ])
+
+      expect(displayApps).toEqual([
+        { name: 'Figma', icon: 'https://cdn.example.com/figma.png' },
+      ])
+    })
+  })
+
   describe('getConnectedAppsTitle', () => {
     it('renders title for a single app', () => {
       expect(getConnectedAppsTitle(['Lovable'])).toBe('Connected to Lovable')
@@ -57,8 +74,44 @@ describe('ProjectOAuthIntegrationsBanner utils', () => {
 
     it('renders a condensed title for multiple apps', () => {
       expect(getConnectedAppsTitle(['Lovable', 'Bolt', 'Replit'])).toBe(
-        'Connected to Lovable, Bolt, and 1 other'
+        'Connected to Lovable, Bolt, and 1 other app'
       )
+    })
+  })
+
+  describe('getConnectedAppsSentence', () => {
+    it('renders single-line sentence copy', () => {
+      expect(getConnectedAppsSentence(['Lovable'])).toBe(
+        'This project is connected to Lovable. Dashboard changes can affect connected tools in this organization.'
+      )
+    })
+  })
+
+  describe('mock parsing', () => {
+    it('parses comma-separated app names into mock apps', () => {
+      const { apps, isMocked } = getMockAuthorizedApps('Lovable,Bolt,Figma')
+
+      expect(isMocked).toBe(true)
+      expect(apps.map((app) => app.name)).toEqual(['Lovable', 'Bolt', 'Figma'])
+      expect(apps.every((app) => app.created_by === 'mock-oauth')).toBe(true)
+    })
+
+    it('supports optional icon in mock entries', () => {
+      const { apps, isMocked } = getMockAuthorizedApps('Figma|https://cdn.example.com/figma.png')
+
+      expect(isMocked).toBe(true)
+      expect(apps[0]).toMatchObject({
+        name: 'Figma',
+        icon: 'https://cdn.example.com/figma.png',
+      })
+    })
+
+    it('treats off/none flags as mock disabled', () => {
+      expect(shouldDisableMockAuthorizedApps('off')).toBe(true)
+      expect(shouldDisableMockAuthorizedApps('none')).toBe(true)
+
+      const parsed = getMockAuthorizedApps('off')
+      expect(parsed).toEqual({ apps: [], isMocked: false })
     })
   })
 })

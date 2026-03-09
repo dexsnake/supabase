@@ -8,6 +8,7 @@ import { ProjectOAuthIntegrationsBanner } from './ProjectOAuthIntegrationsBanner
 
 const mockUseSelectedOrganizationQuery = vi.fn()
 const mockUseAuthorizedAppsQuery = vi.fn()
+const mockUseLocalStorageQuery = vi.fn()
 
 vi.mock('hooks/misc/useSelectedOrganization', () => ({
   useSelectedOrganizationQuery: () => mockUseSelectedOrganizationQuery(),
@@ -15,6 +16,10 @@ vi.mock('hooks/misc/useSelectedOrganization', () => ({
 
 vi.mock('data/oauth/authorized-apps-query', () => ({
   useAuthorizedAppsQuery: (...args: unknown[]) => mockUseAuthorizedAppsQuery(...args),
+}))
+
+vi.mock('hooks/misc/useLocalStorage', () => ({
+  useLocalStorageQuery: (...args: unknown[]) => mockUseLocalStorageQuery(...args),
 }))
 
 const createAuthorizedApp = (overrides: Partial<AuthorizedApp>): AuthorizedApp => ({
@@ -36,6 +41,11 @@ describe('ProjectOAuthIntegrationsBanner', () => {
     mockUseSelectedOrganizationQuery.mockReturnValue({
       data: { slug: 'acme' },
     })
+    mockUseLocalStorageQuery.mockReturnValue([
+      '',
+      vi.fn(),
+      { isSuccess: true, isLoading: false, isError: false, error: null },
+    ])
 
     mockUseAuthorizedAppsQuery.mockReturnValue({
       data: [createAuthorizedApp({ name: 'Lovable' })],
@@ -46,9 +56,10 @@ describe('ProjectOAuthIntegrationsBanner', () => {
   it('renders on project routes when authorized apps are available', () => {
     render(<ProjectOAuthIntegrationsBanner />)
 
-    expect(screen.getByText('Connected to Lovable')).toBeInTheDocument()
     expect(
-      screen.getByText('Dashboard changes can affect connected tools in this organization.')
+      screen.getByText(
+        'This project is connected to Lovable. Dashboard changes can affect connected tools in this organization.'
+      )
     ).toBeInTheDocument()
 
     const manageLink = screen.getByRole('link', { name: 'Manage' })
@@ -71,7 +82,11 @@ describe('ProjectOAuthIntegrationsBanner', () => {
 
     render(<ProjectOAuthIntegrationsBanner />)
 
-    expect(screen.getByText('Connected to Lovable, Bolt, and 1 other')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'This project is connected to Lovable, Bolt, and 1 other app. Dashboard changes can affect connected tools in this organization.'
+      )
+    ).toBeInTheDocument()
   })
 
   it('does not render on non-project routes', () => {
@@ -116,5 +131,85 @@ describe('ProjectOAuthIntegrationsBanner', () => {
     render(<ProjectOAuthIntegrationsBanner />)
 
     expect(screen.queryByText(/Connected to/)).not.toBeInTheDocument()
+  })
+
+  it('uses query-param mock data on project routes', () => {
+    routerMock.setCurrentUrl('/project/default/editor?oauthBannerMock=Lovable,Bolt,Figma')
+    mockUseAuthorizedAppsQuery.mockReturnValue({
+      data: [],
+      isError: false,
+    })
+
+    render(<ProjectOAuthIntegrationsBanner />)
+
+    expect(
+      screen.getByText(
+        'This project is connected to Lovable, Bolt, and 1 other app. Dashboard changes can affect connected tools in this organization.'
+      )
+    ).toBeInTheDocument()
+    expect(mockUseAuthorizedAppsQuery).toHaveBeenCalledWith(
+      { slug: 'acme' },
+      expect.objectContaining({ enabled: false })
+    )
+  })
+
+  it('uses local-storage mock data when query param is absent', () => {
+    mockUseLocalStorageQuery.mockReturnValue([
+      'Lovable,Bolt',
+      vi.fn(),
+      { isSuccess: true, isLoading: false, isError: false, error: null },
+    ])
+    mockUseAuthorizedAppsQuery.mockReturnValue({
+      data: [],
+      isError: false,
+    })
+
+    render(<ProjectOAuthIntegrationsBanner />)
+
+    expect(
+      screen.getByText(
+        'This project is connected to Lovable and Bolt. Dashboard changes can affect connected tools in this organization.'
+      )
+    ).toBeInTheDocument()
+    expect(mockUseAuthorizedAppsQuery).toHaveBeenCalledWith(
+      { slug: 'acme' },
+      expect.objectContaining({ enabled: false })
+    )
+  })
+
+  it('supports forcing real data with query-param off even when local mock exists', () => {
+    routerMock.setCurrentUrl('/project/default/editor?oauthBannerMock=off')
+    mockUseLocalStorageQuery.mockReturnValue([
+      'Lovable,Bolt',
+      vi.fn(),
+      { isSuccess: true, isLoading: false, isError: false, error: null },
+    ])
+    mockUseAuthorizedAppsQuery.mockReturnValue({
+      data: [createAuthorizedApp({ name: 'Replit' })],
+      isError: false,
+    })
+
+    render(<ProjectOAuthIntegrationsBanner />)
+
+    expect(
+      screen.getByText(
+        'This project is connected to Replit. Dashboard changes can affect connected tools in this organization.'
+      )
+    ).toBeInTheDocument()
+    expect(mockUseAuthorizedAppsQuery).toHaveBeenCalledWith(
+      { slug: 'acme' },
+      expect.objectContaining({ enabled: true })
+    )
+  })
+
+  it('falls back to plug icon when no app icon is provided', () => {
+    mockUseAuthorizedAppsQuery.mockReturnValue({
+      data: [createAuthorizedApp({ name: 'Lovable', icon: null })],
+      isError: false,
+    })
+
+    const { container } = render(<ProjectOAuthIntegrationsBanner />)
+
+    expect(container.querySelector('div[style*="background-image: none"] svg')).toBeInTheDocument()
   })
 })
