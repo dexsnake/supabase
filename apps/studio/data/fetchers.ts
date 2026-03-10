@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { DEFAULT_PLATFORM_APPLICATION_NAME } from '@supabase/pg-meta/src/constants'
-import { IS_PLATFORM, getAccessToken } from 'common'
+import { getAccessToken, IS_PLATFORM } from 'common'
 import { API_URL } from 'lib/constants'
 import { uuidv4 } from 'lib/helpers'
 import createClient from 'openapi-fetch'
