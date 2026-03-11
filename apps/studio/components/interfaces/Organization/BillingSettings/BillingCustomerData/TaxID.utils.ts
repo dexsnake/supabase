@@ -1,4 +1,17 @@
-import { TAX_IDS } from './TaxID.constants'
+import { TAX_IDS, TaxId } from './TaxID.constants'
+
+export const getTaxIdCountry = (taxId: TaxId): string => taxId.taxCountryIso2 ?? taxId.countryIso2
+
+export const findTaxIdOption = (type: string, country: string, billingCountry?: string) => {
+  const matches = TAX_IDS.filter(
+    (option) =>
+      option.type === type && (option.taxCountryIso2 ?? option.countryIso2) === country
+  )
+
+  if (matches.length <= 1 || !billingCountry) return matches[0]
+
+  return matches.find((option) => option.countryIso2 === billingCountry) ?? matches[0]
+}
 
 export const sanitizeTaxIdValue = (taxId: { name: string; value: string }) => {
   const selectedTaxId = TAX_IDS.find((option) => option.name === taxId.name)
