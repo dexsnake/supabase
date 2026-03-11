@@ -103,7 +103,7 @@ export function BuiltWithSupabaseSection() {
       {/* Header row */}
       <div className="border-b border-border">
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
-          <div className="flex items-end justify-between pt-20 pb-8">
+          <div className="flex items-end justify-between pt-32 pb-8">
             <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
               Kickstart your next project <br />
               <span className="text-foreground">with production ready templates</span>
@@ -132,7 +132,7 @@ export function BuiltWithSupabaseSection() {
                   target="_blank"
                   className="group flex flex-col border-b md:border-b-0 md:border-r border-border last:border-r-0 last:border-b-0 hover:bg-surface-75/50 transition-colors"
                 >
-                  <div className="flex-1 flex items-center justify-center px-10 pt-16 pb-0 overflow-hidden">
+                  <div className="flex-1 flex items-center justify-center px-6 pt-16 pb-0 overflow-hidden">
                     {/* Browser frame */}
                     <div className="w-full rounded-t-lg border border-b-0 border-border-stronger/50 shadow-lg -mb-[10%]">
                       {/* Title bar */}
@@ -191,7 +191,7 @@ export function BuiltWithSupabaseSection() {
                   )}
                 </div>
                 <h4 className="text-foreground text-sm font-medium">{example.title}</h4>
-                <p className="text-foreground-lighter text-xs mt-1 line-clamp-2">
+                <p className="text-foreground-lighter text-sm mt-1 line-clamp-2">
                   {example.description}
                 </p>
               </Link>
