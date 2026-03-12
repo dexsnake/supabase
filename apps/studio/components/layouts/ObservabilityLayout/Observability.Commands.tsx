@@ -1,8 +1,7 @@
-import { useMemo } from 'react'
-
 import { useParams } from 'common'
 import { COMMAND_MENU_SECTIONS } from 'components/interfaces/App/CommandMenu/CommandMenu.utils'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
+import { useMemo } from 'react'
 import type { CommandOptions, ICommand } from 'ui-patterns/CommandMenu'
 import { orderSectionFirst, useQuery, useRegisterCommands } from 'ui-patterns/CommandMenu'
 
@@ -41,6 +40,24 @@ export function useReportsGotoCommands(options?: CommandOptions) {
             id: 'nav-reports',
             name: 'Reports',
             route: `/project/${ref}/observability`,
+            defaultHidden: true,
+          },
+          {
+            id: 'nav-reports-alerts-inbox',
+            name: 'Alerts Inbox',
+            route: `/project/${ref}/observability/alerts/inbox`,
+            defaultHidden: true,
+          },
+          {
+            id: 'nav-reports-alerts-rules',
+            name: 'Alerts Rules',
+            route: `/project/${ref}/observability/alerts/rules`,
+            defaultHidden: true,
+          },
+          {
+            id: 'nav-reports-agents-manage',
+            name: 'Agents Manage',
+            route: `/project/${ref}/observability/agents`,
             defaultHidden: true,
           },
           {

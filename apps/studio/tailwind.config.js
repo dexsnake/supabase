@@ -5,6 +5,8 @@ module.exports = config({
     './pages/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     // purge styles from grid library
+    './../../node_modules/streamdown/dist/*.js',
+    './../../packages/agent-chat/src/**/*.{tsx,ts,js}',
     './../../packages/ui/src/**/*.{tsx,ts,js}',
     './../../packages/ui-patterns/src/**/*.{tsx,ts,js}',
   ],

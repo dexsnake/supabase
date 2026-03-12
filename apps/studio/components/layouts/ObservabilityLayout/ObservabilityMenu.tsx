@@ -9,7 +9,7 @@ import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from 'lib/constants'
 import { useProfile } from 'lib/profile'
-import { Plus } from 'lucide-react'
+import { ExternalLink, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { parseAsBoolean, useQueryState } from 'nuqs'
@@ -23,7 +23,17 @@ import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { ObservabilityMenuItem } from './ObservabilityMenuItem'
 
-const ObservabilityMenu = () => {
+const AGENTS_ACCESS_CONTROL_URL = 'http://localhost:8082/org/twokniuusaltjpuhedon/general'
+
+type NavigationMenuItem = {
+  key: string
+  name: string
+  url: string
+  pages?: string[]
+  isExternal?: boolean
+}
+
+export const ObservabilityMenu = () => {
   const router = useRouter()
   const { profile } = useProfile()
   const { ref, id } = useParams()
@@ -133,6 +143,7 @@ const ObservabilityMenu = () => {
                 name: 'Overview',
                 key: 'observability',
                 url: `/project/${ref}/observability${preservedQueryParams}`,
+                pages: ['/project/[ref]/observability'],
               },
             ]
           : []),
@@ -140,6 +151,7 @@ const ObservabilityMenu = () => {
           name: 'Query Performance',
           key: 'query-performance',
           url: `/project/${ref}/observability/query-performance${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/query-performance'],
         },
         ...(IS_PLATFORM
           ? [
@@ -147,9 +159,49 @@ const ObservabilityMenu = () => {
                 name: 'API Gateway',
                 key: 'api-overview',
                 url: `/project/${ref}/observability/api-overview${preservedQueryParams}`,
+                pages: ['/project/[ref]/observability/api-overview'],
               },
             ]
           : []),
+      ],
+    },
+    {
+      title: 'ALERTS',
+      key: 'alerts-section',
+      items: [
+        {
+          name: 'Inbox',
+          key: 'alerts-inbox',
+          url: `/project/${ref}/observability/alerts/inbox${preservedQueryParams}`,
+          pages: [
+            '/project/[ref]/observability/alerts',
+            '/project/[ref]/observability/alerts/inbox',
+          ],
+        },
+        {
+          name: 'Rules',
+          key: 'alerts-rules',
+          url: `/project/${ref}/observability/alerts/rules${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/alerts/rules'],
+        },
+      ],
+    },
+    {
+      title: 'AGENTS',
+      key: 'agents-section',
+      items: [
+        {
+          name: 'Manage',
+          key: 'agents-manage',
+          url: `/project/${ref}/observability/agents${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/agents'],
+        },
+        {
+          name: 'Access control',
+          key: 'agents-access-control',
+          url: AGENTS_ACCESS_CONTROL_URL,
+          isExternal: true,
+        },
       ],
     },
     {
@@ -160,21 +212,25 @@ const ObservabilityMenu = () => {
           name: 'Database',
           key: 'database',
           url: `/project/${ref}/observability/database${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/database'],
         },
         {
           name: 'Data API',
           key: 'postgrest',
           url: `/project/${ref}/observability/postgrest${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/postgrest'],
         },
         {
           name: 'Auth',
           key: 'auth',
           url: `/project/${ref}/observability/auth${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/auth'],
         },
         {
           name: 'Edge Functions',
           key: 'edge-functions',
           url: `/project/${ref}/observability/edge-functions${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/edge-functions'],
         },
         ...(storageSupported
           ? [
@@ -182,6 +238,7 @@ const ObservabilityMenu = () => {
                 name: 'Storage',
                 key: 'storage',
                 url: `/project/${ref}/observability/storage${preservedQueryParams}`,
+                pages: ['/project/[ref]/observability/storage'],
               },
             ]
           : []),
@@ -189,10 +246,11 @@ const ObservabilityMenu = () => {
           name: 'Realtime',
           key: 'realtime',
           url: `/project/${ref}/observability/realtime${preservedQueryParams}`,
+          pages: ['/project/[ref]/observability/realtime'],
         },
       ],
     },
-  ]
+  ] as Array<{ title: string; key: string; items: NavigationMenuItem[] }>
 
   return (
     <Menu type="pills" className="mt-6">
@@ -218,16 +276,21 @@ const ObservabilityMenu = () => {
                           className={cn(
                             'pr-2 mt-1 text-foreground-light group-hover:text-foreground/80 text-sm',
                             'flex items-center justify-between rounded-md group relative',
-                            subItem.key === pageKey
+                            !subItem.isExternal && subItem.pages?.includes(router.pathname)
                               ? 'bg-surface-300 text-foreground'
                               : 'hover:text-foreground'
                           )}
                         >
                           <Link
                             href={subItem.url}
+                            target={subItem.isExternal ? '_blank' : '_self'}
+                            rel={subItem.isExternal ? 'noreferrer noopener' : undefined}
                             className="flex-grow h-7 flex justify-between items-center pl-3"
                           >
                             <span>{subItem.name}</span>
+                            {subItem.isExternal && (
+                              <ExternalLink size={14} className="text-foreground-lighter" />
+                            )}
                           </Link>
                         </li>
                       ))}
@@ -354,5 +417,3 @@ const ObservabilityMenu = () => {
     </Menu>
   )
 }
-
-export default ObservabilityMenu

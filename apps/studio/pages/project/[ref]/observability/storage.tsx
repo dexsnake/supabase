@@ -1,7 +1,3 @@
-import dayjs from 'dayjs'
-import { ArrowRight, ExternalLinkIcon, RefreshCw } from 'lucide-react'
-import Link from 'next/link'
-
 import {
   NetworkTrafficRenderer,
   ResponseSpeedChartRenderer,
@@ -24,13 +20,16 @@ import {
 } from 'components/interfaces/Settings/Logs/Logs.DatePickers'
 import UpgradePrompt from 'components/interfaces/Settings/Logs/UpgradePrompt'
 import DefaultLayout from 'components/layouts/DefaultLayout'
-import ObservabilityLayout from 'components/layouts/ObservabilityLayout/ObservabilityLayout'
+import { ObservabilityLayout } from 'components/layouts/ObservabilityLayout/ObservabilityLayout'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
-import { useStorageReport } from 'data/reports/storage-report-query'
-import { useReportDateRange, useRefreshHandler } from 'hooks/misc/useReportDateRange'
-import { DOCS_URL } from 'lib/constants'
-import type { NextPageWithLayout } from 'types'
 import { ObservabilityLink } from 'components/ui/ObservabilityLink'
+import { useStorageReport } from 'data/reports/storage-report-query'
+import dayjs from 'dayjs'
+import { useRefreshHandler, useReportDateRange } from 'hooks/misc/useReportDateRange'
+import { DOCS_URL } from 'lib/constants'
+import { ArrowRight, ExternalLinkIcon, RefreshCw } from 'lucide-react'
+import Link from 'next/link'
+import type { NextPageWithLayout } from 'types'
 
 export const StorageReport: NextPageWithLayout = () => {
   const report = useStorageReport()

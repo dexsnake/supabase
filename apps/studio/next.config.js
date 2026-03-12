@@ -562,6 +562,7 @@ const nextConfig = {
     ],
   },
   transpilePackages: [
+    'agent-chat',
     'ui',
     'ui-patterns',
     'common',

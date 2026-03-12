@@ -19,7 +19,9 @@
     "incremental": true,
     "paths": {
       "@/*": ["./*"],
-      "@ui/*": ["./../../packages/ui/src/*"] // handle ui package paths
+      "@ui/*": ["./../../packages/ui/src/*"], // handle ui package paths
+      "agent-chat": ["./../../packages/agent-chat/index.tsx"],
+      "agent-chat/*": ["./../../packages/agent-chat/*"]
     },
     "useDefineForClassFields": true,
     "plugins": [
@@ -36,7 +38,9 @@
     "**/*.js",
     "**/*.jsx",
     ".next/types/**/*.ts",
-    "./../../packages/ui/src/**/*.d.ts"
+    "./../../packages/ui/src/**/*.d.ts",
+    "./../../packages/agent-chat/**/*.ts",
+    "./../../packages/agent-chat/**/*.tsx"
   ],
   "exclude": ["node_modules", "public/deno/*.ts"]
 }

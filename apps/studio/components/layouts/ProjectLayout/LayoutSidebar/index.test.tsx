@@ -9,8 +9,26 @@ import { MobileSheetProvider } from '../NavigationBar/MobileSheetContext'
 import { LayoutSidebar } from './index'
 import { LayoutSidebarProvider, SIDEBAR_KEYS } from './LayoutSidebarProvider'
 
+let mockAgentChatSidebarFlag = false
+
+vi.mock('common', async () => {
+  const actual = await vi.importActual<typeof import('common')>('common')
+
+  return {
+    ...actual,
+    useFlag: (name: string) => {
+      if (name === 'agentChatSidebar') return mockAgentChatSidebarFlag
+      return false
+    },
+  }
+})
+
 vi.mock('components/ui/AIAssistantPanel/AIAssistant', () => ({
   AIAssistant: () => <div data-testid="ai-assistant-sidebar">AI Assistant</div>,
+}))
+
+vi.mock('components/interfaces/AgentChat/AgentChat', () => ({
+  AgentChat: () => <div data-testid="agent-chat-sidebar">Agent Chat</div>,
 }))
 
 vi.mock('components/ui/EditorPanel/EditorPanel', () => ({
@@ -100,6 +118,7 @@ describe('LayoutSidebar', () => {
   afterEach(() => {
     resetSidebarManagerState()
     localStorage.clear()
+    mockAgentChatSidebarFlag = false
     vi.clearAllMocks()
   })
 
@@ -136,6 +155,23 @@ describe('LayoutSidebar', () => {
 
     const sidebar = await screen.findByTestId('ai-assistant-sidebar')
     expect(sidebar).toBeTruthy()
+  })
+
+  it('renders the new agent chat when the feature flag is enabled', async () => {
+    mockAgentChatSidebarFlag = true
+
+    renderSidebar()
+
+    await waitFor(() => {
+      expect(sidebarManagerState.sidebars[SIDEBAR_KEYS.AI_ASSISTANT]).toBeDefined()
+    })
+
+    act(() => {
+      sidebarManagerState.toggleSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
+    })
+
+    expect(await screen.findByTestId('agent-chat-sidebar')).toBeTruthy()
+    expect(screen.queryByTestId('ai-assistant-sidebar')).toBeNull()
   })
 
   describe('at organization level', () => {

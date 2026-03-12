@@ -184,6 +184,27 @@ services:
     plugins:
       - name: cors
 
+  ## Agent API routes
+  - name: agent-v1
+    _comment: 'Agent API: /agent/v1/* -> http://agent-api:3001/*'
+    url: http://agent-api:3001/
+    routes:
+      - name: agent-v1-all
+        strip_path: true
+        paths:
+          - /agent/v1/
+    plugins:
+      - name: cors
+      - name: key-auth
+        config:
+          hide_credentials: false
+      - name: acl
+        config:
+          hide_groups_header: true
+          allow:
+            - admin
+            - anon
+
   ## Edge Functions routes
   - name: functions-v1
     _comment: 'Edge Functions: /functions/v1/* -> http://functions:9000/*'

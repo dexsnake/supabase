@@ -26,6 +26,12 @@ export const API_URL = (() => {
 export const PG_META_URL = IS_PLATFORM
   ? process.env.PLATFORM_PG_META_URL
   : process.env.STUDIO_PG_META_URL
+
+export const AGENT_API_URL =
+  process.env.PLATFORM_AGENT_API_URL ??
+  process.env.STUDIO_AGENT_API_URL ??
+  process.env.AGENT_API_URL ??
+  'http://localhost:3001'
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 /**

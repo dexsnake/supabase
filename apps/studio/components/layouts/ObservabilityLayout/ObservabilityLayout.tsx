@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation'
 import { PropsWithChildren, useEffect, useRef } from 'react'
 
 import { ProjectLayout } from '../ProjectLayout'
-import ObservabilityMenu from './ObservabilityMenu'
+import { ObservabilityMenu } from './ObservabilityMenu'
 
 interface ObservabilityLayoutProps {
   title?: string
@@ -98,7 +98,7 @@ const ObservabilityLayoutContent = ({
   }
 }
 
-const ObservabilityLayout = (props: PropsWithChildren<ObservabilityLayoutProps>) => {
+const ObservabilityLayoutComponent = (props: PropsWithChildren<ObservabilityLayoutProps>) => {
   const { ref } = useParams()
   const { reportsAll } = useIsFeatureEnabled(['reports:all'])
 
@@ -109,4 +109,4 @@ const ObservabilityLayout = (props: PropsWithChildren<ObservabilityLayoutProps>)
   }
 }
 
-export default withAuth(ObservabilityLayout)
+export const ObservabilityLayout = withAuth(ObservabilityLayoutComponent)

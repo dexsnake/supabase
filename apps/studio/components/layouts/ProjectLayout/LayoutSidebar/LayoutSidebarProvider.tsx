@@ -18,6 +18,9 @@ const AdvisorPanel = dynamic(() =>
 const AIAssistant = dynamic(() =>
   import('components/ui/AIAssistantPanel/AIAssistant').then((m) => m.AIAssistant)
 )
+const AgentChat = dynamic(() =>
+  import('components/interfaces/AgentChat/AgentChat').then((m) => m.AgentChat)
+)
 const EditorPanel = dynamic(() =>
   import('components/ui/EditorPanel/EditorPanel').then((m) => m.EditorPanel)
 )
@@ -40,6 +43,7 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
   const { data: org } = useSelectedOrganizationQuery()
   const { mutate: sendEvent } = useSendEventMutation()
   const { openSidebar, closeSidebar, activeSidebar } = useSidebarManagerSnapshot()
+  const useAgentChatSidebar = true // useFlag('agentChatSidebar')
 
   const [sidebarURLParam, setSidebarUrlParam] = useQueryState('sidebar', parseAsString)
   const [sidebarLocalStorage, setSidebarLocalStorage, { isSuccess: isLoadedLocalStorage }] =
@@ -47,8 +51,15 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
 
   const sidebarURLParamRef = useLatest(sidebarURLParam)
   const sidebarLocalStorageRef = useLatest(sidebarLocalStorage)
+  const renderAssistantSidebar = () => {
+    if (useAgentChatSidebar && project?.ref) {
+      return <AgentChat projectRef={project.ref} />
+    }
 
-  useRegisterSidebar(SIDEBAR_KEYS.AI_ASSISTANT, () => <AIAssistant />, {}, 'i', !!project)
+    return <AIAssistant />
+  }
+
+  useRegisterSidebar(SIDEBAR_KEYS.AI_ASSISTANT, renderAssistantSidebar, {}, 'i', !!project)
   useRegisterSidebar(SIDEBAR_KEYS.EDITOR_PANEL, () => <EditorPanel />, {}, 'e', !!project)
   useRegisterSidebar(SIDEBAR_KEYS.ADVISOR_PANEL, () => <AdvisorPanel />, {}, undefined, true)
   useRegisterSidebar(
