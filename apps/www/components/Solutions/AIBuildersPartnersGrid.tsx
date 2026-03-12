@@ -52,19 +52,9 @@ const newPartners: Partner[] = [
     logo: '/images/logos/publicity/optisigns.svg',
   },
   {
-    name: 'Nerd',
-    href: 'https://nerd.com/',
-    logo: '/images/logos/publicity/nerd.svg',
-  },
-  {
     name: 'CatDoes',
     href: 'https://catdoes.com/',
     logo: '/images/logos/publicity/catdoes.svg',
-  },
-  {
-    name: 'Baidu MiaoDa',
-    href: 'https://www.baidu.com/',
-    logo: '/images/logos/publicity/baidu-miaoda.svg',
   },
   {
     name: 'Woz',
@@ -72,24 +62,9 @@ const newPartners: Partner[] = [
     logo: '/images/logos/publicity/woz.svg',
   },
   {
-    name: 'Anyx Managed',
-    href: 'https://anyx.io/',
-    logo: '/images/logos/publicity/anyx.svg',
-  },
-  {
     name: 'Buildify.dev',
     href: 'https://buildify.dev/',
     logo: '/images/logos/publicity/buildify.svg',
-  },
-  {
-    name: 'Fastshot.ai',
-    href: 'https://fastshot.ai/',
-    logo: '/images/logos/publicity/fastshot.svg',
-  },
-  {
-    name: 'Flexpp (VibeX)',
-    href: 'https://flexpp.com/',
-    logo: '/images/logos/publicity/flexpp.svg',
   },
   {
     name: 'The Open Builder',
@@ -134,7 +109,7 @@ const PartnerLogo = ({ partner, size = 'small' }: PartnerLogoProps) => {
             <img
               src={partner.logo}
               alt={partner.name}
-              className={`${sizeClasses} w-auto object-contain opacity-80 hover:opacity-100 transition-opacity`}
+              className={`${sizeClasses} w-auto object-contain opacity-80 hover:opacity-100 transition-opacity grayscale`}
               draggable={false}
               onError={(e) => {
                 // If image fails to load, show text fallback
@@ -178,7 +153,7 @@ const AIBuildersPartnersGrid = ({ className }: AIBuildersPartnersGridProps) => {
 
       {/* New Partners - smaller logos */}
       <div className="pt-6 border-t border-default">
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3 md:gap-4 items-center justify-items-center">
+        <div className="flex flex-wrap justify-center md:justify-between gap-3 items-center">
           {newPartners.map((partner) => (
             <PartnerLogo key={partner.name} partner={partner} size="small" />
           ))}
