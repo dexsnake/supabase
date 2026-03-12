@@ -125,7 +125,7 @@ const PartnerLogo = ({ partner, size = 'small' }: PartnerLogoProps) => {
             <img
               src={partner.logo}
               alt={partner.name}
-              className={`${containerClasses} object-contain opacity-80 hover:opacity-100 transition-opacity grayscale`}
+              className={`${containerClasses} object-contain opacity-80 hover:opacity-100 transition-opacity grayscale dark:invert`}
               draggable={false}
               onError={(e) => {
                 // If image fails to load, show text fallback
