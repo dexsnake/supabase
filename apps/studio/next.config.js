@@ -33,6 +33,14 @@ const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   assetPrefix: getAssetPrefix(),
   output: 'standalone',
+
+  // Generate client-side source maps in production so the Sentry webpack plugin can pair
+  // each JS chunk with its .map file, inject matching debug IDs into both, and upload them.
+  // Without this, Next.js uses hidden-source-map mode (no //# sourceMappingURL= in JS files),
+  // the plugin can't find the source maps, and debug IDs only end up in JS files — not in
+  // the uploaded source maps — causing "No source file with matching Debug ID" in Sentry.
+  // The .map files are deleted before CDN upload by Sentry's deleteSourcemapsAfterUpload.
+  productionBrowserSourceMaps: true,
   async rewrites() {
     return [
       {
@@ -634,6 +642,16 @@ module.exports =
           // This is the v10 replacement for the removed `hideSourceMaps` option.
           deleteSourcemapsAfterUpload: true,
         },
+
+        // Match the CDN URL structure so Sentry can correlate uploaded source maps to
+        // incoming stack frames. Assets are served from:
+        //   {SUPABASE_ASSETS_URL}/{SITE_NAME}/{COMMIT_SHA_12}/_next/static/...
+        // Without this, Sentry indexes artifacts as ~/_next/... and can't find them
+        // when frames arrive with the full CDN path.
+        urlPrefix: (() => {
+          const assetPrefix = getAssetPrefix()
+          return assetPrefix ? `${assetPrefix}/_next` : '~/_next'
+        })(),
 
         // Automatically tree-shake Sentry logger statements to reduce bundle size
         disableLogger: true,
