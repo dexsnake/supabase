@@ -227,8 +227,13 @@ services:
 
   ## Storage API endpoint (with Authorization header transformation).
   ## No key-auth.
-  ## S3 protocol requests will not match the Lua code in add/replace headers.
-  ## Kong doesn't add empty headers if the expression evaluates to nil.
+  ##
+  ## supabase-js and AWS SDK normal operations always send an Authorization
+  ## header, so the Lua expression passes it through unchanged.
+  ##
+  ## AWS S3 presigned URLs (aws cli, boto3, etc. - not Supabase signed URLs)
+  ## carry credentials in query parameters without an Authorization header.
+  ## The Lua expression evaluates to nil, which Kong renders as empty string.
   - name: storage-v1
     _comment: 'Storage: /storage/v1/* -> http://storage:5000/*'
     url: http://storage:5000/
