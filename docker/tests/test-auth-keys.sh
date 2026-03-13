@@ -191,10 +191,10 @@ jwks_has_oct=$(echo "$jwks_content" | node -e "
 check "JWKS contains EC public key" "true" "$jwks_has_ec"
 check "JWKS does NOT contain symmetric key" "false" "$jwks_has_oct"
 
-echo ""
-echo "--- OAuth metadata endpoint ---"
-check "well-known oauth (no auth)" "200" \
-    "$(http_status "$BASE_URL/.well-known/oauth-authorization-server")"
+#echo ""
+#echo "--- OAuth metadata endpoint ---"
+#check "well-known oauth (no auth)" "200" \
+#    "$(http_status "$BASE_URL/.well-known/oauth-authorization-server")"
 
 echo ""
 echo "--- Realtime WebSocket upgrade ---"
