@@ -1,4 +1,5 @@
 import { IS_PLATFORM } from 'common'
+import apiWrapper from 'lib/api/apiWrapper'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import { InternalServerError } from '@/lib/api/apiHelpers'
@@ -8,7 +9,6 @@ import {
   type IncidentInfo,
 } from '@/lib/api/incident-status'
 import { createAdminClient } from '@/lib/api/supabase-admin'
-import apiWrapper from 'lib/api/apiWrapper'
 
 /**
  * Cache on browser for 5 minutes
@@ -98,7 +98,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const wrapper = (req: NextApiRequest, res: NextApiResponse) =>
-  apiWrapper(req, res, handler)
+const wrapper = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
 export default wrapper

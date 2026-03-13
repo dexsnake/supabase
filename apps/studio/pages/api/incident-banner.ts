@@ -1,8 +1,8 @@
 import { createHash } from 'crypto'
 import { IS_PLATFORM, IS_PROD } from 'common'
+import apiWrapper from 'lib/api/apiWrapper'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
-import apiWrapper from 'lib/api/apiWrapper'
 
 const INCIDENT_IO_BASE_URL = 'https://api.incident.io/v2'
 
@@ -157,7 +157,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json({ incidents: bannerIncidents })
 }
 
-const wrapper = (req: NextApiRequest, res: NextApiResponse) =>
-  apiWrapper(req, res, handler)
+const wrapper = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 
 export default wrapper
