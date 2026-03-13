@@ -29,6 +29,9 @@ export type IncidentInfo = {
 const STATUSPAGE_API_URL = 'https://api.statuspage.io/v1'
 const STATUSPAGE_PAGE_ID = process.env.STATUSPAGE_PAGE_ID
 const STATUSPAGE_API_KEY = process.env.STATUSPAGE_API_KEY
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+let incidentCache: { data: IncidentInfo[]; expiresAt: number } | null = null
 
 function getIncidentsEndpoint(): string {
   return `${STATUSPAGE_API_URL}/pages/${STATUSPAGE_PAGE_ID}/incidents/unresolved`
@@ -67,6 +70,10 @@ export async function getActiveIncidents(): Promise<IncidentInfo[]> {
     return []
   }
 
+  if (incidentCache && Date.now() < incidentCache.expiresAt) {
+    return incidentCache.data
+  }
+
   if (!STATUSPAGE_PAGE_ID) {
     throw new InternalServerError('StatusPage page ID is not configured')
   }
@@ -81,7 +88,6 @@ export async function getActiveIncidents(): Promise<IncidentInfo[]> {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    cache: 'no-store',
     signal: AbortSignal.timeout(30_000),
   })
   const responseText = await response.text()
@@ -133,7 +139,7 @@ export async function getActiveIncidents(): Promise<IncidentInfo[]> {
     return hasScheduledTimePassed
   })
 
-  return activeIncidents.map((incident) => ({
+  const incidents = activeIncidents.map((incident) => ({
     id: incident.id,
     name: incident.name,
     status: incident.status,
@@ -141,4 +147,8 @@ export async function getActiveIncidents(): Promise<IncidentInfo[]> {
     active_since: incident.scheduled_for ?? incident.created_at,
     metadata: incident.metadata,
   }))
+
+  incidentCache = { data: incidents, expiresAt: Date.now() + CACHE_TTL_MS }
+
+  return incidents
 }
