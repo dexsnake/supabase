@@ -40,7 +40,7 @@ export function HighlightsSection() {
   return (
     <div className="mx-auto max-w-[var(--container-max-w,75rem)]  border-x border-border">
       {/* Header */}
-      <div className="pt-32 pb-8 border-b border-border px-6">
+      <div className="pt-40 pb-8 border-b border-border px-6">
         <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
           Built for scale
           <br />

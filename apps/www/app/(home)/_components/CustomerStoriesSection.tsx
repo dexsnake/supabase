@@ -77,7 +77,7 @@ export function CustomerStoriesSection() {
       {/* Header row */}
       <div className="border-b border-border">
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
-          <div className="flex items-end justify-between pt-16 pb-8">
+          <div className="flex items-end justify-between pt-40 pb-8">
             <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
               How industry leaders <br />{' '}
               <span className="text-foreground">are building with Supabase</span>

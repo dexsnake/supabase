@@ -87,7 +87,7 @@ export function FeaturesSection() {
       {/* Header */}
       <div className="border-b border-border">
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
-          <div className="pt-32 pb-8">
+          <div className="pt-40 pb-8">
             <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
               Everything you need
               <br />

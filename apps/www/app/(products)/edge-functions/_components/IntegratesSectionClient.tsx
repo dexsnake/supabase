@@ -76,7 +76,7 @@ export function IntegratesSectionClient({ useCases }: { useCases: UseCase[] }) {
       {/* Header row */}
       <div className="border-b border-border">
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
-          <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl pt-32 pb-8">
+          <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl pt-40 pb-8">
             Integrates with the <span className="text-foreground">Supabase ecosystem</span>
           </h3>
         </div>

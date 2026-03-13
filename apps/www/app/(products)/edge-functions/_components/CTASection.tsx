@@ -41,7 +41,7 @@ function TerminalAnimation() {
         <span className="ml-2 text-xs text-foreground-muted font-mono uppercase">Terminal</span>
       </div>
       {/* Lines */}
-      <div className="px-4 py-8 md:px-6 md:py-10 font-mono text-xs md:text-sm leading-relaxed min-h-[240px]">
+      <div className="px-4 md:px-6 font-mono text-xs md:text-sm leading-relaxed h-[280px] flex flex-col justify-center">
         <AnimatePresence>
           {TERMINAL_LINES.slice(0, visibleCount).map((line, i) => (
             <motion.div
