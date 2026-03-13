@@ -119,6 +119,11 @@ Sentry.init({
   allowUrls: [
     /https?:\/\/(.*\.)?supabase\.(com|co|green|io)/,
     /app:\/\//, // Next.js rewrites source URLs to app:// with source maps
+    // On Vercel preview deployments, assets are served from *.vercel.app (no CDN).
+    // Allow those so errors from preview branches reach Sentry.
+    ...(process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production'
+      ? [/https?:\/\/.*\.vercel\.app/]
+      : []),
   ],
   beforeBreadcrumb(breadcrumb, _hint) {
     const cleanedBreadcrumb = { ...breadcrumb }
