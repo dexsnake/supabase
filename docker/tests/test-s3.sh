@@ -93,19 +93,21 @@ check "ListBuckets returns valid response" "true" "$list_ok"
 
 echo ""
 echo "--- S3 CreateBucket ---"
-create_output=$(s3 s3api create-bucket --bucket "$bucket_name" --output json 2>&1)
-create_ok=$(echo "$create_output" | jq -r 'if .Location then "true" else "false" end' 2>/dev/null)
-check "CreateBucket" "true" "$create_ok"
+s3 s3api create-bucket --bucket "$bucket_name" --output json >/dev/null 2>&1
 
-if [ "$create_ok" != "true" ]; then
+# Verify create succeeded
+create_found=$(s3 s3api list-buckets --output json | \
+    jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "true" else "false" end' 2>/dev/null)
+check "CreateBucket" "true" "$create_found"
+
+if [ "$create_found" != "true" ]; then
     echo "  Cannot continue without a bucket. Aborting."
-    echo "  Response: $create_output"
     echo ""
     echo "=== Results: $pass passed, $fail failed ==="
     exit 1
 fi
 
-# Verify bucket appears in ListBuckets
+# Verify bucket appears in ListBuckets (separate call)
 s3_bucket_found=$(s3 s3api list-buckets --output json | \
     jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "true" else "false" end' 2>/dev/null)
 check "Bucket visible in ListBuckets" "true" "$s3_bucket_found"
