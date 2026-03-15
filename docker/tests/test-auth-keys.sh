@@ -9,7 +9,8 @@
 # Prerequisites:
 #   - Running self-hosted Supabase instance
 #   - .env file with all keys configured
-#   - node >= 16 (for HS256 token minting test)
+#   - jq (for JSON parsing)
+#   - node >= 16 (for HS256 token minting test only)
 #
 
 set -e
@@ -20,6 +21,13 @@ if [ ! -f .env ]; then
     echo "Error: .env file not found. Run from the project directory."
     exit 1
 fi
+
+for cmd in jq node; do
+    if ! command -v $cmd >/dev/null 2>&1; then
+        echo "Error: $cmd not found."
+        exit 1
+    fi
+done
 
 # Read keys from .env
 JWT_SECRET=$(grep '^JWT_SECRET=' .env | cut -d= -f2-)
@@ -179,16 +187,8 @@ check "JWKS public endpoint (no auth)" "200" \
 
 # Verify JWKS content: should have EC key, should NOT have symmetric key
 jwks_content=$(curl -s "$BASE_URL/auth/v1/.well-known/jwks.json")
-jwks_has_ec=$(echo "$jwks_content" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.keys&&j.keys.some(k=>k.kty==='EC')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
-jwks_has_oct=$(echo "$jwks_content" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.keys&&j.keys.some(k=>k.kty==='oct')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+jwks_has_ec=$(echo "$jwks_content" | jq -r '[.keys[] | .kty] | if any(. == "EC") then "true" else "false" end' 2>/dev/null)
+jwks_has_oct=$(echo "$jwks_content" | jq -r '[.keys[] | .kty] | if any(. == "oct") then "true" else "false" end' 2>/dev/null)
 check "JWKS contains EC public key" "true" "$jwks_has_ec"
 check "JWKS does NOT contain symmetric key" "false" "$jwks_has_oct"
 
@@ -240,10 +240,7 @@ create_resp=$(curl -s "$BASE_URL/auth/v1/admin/users" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"$test_email\",\"password\":\"$test_password\",\"email_confirm\":true}")
 
-test_user_id=$(echo "$create_resp" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).id||'')}catch{console.log('')}
-    })" 2>/dev/null)
+test_user_id=$(echo "$create_resp" | jq -r '.id // empty' 2>/dev/null)
 
 # Sign in to get session JWT
 auth_response=$(curl -s "$BASE_URL/auth/v1/token?grant_type=password" \
@@ -251,21 +248,12 @@ auth_response=$(curl -s "$BASE_URL/auth/v1/token?grant_type=password" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"$test_email\",\"password\":\"$test_password\"}")
 
-access_token=$(echo "$auth_response" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).access_token||'')}catch{console.log('')}
-    })" 2>/dev/null)
+access_token=$(echo "$auth_response" | jq -r '.access_token // empty' 2>/dev/null)
 
 if [ -n "$access_token" ]; then
     # Check the algorithm in the JWT header
-    jwt_header=$(echo "$access_token" | cut -d. -f1 | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            console.log(Buffer.from(d.trim(),'base64url').toString())
-        })" 2>/dev/null)
-    jwt_alg=$(echo "$jwt_header" | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            try{console.log(JSON.parse(d.trim()).alg||'')}catch{console.log('')}
-        })" 2>/dev/null)
+    jwt_alg=$(echo "$access_token" | cut -d. -f1 | \
+        jq -Rr '@base64d | fromjson | .alg // empty' 2>/dev/null)
 
     if [ -n "$jwt_alg" ]; then
         echo "  INFO: User session JWT signed with: $jwt_alg"
@@ -359,19 +347,10 @@ echo "--- JWT_KEYS format ---"
 JWT_KEYS_VAL=$(grep '^JWT_KEYS=' .env | cut -d= -f2-)
 if [ -n "$JWT_KEYS_VAL" ]; then
     # Auth expects a JSON array, not a JWKS object
-    jwt_keys_is_array=$(echo "$JWT_KEYS_VAL" | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            try{console.log(Array.isArray(JSON.parse(d.trim()))?'true':'false')}
-            catch{console.log('false')}
-        })" 2>/dev/null)
+    jwt_keys_is_array=$(echo "$JWT_KEYS_VAL" | jq -r 'if type == "array" then "true" else "false" end' 2>/dev/null)
     check "JWT_KEYS is JSON array (not JWKS object)" "true" "$jwt_keys_is_array"
 
-    jwt_keys_has_sign=$(echo "$JWT_KEYS_VAL" | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            try{const a=JSON.parse(d.trim());
-            console.log(a.some(k=>k.key_ops&&k.key_ops.includes('sign'))?'true':'false')}
-            catch{console.log('false')}
-        })" 2>/dev/null)
+    jwt_keys_has_sign=$(echo "$JWT_KEYS_VAL" | jq -r 'if any(.[]; .key_ops and (.key_ops | index("sign"))) then "true" else "false" end' 2>/dev/null)
     check "JWT_KEYS has a signing key (key_ops: sign)" "true" "$jwt_keys_has_sign"
 else
     echo "  SKIP: JWT_KEYS not configured"

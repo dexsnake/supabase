@@ -16,6 +16,7 @@
 #         -f ./tests/docker-compose.s3.test.yml up -d
 #   - .env file with MINIO_ROOT_USER, MINIO_ROOT_PASSWORD, GLOBAL_S3_BUCKET
 #   - aws cli v2
+#   - jq (for JSON parsing)
 #
 
 set -e
@@ -30,10 +31,12 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-if ! command -v aws >/dev/null 2>&1; then
-    echo "Error: aws cli not found. Install it: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html"
-    exit 1
-fi
+for cmd in aws jq; do
+    if ! command -v $cmd >/dev/null 2>&1; then
+        echo "Error: $cmd not found."
+        exit 1
+    fi
+done
 
 # Read backend credentials from .env
 BACKEND_ACCESS_KEY=$(grep '^MINIO_ROOT_USER=' .env | cut -d= -f2-)
@@ -83,11 +86,7 @@ echo ""
 
 echo "--- Connectivity ---"
 list_output=$(s3 s3api list-buckets --output json)
-list_ok=$(echo "$list_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(Array.isArray(j.Buckets)?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+list_ok=$(echo "$list_output" | jq -r 'if .Buckets then "true" else "false" end' 2>/dev/null)
 check "Backend reachable (ListBuckets)" "true" "$list_ok"
 
 if [ "$list_ok" != "true" ]; then
@@ -105,12 +104,8 @@ fi
 echo ""
 echo "--- Storage bucket ---"
 if [ -n "$GLOBAL_S3_BUCKET" ]; then
-    storage_bucket_exists=$(s3 s3api list-buckets --output json | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            try{const j=JSON.parse(d);
-            console.log(j.Buckets.some(b=>b.Name==='$GLOBAL_S3_BUCKET')?'true':'false')}
-            catch{console.log('false')}
-        })" 2>/dev/null)
+    storage_bucket_exists=$(s3 s3api list-buckets --output json | \
+        jq -r --arg name "$GLOBAL_S3_BUCKET" '[.Buckets[] | .Name] | if any(. == $name) then "true" else "false" end' 2>/dev/null)
     check "GLOBAL_S3_BUCKET ($GLOBAL_S3_BUCKET) exists" "true" "$storage_bucket_exists"
 else
     echo "  SKIP: GLOBAL_S3_BUCKET not set"
@@ -123,11 +118,7 @@ fi
 echo ""
 echo "--- CreateBucket ---"
 create_output=$(s3 s3api create-bucket --bucket "$bucket_name" --output json 2>&1)
-create_ok=$(echo "$create_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.Location?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+create_ok=$(echo "$create_output" | jq -r 'if .Location then "true" else "false" end' 2>/dev/null)
 check "CreateBucket" "true" "$create_ok"
 
 if [ "$create_ok" != "true" ]; then
@@ -139,12 +130,8 @@ if [ "$create_ok" != "true" ]; then
 fi
 
 # Verify in ListBuckets
-bucket_found=$(s3 s3api list-buckets --output json | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Buckets.some(b=>b.Name==='$bucket_name')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+bucket_found=$(s3 s3api list-buckets --output json | \
+    jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "true" else "false" end' 2>/dev/null)
 check "Bucket visible in ListBuckets" "true" "$bucket_found"
 
 # ---------------------------------------------
@@ -166,12 +153,8 @@ check "PutObject" "true" "$put_ok"
 echo ""
 echo "--- ListObjectsV2 ---"
 list_objects=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --output json)
-object_found=$(echo "$list_objects" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Contents&&j.Contents.some(o=>o.Key==='test-file.txt')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+object_found=$(echo "$list_objects" | \
+    jq -r '[.Contents[]? | .Key] | if any(. == "test-file.txt") then "true" else "false" end' 2>/dev/null)
 check "Object found in ListObjectsV2" "true" "$object_found"
 
 # ---------------------------------------------
@@ -181,10 +164,7 @@ check "Object found in ListObjectsV2" "true" "$object_found"
 echo ""
 echo "--- HeadObject ---"
 head_output=$(s3 s3api head-object --bucket "$bucket_name" --key "test-file.txt" --output json)
-head_size=$(echo "$head_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).ContentLength||0)}catch{console.log(0)}
-    })" 2>/dev/null)
+head_size=$(echo "$head_output" | jq -r '.ContentLength // 0' 2>/dev/null)
 original_size=$(wc -c < "$tmpfile" | tr -d ' ')
 check "HeadObject returns correct size" "$original_size" "$head_size"
 rm -f "$tmpfile"
@@ -224,13 +204,8 @@ echo ""
 echo "--- DeleteObject ---"
 s3 s3 rm "s3://$bucket_name/test-copy.txt" >/dev/null
 list_after_delete=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --output json)
-copy_gone=$(echo "$list_after_delete" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        const found=j.Contents&&j.Contents.some(o=>o.Key==='test-copy.txt');
-        console.log(found?'false':'true')}
-        catch{console.log('true')}
-    })" 2>/dev/null)
+copy_gone=$(echo "$list_after_delete" | \
+    jq -r '[.Contents[]? | .Key] | if any(. == "test-copy.txt") then "false" else "true" end' 2>/dev/null)
 check "Deleted object no longer listed" "true" "$copy_gone"
 
 # ---------------------------------------------
@@ -247,10 +222,7 @@ large_ok=$(echo "$large_put" | grep -q "upload:" && echo "true" || echo "false")
 check "Multipart upload (7MB)" "true" "$large_ok"
 
 large_head=$(s3 s3api head-object --bucket "$bucket_name" --key "large-file.bin" --output json)
-remote_size=$(echo "$large_head" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).ContentLength||0)}catch{console.log(0)}
-    })" 2>/dev/null)
+remote_size=$(echo "$large_head" | jq -r '.ContentLength // 0' 2>/dev/null)
 check "Multipart size matches ($large_size bytes)" "$large_size" "$remote_size"
 
 large_download=$(mktemp); cleanup_files="$cleanup_files $large_download"
@@ -276,17 +248,12 @@ rm -f "$batch_file"
 delete_objects_output=$(s3 s3api delete-objects --bucket "$bucket_name" \
     --delete '{"Objects":[{"Key":"batch-a.txt"},{"Key":"batch-b.txt"},{"Key":"batch-c.txt"}]}' \
     --output json)
-deleted_count=$(echo "$delete_objects_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).Deleted.length)}catch{console.log(0)}
-    })" 2>/dev/null)
+deleted_count=$(echo "$delete_objects_output" | jq -r '.Deleted | length' 2>/dev/null)
 check "DeleteObjects removed 3 objects" "3" "$deleted_count"
 
 # Verify all gone
-batch_remaining=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --prefix "batch-" --output json | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.KeyCount||0)}catch{console.log(0)}
-    })" 2>/dev/null)
+batch_remaining=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --prefix "batch-" --output json | \
+    jq -r '.KeyCount // 0' 2>/dev/null)
 check "Batch-deleted objects gone" "0" "$batch_remaining"
 
 # ---------------------------------------------
@@ -367,12 +334,8 @@ echo ""
 echo "--- Cleanup ---"
 s3 s3 rm "s3://$bucket_name/" --recursive >/dev/null
 s3 s3api delete-bucket --bucket "$bucket_name" >/dev/null
-bucket_gone=$(s3 s3api list-buckets --output json | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Buckets.some(b=>b.Name==='$bucket_name')?'false':'true')}
-        catch{console.log('true')}
-    })" 2>/dev/null)
+bucket_gone=$(s3 s3api list-buckets --output json | \
+    jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "false" else "true" end' 2>/dev/null)
 check "Test bucket deleted" "true" "$bucket_gone"
 
 # ---------------------------------------------

@@ -9,7 +9,7 @@
 # Prerequisites:
 #   - Running self-hosted Supabase instance
 #   - .env file with keys configured
-#   - node >= 16 (for file generation)
+#   - jq (for JSON parsing)
 #
 
 set -e
@@ -21,6 +21,11 @@ BASE_URL="${1:-http://localhost:8000}"
 
 if [ ! -f .env ]; then
     echo "Error: .env file not found. Run from the project directory."
+    exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq not found. Install it: https://jqlang.github.io/jq/download/"
     exit 1
 fi
 
@@ -69,13 +74,10 @@ echo ""
 
 echo "--- Container health ---"
 if command -v docker >/dev/null 2>&1; then
-    container_status=$(docker compose ps --format json 2>/dev/null | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            const lines=d.trim().split('\n').filter(Boolean);
-            const bad=lines.filter(l=>{try{const o=JSON.parse(l);return o.State!=='running'||(o.Health&&o.Health!=='healthy')}catch{return false}});
-            const info=bad.map(l=>{try{const o=JSON.parse(l);return o.Service+': State='+o.State+' Health='+(o.Health||'none')}catch{return '?'}});
-            console.log(bad.length+'|'+info.join(', '))
-        })" 2>/dev/null || echo "?|")
+    container_status=$(docker compose ps --format json 2>/dev/null | jq -rs '
+        [.[] | select(.State != "running" or (.Health != "" and .Health != "healthy"))]
+        | (length | tostring) + "|" + ([.[] | .Service + ": State=" + .State + " Health=" + (.Health // "none")] | join(", "))
+    ' 2>/dev/null || echo "?|")
     unhealthy="${container_status%%|*}"
     container_issues="${container_status#*|}"
     if [ "$unhealthy" = "0" ]; then
@@ -119,10 +121,7 @@ create_resp=$(http_body "$BASE_URL/auth/v1/admin/users" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"$test_email\",\"password\":\"$test_password\",\"email_confirm\":true}")
 
-user_id=$(echo "$create_resp" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).id||'')}catch{console.log('')}
-    })" 2>/dev/null)
+user_id=$(echo "$create_resp" | jq -r '.id // empty' 2>/dev/null)
 
 if [ -n "$user_id" ]; then
     check "Create user (admin)" "true" "true"
@@ -133,10 +132,7 @@ if [ -n "$user_id" ]; then
         -H "Content-Type: application/json" \
         -d "{\"email\":\"$test_email\",\"password\":\"$test_password\"}")
 
-    access_token=$(echo "$signin_resp" | node -e "
-        let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-            try{console.log(JSON.parse(d).access_token||'')}catch{console.log('')}
-        })" 2>/dev/null)
+    access_token=$(echo "$signin_resp" | jq -r '.access_token // empty' 2>/dev/null)
 
     if [ -n "$access_token" ]; then
         check "Sign in user" "true" "true"
@@ -167,14 +163,8 @@ signup_resp=$(http_body "$BASE_URL/auth/v1/signup" \
     -H "Content-Type: application/json" \
     -d "{\"email\":\"$signup_email\",\"password\":\"$test_password\"}")
 
-signup_token=$(echo "$signup_resp" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).access_token||'')}catch{console.log('')}
-    })" 2>/dev/null)
-signup_user_id=$(echo "$signup_resp" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.id||j.user?.id||'')}catch{console.log('')}
-    })" 2>/dev/null)
+signup_token=$(echo "$signup_resp" | jq -r '.access_token // empty' 2>/dev/null)
+signup_user_id=$(echo "$signup_resp" | jq -r '.id // .user.id // empty' 2>/dev/null)
 
 if [ -n "$signup_token" ]; then
     check "Public signup (autoconfirm on)" "true" "true"
@@ -210,10 +200,7 @@ gql_resp=$(http_body "$BASE_URL/graphql/v1" \
     -H "apikey: $ANON_KEY" \
     -H "Content-Type: application/json" \
     -d '{"query":"{ __typename }"}')
-gql_has_data=$(echo "$gql_resp" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).data?'true':'false')}catch{console.log('false')}
-    })" 2>/dev/null)
+gql_has_data=$(echo "$gql_resp" | jq -r 'if .data then "true" else "false" end' 2>/dev/null)
 check "GraphQL introspection" "true" "$gql_has_data"
 
 # ---------------------------------------------
@@ -273,10 +260,7 @@ if [ "$create_bucket_status" = "200" ]; then
             -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -d '{"expiresIn": 600}')
-        signed_path=$(echo "$sign_resp" | node -e "
-            let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-                try{console.log(JSON.parse(d).signedURL||'')}catch{console.log('')}
-            })" 2>/dev/null)
+        signed_path=$(echo "$sign_resp" | jq -r '.signedURL // empty' 2>/dev/null)
 
         if [ -n "$signed_path" ]; then
             check "Create signed URL" "true" "true"

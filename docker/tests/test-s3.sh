@@ -15,6 +15,7 @@
 #       docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d
 #   - .env file with S3_PROTOCOL_ACCESS_KEY_ID, S3_PROTOCOL_ACCESS_KEY_SECRET, REGION
 #   - aws cli v2 (for S3 operations)
+#   - jq (for JSON parsing)
 #
 
 set -e
@@ -30,10 +31,12 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-if ! command -v aws >/dev/null 2>&1; then
-    echo "Error: aws cli not found. Install it: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html"
-    exit 1
-fi
+for cmd in aws jq; do
+    if ! command -v $cmd >/dev/null 2>&1; then
+        echo "Error: $cmd not found."
+        exit 1
+    fi
+done
 
 # Read keys from .env
 S3_ACCESS_KEY=$(grep '^S3_PROTOCOL_ACCESS_KEY_ID=' .env | cut -d= -f2-)
@@ -81,11 +84,7 @@ echo ""
 
 echo "--- S3 ListBuckets ---"
 list_output=$(s3 s3api list-buckets --output json)
-list_ok=$(echo "$list_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(Array.isArray(j.Buckets)?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+list_ok=$(echo "$list_output" | jq -r 'if .Buckets then "true" else "false" end' 2>/dev/null)
 check "ListBuckets returns valid response" "true" "$list_ok"
 
 # ---------------------------------------------
@@ -95,11 +94,7 @@ check "ListBuckets returns valid response" "true" "$list_ok"
 echo ""
 echo "--- S3 CreateBucket ---"
 create_output=$(s3 s3api create-bucket --bucket "$bucket_name" --output json 2>&1)
-create_ok=$(echo "$create_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);console.log(j.Location?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+create_ok=$(echo "$create_output" | jq -r 'if .Location then "true" else "false" end' 2>/dev/null)
 check "CreateBucket" "true" "$create_ok"
 
 if [ "$create_ok" != "true" ]; then
@@ -111,12 +106,8 @@ if [ "$create_ok" != "true" ]; then
 fi
 
 # Verify bucket appears in ListBuckets
-s3_bucket_found=$(s3 s3api list-buckets --output json | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Buckets.some(b=>b.Name==='$bucket_name')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+s3_bucket_found=$(s3 s3api list-buckets --output json | \
+    jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "true" else "false" end' 2>/dev/null)
 check "Bucket visible in ListBuckets" "true" "$s3_bucket_found"
 
 # ---------------------------------------------
@@ -138,12 +129,8 @@ check "PutObject upload" "true" "$put_ok"
 echo ""
 echo "--- S3 ListObjectsV2 ---"
 list_objects=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --output json)
-object_found=$(echo "$list_objects" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Contents&&j.Contents.some(o=>o.Key==='s3-uploaded.txt')?'true':'false')}
-        catch{console.log('false')}
-    })" 2>/dev/null)
+object_found=$(echo "$list_objects" | \
+    jq -r '[.Contents[]? | .Key] | if any(. == "s3-uploaded.txt") then "true" else "false" end' 2>/dev/null)
 check "Object found in ListObjectsV2" "true" "$object_found"
 
 # ---------------------------------------------
@@ -153,10 +140,7 @@ check "Object found in ListObjectsV2" "true" "$object_found"
 echo ""
 echo "--- S3 HeadObject ---"
 head_output=$(s3 s3api head-object --bucket "$bucket_name" --key "s3-uploaded.txt" --output json)
-head_size=$(echo "$head_output" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).ContentLength||0)}catch{console.log(0)}
-    })" 2>/dev/null)
+head_size=$(echo "$head_output" | jq -r '.ContentLength // 0' 2>/dev/null)
 original_size=$(wc -c < "$tmpfile" | tr -d ' ')
 check "HeadObject returns correct size" "$original_size" "$head_size"
 rm -f "$tmpfile"
@@ -198,13 +182,8 @@ echo "--- S3 DeleteObject ---"
 s3 s3 rm "s3://$bucket_name/s3-copied.txt" >/dev/null
 # Verify object is gone
 list_after_delete=$(s3 s3api list-objects-v2 --bucket "$bucket_name" --output json)
-copied_gone=$(echo "$list_after_delete" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        const found=j.Contents&&j.Contents.some(o=>o.Key==='s3-copied.txt');
-        console.log(found?'false':'true')}
-        catch{console.log('true')}
-    })" 2>/dev/null)
+copied_gone=$(echo "$list_after_delete" | \
+    jq -r '[.Contents[]? | .Key] | if any(. == "s3-copied.txt") then "false" else "true" end' 2>/dev/null)
 check "Deleted object no longer listed" "true" "$copied_gone"
 
 # ---------------------------------------------
@@ -222,10 +201,7 @@ check "Multipart upload (7MB)" "true" "$large_ok"
 
 # Verify size via HeadObject
 large_head=$(s3 s3api head-object --bucket "$bucket_name" --key "large-file.bin" --output json)
-remote_size=$(echo "$large_head" | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{console.log(JSON.parse(d).ContentLength||0)}catch{console.log(0)}
-    })" 2>/dev/null)
+remote_size=$(echo "$large_head" | jq -r '.ContentLength // 0' 2>/dev/null)
 check "Multipart upload size matches ($large_size bytes)" "$large_size" "$remote_size"
 
 # Download and verify size
@@ -297,12 +273,8 @@ echo "--- Cleanup ---"
 s3 s3 rm "s3://$bucket_name/" --recursive >/dev/null
 s3 s3api delete-bucket --bucket "$bucket_name" >/dev/null
 # Verify bucket is gone
-bucket_gone=$(s3 s3api list-buckets --output json | node -e "
-    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
-        try{const j=JSON.parse(d);
-        console.log(j.Buckets.some(b=>b.Name==='$bucket_name')?'false':'true')}
-        catch{console.log('true')}
-    })" 2>/dev/null)
+bucket_gone=$(s3 s3api list-buckets --output json | \
+    jq -r --arg name "$bucket_name" '[.Buckets[] | .Name] | if any(. == $name) then "false" else "true" end' 2>/dev/null)
 check "Bucket deleted via S3" "true" "$bucket_gone"
 
 # ---------------------------------------------
