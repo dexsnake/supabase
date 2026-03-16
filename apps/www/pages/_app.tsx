@@ -15,6 +15,7 @@ import { DevToolbar, DevToolbarProvider } from 'dev-tools'
 import { DefaultSeo } from 'next-seo'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { ktfPrima } from '~/lib/fonts'
 import { useRouter } from 'next/router'
 import { SonnerToaster, themes, TooltipProvider } from 'ui'
 import { CommandProvider } from 'ui-patterns/CommandMenu'
@@ -53,7 +54,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <>
+    <main className={`${ktfPrima.variable} ${ktfPrima.className}`}>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
@@ -116,6 +117,6 @@ export default function App({ Component, pageProps }: AppProps) {
         </FeatureFlagProvider>
       </AuthProvider>
       <TelemetryTagManager />
-    </>
+    </main>
   )
 }

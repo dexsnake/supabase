@@ -23,29 +23,7 @@
   }
 }
 
-@font-face {
-  font-family: 'custom-font';
-  src:
-    url(../../../packages/common/assets/fonts/CustomFont-Book.woff2) format('woff2'),
-    url(../../../packages/common/assets/fonts/CustomFont-Book.woff) format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'custom-font';
-  src:
-    url(../../../packages/common/assets/fonts/CustomFont-Medium.woff2) format('woff2'),
-    url(../../../packages/common/assets/fonts/CustomFont-Medium.woff) format('woff');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
-  --heading-font: var(--font-ktf-prima);
-  --body-font: var(--font-ktf-prima);
   --heading-tracking: -0.02em;
   --body-tracking: -0.01em;
   --heading-leading: 1.1;
@@ -58,7 +36,7 @@ html {
 
 body {
   @apply bg text-foreground;
-  font-family: var(--body-font), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ktf-prima), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: var(--body-tracking);
   line-height: var(--body-leading);
   -webkit-font-smoothing: antialiased;
@@ -66,7 +44,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--heading-font), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ktf-prima), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: var(--heading-tracking);
   line-height: var(--heading-leading);
 }

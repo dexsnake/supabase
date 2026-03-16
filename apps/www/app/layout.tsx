@@ -3,48 +3,12 @@ import 'config/code-hike.scss'
 import '../styles/index.css'
 
 import { APP_NAME, DEFAULT_META_DESCRIPTION } from '~/lib/constants'
+import { ktfPrima } from '~/lib/fonts'
 import { Agentation } from 'agentation'
 import { Metadata } from 'next'
 import type { Viewport } from 'next'
-import localFont from 'next/font/local'
 
 import Providers from './providers'
-
-const ktfPrima = localFont({
-  src: [
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Thin.woff2',
-      weight: '100',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Light.woff2',
-      weight: '300',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Medium.woff2',
-      weight: '500',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Bold.woff2',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/ktf-prima/KTFPrimaTrial-Black.woff2',
-      weight: '900',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-ktf-prima',
-})
 
 const site_title = `${APP_NAME} | The Open Source Firebase Alternative`
 
