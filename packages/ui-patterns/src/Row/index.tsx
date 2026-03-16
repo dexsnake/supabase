@@ -40,7 +40,16 @@ export const resolveColumnsForWidth = ({
 }
 
 export const Row = forwardRef<HTMLDivElement, RowProps>(function Row(
-  { maxRows, minWidth, children, className, gap = 16, showArrows = true, scrollBehavior = 'smooth', ...rest },
+  {
+    maxRows,
+    minWidth,
+    children,
+    className,
+    gap = 16,
+    showArrows = true,
+    scrollBehavior = 'smooth',
+    ...rest
+  },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
