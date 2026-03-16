@@ -32,6 +32,8 @@ export interface ReportAttributes {
     tickFormatter?: (value: any) => string
   }
   hideHighlightedValue?: boolean
+  /** When set, stacked values are normalized so their sum never exceeds this cap (e.g. 100 for CPU %) */
+  normalizeStacked?: number
 }
 
 export type Provider = 'infra-monitoring' | 'daily-stats' | 'mock' | 'reference-line' | 'logs'

@@ -18,6 +18,7 @@ import { useChartHighlight } from './useChartHighlight'
 import dayjs from 'dayjs'
 import type { UpdateDateRange } from 'pages/project/[ref]/observability/database'
 import type { ChartData } from './Charts.types'
+import { normalizeStackedData } from './Charts.utils'
 import { MultiAttribute } from './ComposedChart.utils'
 
 export interface ComposedChartHandlerProps {
@@ -45,6 +46,7 @@ export interface ComposedChartHandlerProps {
   docsUrl?: string
   hide?: boolean
   syncId?: string
+  normalizeStacked?: number
 }
 
 /**
@@ -116,6 +118,7 @@ const ComposedChartHandler = ({
   isVisible = true,
   id,
   syncId,
+  normalizeStacked,
   ...otherProps
 }: PropsWithChildren<ComposedChartHandlerProps>) => {
   const router = useRouter()
@@ -204,6 +207,16 @@ const ComposedChartHandler = ({
     return combined as DataPoint[]
   }, [data, attributeQueries, attributes])
 
+  const normalizedData = useMemo(() => {
+    if (!combinedData || !normalizeStacked) return combinedData
+
+    const stackedAttributeNames = attributes
+      .filter((a) => a.provider !== 'reference-line' && !a.isMaxValue)
+      .map((a) => a.attribute)
+
+    return normalizeStackedData(combinedData, stackedAttributeNames, normalizeStacked)
+  }, [combinedData, normalizeStacked, attributes])
+
   const loading = isLoading || attributeQueries.some((query: any) => query.isLoading)
 
   const _highlightedValue = useMemo(() => {
@@ -262,7 +275,7 @@ const ComposedChartHandler = ({
     )
   }
 
-  if (!combinedData) {
+  if (!normalizedData) {
     return (
       <div className="flex h-52 w-full flex-col items-center justify-center gap-y-2">
         <WarningIcon />
@@ -283,7 +296,7 @@ const ComposedChartHandler = ({
         <div className="absolute right-6 z-50 flex justify-between scroll-mt-16">{children}</div>
         <ComposedChart
           attributes={attributes}
-          data={combinedData as DataPoint[]}
+          data={normalizedData as DataPoint[]}
           format={format}
           // [Joshen] This is where it's messing up
           xAxisKey="period_start"
