@@ -4,7 +4,7 @@ import useLatest from 'hooks/misc/useLatest'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
-import { IS_PLATFORM } from 'lib/constants'
+import { ENABLE_AGENTS } from 'lib/constants'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -44,7 +44,7 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
   const { data: org } = useSelectedOrganizationQuery()
   const { mutate: sendEvent } = useSendEventMutation()
   const { openSidebar, closeSidebar, activeSidebar } = useSidebarManagerSnapshot()
-  const useAgentChatSidebar = !IS_PLATFORM || true // useFlag('agentChatSidebar')
+  const useAgentChatSidebar = ENABLE_AGENTS
 
   const [sidebarURLParam, setSidebarUrlParam] = useQueryState('sidebar', parseAsString)
   const [sidebarLocalStorage, setSidebarLocalStorage, { isSuccess: isLoadedLocalStorage }] =
@@ -53,7 +53,6 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
   const sidebarURLParamRef = useLatest(sidebarURLParam)
   const sidebarLocalStorageRef = useLatest(sidebarLocalStorage)
   const renderAssistantSidebar = () => {
-    console.log('[sidebar] useAgentChatSidebar:', useAgentChatSidebar, 'IS_PLATFORM:', IS_PLATFORM, 'project?.ref:', project?.ref, 'project:', !!project)
     if (useAgentChatSidebar && project?.ref) {
       return (
         <AgentChat
