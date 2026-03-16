@@ -1,5 +1,6 @@
 import { tool } from 'ai'
 import { z } from 'zod'
+import { PROJECT_REF } from '../db.js'
 import { getToolContext } from './context.js'
 
 const SUPABASE_API_URL = process.env.SUPABASE_API_URL ?? 'https://api.supabase.com'
@@ -7,6 +8,10 @@ const SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? ''
 const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN ?? null
 const DEFAULT_LOGS_RANGE_MS = 60 * 60 * 1000
+
+// Self-hosted: query Logflare directly (same as Studio's self-hosted logs path)
+const LOGFLARE_URL = process.env.LOGFLARE_URL ?? null
+const LOGFLARE_PRIVATE_ACCESS_TOKEN = process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN ?? null
 
 function resolveLogsDateRange(start?: string, end?: string) {
   const now = new Date()
@@ -27,9 +32,7 @@ function resolveManagementApiAuthToken(userToken?: string | null): string | null
   return normalized ?? SUPABASE_ACCESS_TOKEN
 }
 
-export const monitoringTools = {
-  executeLogsQuery: tool({
-    description: `Execute a SQL query against project logs via the Supabase Analytics API (BigQuery SQL dialect).
+const BIGQUERY_LOGS_DESCRIPTION = `Execute a SQL query against project logs via the Supabase Analytics API (BigQuery SQL dialect).
 
 Available log tables: edge_logs, function_logs, function_edge_logs, postgres_logs, auth_logs, realtime_logs, storage_logs.
 
@@ -89,30 +92,87 @@ Example — auth_logs:
 Timestamp filtering: prefer iso_timestamp_start/iso_timestamp_end params over SQL WHERE on timestamp. Max range is 24h. If omitted, the tool defaults to the last hour through now.
 Always include ORDER BY timestamp DESC and a LIMIT (max 1000).
 
-When the user should also inspect or rerun the logs SQL themselves, first execute the query with this tool to inspect the results, then call renderSql with the same logs SQL and date range so both the assistant and user can interpret the same query output.`,
+When the user should also inspect or rerun the logs SQL themselves, first execute the query with this tool to inspect the results, then call renderSql with the same logs SQL and date range so both the assistant and user can interpret the same query output.`
+
+const POSTGRES_LOGS_DESCRIPTION = `Execute a SQL query against project logs via the Logflare Analytics API (PostgreSQL SQL dialect).
+
+Available log tables: edge_logs, function_logs, function_edge_logs, postgres_logs, auth_logs, realtime_logs, storage_logs.
+
+Columns are flat — do NOT use cross join unnest() or datetime(). Use standard PostgreSQL syntax.
+
+Example — postgres_logs:
+  select id, timestamp, event_message
+  from postgres_logs
+  order by timestamp desc
+  limit 25
+
+Example — edge_logs (API requests):
+  select id, timestamp, event_message
+  from edge_logs
+  order by timestamp desc
+  limit 25
+
+Example — auth_logs:
+  select id, timestamp, event_message
+  from auth_logs
+  order by timestamp desc
+  limit 25
+
+Timestamp filtering: prefer iso_timestamp_start/iso_timestamp_end params over SQL WHERE on timestamp. If omitted, the tool defaults to the last hour through now.
+Always include ORDER BY timestamp DESC and a LIMIT (max 1000).
+
+When the user should also inspect or rerun the logs SQL themselves, first execute the query with this tool to inspect the results, then call renderSql with the same logs SQL and date range so both the assistant and user can interpret the same query output.`
+
+export const monitoringTools = {
+  executeLogsQuery: tool({
+    description: PROJECT_REF ? BIGQUERY_LOGS_DESCRIPTION : POSTGRES_LOGS_DESCRIPTION,
     inputSchema: z.object({
-      sql: z.string().optional().describe('BigQuery SQL query. Use cross join unnest() to access nested metadata fields. Do not filter by timestamp in SQL — use iso_timestamp_start/iso_timestamp_end params instead.'),
+      sql: z.string().optional().describe('SQL query for logs. Do not filter by timestamp in SQL — use iso_timestamp_start/iso_timestamp_end params instead.'),
       iso_timestamp_start: z.string().optional().describe('Optional ISO-8601 start timestamp (e.g. "2025-01-15T00:00:00Z"). If omitted, defaults to one hour before iso_timestamp_end or now.'),
       iso_timestamp_end: z.string().optional().describe('Optional ISO-8601 end timestamp. If omitted, defaults to now. Range max 24h.'),
     }),
     execute: async ({ sql: sqlQuery, iso_timestamp_start, iso_timestamp_end }) => {
       const ctx = getToolContext()
       if (!ctx.projectRef) return { error: 'Project ref is not available' }
-      const authToken = resolveManagementApiAuthToken(ctx.userToken)
-      if (!authToken) {
-        return {
-          error:
-            'No auth token available for logs query. Provide a user token or set SUPABASE_ACCESS_TOKEN for background runners.',
-        }
-      }
       const resolvedDateRange = resolveLogsDateRange(iso_timestamp_start, iso_timestamp_end)
-      const params = new URLSearchParams()
-      if (sqlQuery) params.set('sql', sqlQuery)
-      params.set('iso_timestamp_start', resolvedDateRange.start)
-      params.set('iso_timestamp_end', resolvedDateRange.end)
-      const qs = params.toString()
-      const url = `${SUPABASE_API_URL}/v1/projects/${ctx.projectRef}/analytics/endpoints/logs.all${qs ? `?${qs}` : ''}`
-      const resp = await fetch(url, { headers: { Authorization: `Bearer ${authToken}` } })
+
+      let resp: Response
+
+      if (PROJECT_REF) {
+        // Platform: call the Management API
+        const authToken = resolveManagementApiAuthToken(ctx.userToken)
+        if (!authToken) {
+          return {
+            error:
+              'No auth token available for logs query. Provide a user token or set SUPABASE_ACCESS_TOKEN for background runners.',
+          }
+        }
+        const params = new URLSearchParams()
+        if (sqlQuery) params.set('sql', sqlQuery)
+        params.set('iso_timestamp_start', resolvedDateRange.start)
+        params.set('iso_timestamp_end', resolvedDateRange.end)
+        const qs = params.toString()
+        const url = `${SUPABASE_API_URL}/v1/projects/${ctx.projectRef}/analytics/endpoints/logs.all${qs ? `?${qs}` : ''}`
+        resp = await fetch(url, { headers: { Authorization: `Bearer ${authToken}` } })
+      } else {
+        // Self-hosted: query Logflare directly (same as Studio's self-hosted logs path)
+        if (!LOGFLARE_URL || !LOGFLARE_PRIVATE_ACCESS_TOKEN) {
+          return { error: 'Logs are not available: LOGFLARE_URL and LOGFLARE_PRIVATE_ACCESS_TOKEN must be configured.' }
+        }
+        const url = new URL(`${LOGFLARE_URL}/api/endpoints/query/logs.all`)
+        url.searchParams.set('project', ctx.projectRef)
+        if (sqlQuery) url.searchParams.set('sql', sqlQuery)
+        url.searchParams.set('iso_timestamp_start', resolvedDateRange.start)
+        url.searchParams.set('iso_timestamp_end', resolvedDateRange.end)
+        resp = await fetch(url, {
+          headers: {
+            'x-api-key': LOGFLARE_PRIVATE_ACCESS_TOKEN,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        })
+      }
+
       if (!resp.ok) return { error: `Logs API error (HTTP ${resp.status}): ${await resp.text()}` }
       const data = await resp.json() as { result?: unknown[]; error?: unknown }
       if (data.error) return { error: typeof data.error === 'string' ? data.error : JSON.stringify(data.error) }
@@ -126,6 +186,12 @@ When the user should also inspect or rerun the logs SQL themselves, first execut
     execute: async () => {
       const ctx = getToolContext()
       if (!ctx.projectRef) return { error: 'Project ref is not available' }
+
+      // Disk utilization is only available via the Management API (platform only)
+      if (!PROJECT_REF) {
+        return { error: 'Disk utilization metrics are not available in self-hosted mode. Use database tools to query pg_stat or system catalogs instead.' }
+      }
+
       const authToken = resolveManagementApiAuthToken(ctx.userToken)
       if (!authToken) {
         return {

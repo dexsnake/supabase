@@ -461,6 +461,8 @@ services:
       context: ../packages/project-meta-api
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports:
+      - 3001:3001
     depends_on:
       db:
         condition: service_healthy
@@ -478,6 +480,9 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       SUPABASE_URL: http://kong:8000
       PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+      # Self-hosted: Logflare analytics for logs queries
+      LOGFLARE_URL: http://analytics:4000
+      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
       # IS_PLATFORM only: set PROJECT_REF + SUPABASE_ACCESS_TOKEN (PAT) to enable
       # querying the project database via the Supabase Management API.
       # Leave PROJECT_REF unset for self-hosted (uses local pg-meta instead).

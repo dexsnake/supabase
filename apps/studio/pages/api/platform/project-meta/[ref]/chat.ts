@@ -31,25 +31,21 @@ export default async function handler(req: NextRequest) {
   const authHeader = req.headers.get('Authorization') ?? ''
   const token = authHeader.replace(/^Bearer\s+/i, '').trim()
 
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
   // Decode the JWT payload to get the user's sub claim.
   // We trust the token is valid — the session was established by GoTrueClient.
+  // In self-hosted mode, there's no GoTrue session so the token may be absent.
   let userId: string | undefined
-  try {
-    const payloadB64 = token.split('.')[1]
-    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')))
-    userId = payload.sub ?? undefined
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  if (token) {
+    try {
+      const payloadB64 = token.split('.')[1]
+      const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')))
+      userId = payload.sub ?? undefined
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
   }
 
   const serviceKey = process.env.SUPABASE_SERVICE_KEY
@@ -74,7 +70,7 @@ export default async function handler(req: NextRequest) {
       ...(userId ? { 'X-Agent-User-Id': userId } : {}),
       ...(ref ? { 'X-Project-Ref': ref } : {}),
       // Forward user's platform JWT for MCP server auth (mcp.supabase.com)
-      'X-User-Token': token,
+      ...(token ? { 'X-User-Token': token } : {}),
     },
     body,
   })
