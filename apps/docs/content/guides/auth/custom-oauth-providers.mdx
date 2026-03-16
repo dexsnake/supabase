@@ -21,6 +21,8 @@ You can add up to 3 custom providers per project. If you need more, [contact sup
 
 ## Creating a provider
 
+The create form displays a read-only **Callback URL**. Copy this URL and configure it as the redirect/callback URI in your external identity provider before completing setup.
+
 ### OAuth2 provider
 
 Use an OAuth2 provider when your identity provider does not support OpenID Connect discovery. You must supply the authorization, token, and userinfo endpoint URLs explicitly.
@@ -35,13 +37,11 @@ Use an OAuth2 provider when your identity provider does not support OpenID Conne
 <TabPanel id="dashboard" label="Dashboard">
 
 1. Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard.
-2. Scroll to **Custom OAuth Providers** and click **Add provider**.
-3. Select **OAuth2** as the provider type.
-4. Enter a unique identifier (must start with `custom:`, for example `custom:my-oauth-provider`).
-5. Enter the provider's **Client ID** and **Client Secret**.
-6. Enter the **Authorization URL**, **Token URL**, and **UserInfo URL**.
-7. Optionally configure scopes and enable PKCE.
-8. Click **Save**.
+2. Click **New Provider**. Select **Manual configuration** as the configuration method.
+3. Enter a unique identifier (must start with `custom:`, for example `custom:my-oauth-provider`).
+4. Enter the provider's **Client ID** and **Client Secret**.
+5. Enter the **Authorization URL**, **Token URL**, and **UserInfo URL**.
+6. Click **Create and enable provider**.
 
 </TabPanel>
 <TabPanel id="js" label="JavaScript">
@@ -57,7 +57,6 @@ const { data, error } = await supabase.auth.admin.customProviders.createProvider
   token_url: 'https://provider.example.com/oauth/token',
   userinfo_url: 'https://provider.example.com/oauth/userinfo',
   scopes: ['profile', 'email'],
-  pkce_enabled: true,
 })
 ```
 
@@ -78,13 +77,11 @@ Use an OIDC provider when your identity provider supports OpenID Connect. Supply
 <TabPanel id="dashboard" label="Dashboard">
 
 1. Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard.
-2. Scroll to **Custom OAuth Providers** and click **Add provider**.
-3. Select **OIDC** as the provider type.
-4. Enter a unique identifier (must start with `custom:`, for example `custom:my-regional-provider`).
-5. Enter the provider's **Client ID** and **Client Secret**.
-6. Enter the **Issuer URL**. The discovery document and endpoints are resolved automatically.
-7. Optionally configure scopes and enable PKCE.
-8. Click **Save**.
+2. Click **New Provider**. Select **Auto-discovery (OIDC)** as the configuration method.
+3. Enter a unique identifier (must start with `custom:`, for example `custom:my-regional-provider`).
+4. Enter the provider's **Client ID** and **Client Secret**.
+5. Enter the **Issuer URL**. The discovery document and endpoints are resolved automatically.
+6. Click **Create and enable provider**.
 
 </TabPanel>
 <TabPanel id="js" label="JavaScript">
@@ -98,7 +95,6 @@ const { data, error } = await supabase.auth.admin.customProviders.createProvider
   client_secret: 'your-client-secret',
   issuer: 'https://auth.example.com',
   scopes: ['openid', 'profile', 'email'],
-  pkce_enabled: true,
 })
 ```
 
@@ -108,7 +104,7 @@ const { data, error } = await supabase.auth.admin.customProviders.createProvider
 OIDC providers have the following automatic behavior:
 
 - The discovery document is fetched from `{issuer}/.well-known/openid-configuration` (or from `discovery_url` if set).
-- The `openid` scope is always included — it is automatically added if missing from the `scopes` array.
+- The `openid` scope is always included. It is automatically added if missing from the `scopes` array.
 - ID tokens are verified against the provider's JWKS (fetched from the discovery document's `jwks_uri`).
 
 ## Provider identifiers
@@ -203,34 +199,9 @@ const { data, error } = await supabase.auth.admin.customProviders.listProviders(
 </TabPanel>
 </Tabs>
 
-### Get a provider
-
-<Tabs
-  scrollable
-  size="small"
-  type="underlined"
-  defaultActiveId="dashboard"
-  queryGroup="setup-method"
->
-<TabPanel id="dashboard" label="Dashboard">
-
-Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard and click on a provider under **Custom OAuth Providers** to view its details.
-
-</TabPanel>
-<TabPanel id="js" label="JavaScript">
-
-```js
-const { data, error } = await supabase.auth.admin.customProviders.getProvider(
-  'custom:my-provider'
-)
-```
-
-</TabPanel>
-</Tabs>
-
 ### Update a provider
 
-Update any provider fields except `provider_type` and `identifier`. Only provided fields are changed (partial update).
+Update any provider fields except `provider_type` and `identifier`. Only provided fields are changed (partial update). To rotate a client secret, update only the `client_secret` field.
 
 <Tabs
   scrollable
@@ -242,9 +213,9 @@ Update any provider fields except `provider_type` and `identifier`. Only provide
 <TabPanel id="dashboard" label="Dashboard">
 
 1. Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard.
-2. Click on the provider you want to update under **Custom OAuth Providers**.
+2. Click the three-dot menu (⋮) next to the provider and select **Update**.
 3. Modify the fields you want to change.
-4. Click **Save**.
+4. Click **Update provider**.
 
 </TabPanel>
 <TabPanel id="js" label="JavaScript">
@@ -275,8 +246,8 @@ const { data, error } = await supabase.auth.admin.customProviders.updateProvider
 <TabPanel id="dashboard" label="Dashboard">
 
 1. Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard.
-2. Click on the provider you want to delete under **Custom OAuth Providers**.
-3. Click **Delete** and confirm the deletion.
+2. Click the three-dot menu (⋮) next to the provider and select **Delete**.
+3. Confirm the deletion.
 
 </TabPanel>
 <TabPanel id="js" label="JavaScript">
@@ -290,40 +261,13 @@ const { data, error } = await supabase.auth.admin.customProviders.deleteProvider
 </TabPanel>
 </Tabs>
 
-### Rotate client secret
-
-Update just the client secret without affecting other settings.
-
-<Tabs
-  scrollable
-  size="small"
-  type="underlined"
-  defaultActiveId="dashboard"
-  queryGroup="setup-method"
->
-<TabPanel id="dashboard" label="Dashboard">
-
-1. Go to [Auth Providers](/dashboard/project/_/auth/providers) in the Dashboard.
-2. Click on the provider under **Custom OAuth Providers**.
-3. Update the **Client Secret** field with the new secret.
-4. Click **Save**.
-
-</TabPanel>
-<TabPanel id="js" label="JavaScript">
-
-```js
-const { data, error } = await supabase.auth.admin.customProviders.updateProvider(
-  'custom:my-provider',
-  {
-    client_secret: 'new-client-secret',
-  }
-)
-```
-
-</TabPanel>
-</Tabs>
-
 ## Advanced configuration
+
+### PKCE
+
+PKCE (Proof Key for Code Exchange) is enabled by default (`pkce_enabled: true`) for all custom providers. The auth server automatically generates a code challenge and verifier during the authorization flow, protecting against authorization code interception attacks. This is handled entirely server-side, no client-side PKCE logic is needed.
+
+To disable PKCE for a specific provider, set `pkce_enabled: false` when creating or updating it. This is not recommended unless the identity provider does not support PKCE.
 
 ### Authorization params
 
@@ -371,7 +315,7 @@ By default, providers must return an email address. Set `email_optional` to `tru
 
 | Error code | HTTP status | Description |
 | --- | --- | --- |
-| `validation_failed` | 400 | Invalid parameters — missing required fields, bad format, reserved params, or invalid URLs. |
+| `validation_failed` | 400 | Invalid parameters: missing required fields, bad format, reserved params, or invalid URLs. |
 | `conflict` | 400 | A provider with the same identifier already exists. |
 | `over_custom_provider_quota` | 400 | Maximum number of custom providers reached. |
 | `custom_provider_not_found` | 404 | No provider exists with the given identifier. |
