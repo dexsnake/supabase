@@ -16,6 +16,8 @@ import {
   cn,
   IconDiscord,
   IconGitHubSolid,
+  IconInstagram,
+  IconTikTok,
   IconTwitterX,
   IconYoutubeSolid,
   Input_Shadcn_,
@@ -158,6 +160,22 @@ const Footer = (props: Props) => {
               >
                 <span className="sr-only">Youtube</span>
                 <IconYoutubeSolid size={22} />
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@supabasecom"
+                className="text-foreground-lighter hover:text-foreground transition"
+              >
+                <span className="sr-only">TikTok</span>
+                <IconTikTok size={22} />
+              </a>
+
+              <a
+                href="https://www.instagram.com/supabasecom"
+                className="text-foreground-lighter hover:text-foreground transition"
+              >
+                <span className="sr-only">Instagram</span>
+                <IconInstagram size={22} />
               </a>
             </div>
             <div className="mt-8">
