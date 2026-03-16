@@ -80,7 +80,7 @@ const DatabaseSettings: NextPageWithLayout = () => {
 
 DatabaseSettings.getLayout = (page) => (
   <DefaultLayout>
-    <DatabaseLayout title="Database">{page}</DatabaseLayout>
+    <DatabaseLayout title="Settings">{page}</DatabaseLayout>
   </DefaultLayout>
 )
 

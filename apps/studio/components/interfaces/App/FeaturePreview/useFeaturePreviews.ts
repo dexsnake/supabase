@@ -1,6 +1,6 @@
 import { LOCAL_STORAGE_KEYS, useFlag } from 'common'
 
-type FeaturePreview = {
+export type FeaturePreview = {
   key: string
   name: string
   discussionsUrl?: string
@@ -17,6 +17,7 @@ export const useFeaturePreviews = (): FeaturePreview[] => {
   const isUnifiedLogsPreviewAvailable = useFlag('unifiedLogs')
   const tableEditorNewFilterBar = useFlag('tableEditorNewFilterBar')
   const pgDeltaDiffEnabled = useFlag('pgdeltaDiff')
+  const showFloatingMobileToolbar = useFlag('enableFloatingMobileToolbar')
   const platformWebhooksEnabled = useFlag('platformWebhooks')
   const jitDbAccessEnabled = useFlag('jitDbAccess')
 
@@ -61,13 +62,19 @@ export const useFeaturePreviews = (): FeaturePreview[] => {
     {
       key: LOCAL_STORAGE_KEYS.UI_PREVIEW_PLATFORM_WEBHOOKS,
       name: 'Platform webhooks',
+      discussionsUrl: undefined,
+      isNew: true,
+      isPlatformOnly: true,
+      isDefaultOptIn: false,
+      enabled: platformWebhooksEnabled,
+    },
+    {
       key: LOCAL_STORAGE_KEYS.UI_PREVIEW_JIT_DB_ACCESS,
       name: 'JIT database access',
       discussionsUrl: undefined,
       isNew: true,
       isPlatformOnly: true,
       isDefaultOptIn: false,
-      enabled: platformWebhooksEnabled,
       enabled: jitDbAccessEnabled,
     },
     {
@@ -105,6 +112,15 @@ export const useFeaturePreviews = (): FeaturePreview[] => {
       isNew: true,
       isPlatformOnly: false,
       isDefaultOptIn: tableEditorNewFilterBar,
+    },
+    {
+      key: LOCAL_STORAGE_KEYS.UI_PREVIEW_FLOATING_MOBILE_TOOLBAR,
+      name: 'Floating Mobile Toolbar',
+      discussionsUrl: 'https://github.com/orgs/supabase/discussions/43721',
+      enabled: showFloatingMobileToolbar,
+      isNew: true,
+      isPlatformOnly: false,
+      isDefaultOptIn: true,
     },
   ].sort((a, b) => Number(b.isNew) - Number(a.isNew))
 }
