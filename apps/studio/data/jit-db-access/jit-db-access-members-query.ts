@@ -1,5 +1,7 @@
-import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { get, handleError } from 'data/fetchers'
+import type { ResponseError, UseCustomQueryOptions } from 'types'
+
 import { jitDbAccessKeys } from './keys'
 
 export type JitDbAccessMembersVariables = { projectRef?: string }
@@ -23,14 +25,14 @@ export async function getJitDbAccessMembers(
 }
 
 export type JitDbAccessMembersData = Awaited<ReturnType<typeof getJitDbAccessMembers>>
-export type JitDbAccessMembersError = unknown
+export type JitDbAccessMembersError = ResponseError
 
 export const useJitDbAccessMembersQuery = <TData = JitDbAccessMembersData>(
   { projectRef }: JitDbAccessMembersVariables,
   {
     enabled = true,
     ...options
-  }: UseQueryOptions<JitDbAccessMembersData, JitDbAccessMembersError, TData> = {}
+  }: UseCustomQueryOptions<JitDbAccessMembersData, JitDbAccessMembersError, TData> = {}
 ) =>
   useQuery<JitDbAccessMembersData, JitDbAccessMembersError, TData>({
     queryKey: jitDbAccessKeys.members(projectRef),

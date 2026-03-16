@@ -121,7 +121,7 @@ export const JitDbAccessConfiguration = () => {
     'appliedSuccessfully' in jitDbAccessConfiguration &&
     jitDbAccessConfiguration.appliedSuccessfully &&
     'state' in jitDbAccessConfiguration &&
-    jitDbAccessConfiguration.state === 'enabled'
+    (jitDbAccessConfiguration as { state: string }).state === 'enabled'
 
   const hasAccessToJitDbAccess = !(
     jitDbAccessConfiguration !== undefined &&
@@ -131,7 +131,7 @@ export const JitDbAccessConfiguration = () => {
 
   useEffect(() => {
     if (!isLoadingConfiguration && jitDbAccessConfiguration) {
-      setEnabled(initialIsEnabled)
+      setEnabled(initialIsEnabled ?? false)
     }
   }, [initialIsEnabled, isLoadingConfiguration, jitDbAccessConfiguration])
 
@@ -265,7 +265,7 @@ export const JitDbAccessConfiguration = () => {
         }
       },
       onError: (error) => {
-        setEnabled(initialIsEnabled)
+        setEnabled(initialIsEnabled ?? false)
         toast.error(`Failed to update just-in-time (JIT) database access: ${error.message}`)
       },
     })

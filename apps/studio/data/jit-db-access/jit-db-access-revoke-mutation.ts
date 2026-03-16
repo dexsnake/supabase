@@ -1,7 +1,7 @@
-import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { del, handleError } from 'data/fetchers'
 import { toast } from 'sonner'
-import type { ResponseError } from 'types'
+import type { ResponseError, UseCustomMutationOptions } from 'types'
 
 import { jitDbAccessKeys } from './keys'
 
@@ -14,8 +14,8 @@ export async function revokeJitDbAccess({ projectRef, userId }: JitDbAccessRevok
   if (!projectRef) throw new Error('projectRef is required')
   if (!userId) throw new Error('userId is required')
 
-  const { data, error } = await del(`/v1/projects/{ref}/database/jit/{gotrue_id}`, {
-    params: { path: { ref: projectRef, gotrue_id: userId } },
+  const { data, error } = await del('/v1/projects/{ref}/database/jit/{user_id}', {
+    params: { path: { ref: projectRef, user_id: userId } },
   })
 
   if (error) handleError(error)
@@ -29,7 +29,7 @@ export const useJitDbAccessRevokeMutation = ({
   onError,
   ...options
 }: Omit<
-  UseMutationOptions<JitDbAccessRevokeData, ResponseError, JitDbAccessRevokeVariables>,
+  UseCustomMutationOptions<JitDbAccessRevokeData, ResponseError, JitDbAccessRevokeVariables>,
   'mutationFn'
 > = {}) => {
   const queryClient = useQueryClient()

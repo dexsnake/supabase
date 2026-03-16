@@ -1,7 +1,7 @@
-import { useQuery, UseQueryOptions } from '@tanstack/react-query'
-
+import { useQuery } from '@tanstack/react-query'
 import { get, handleError } from 'data/fetchers'
-import type { ResponseError } from 'types'
+import type { ResponseError, UseCustomQueryOptions } from 'types'
+
 import { projectKeys } from './keys'
 
 export type ProjectMembersVariables = {
@@ -31,7 +31,7 @@ export const useProjectMembersQuery = <TData = ProjectMembersData>(
   {
     enabled = true,
     ...options
-  }: UseQueryOptions<ProjectMembersData, ProjectMembersError, TData> = {}
+  }: UseCustomQueryOptions<ProjectMembersData, ProjectMembersError, TData> = {}
 ) =>
   useQuery<ProjectMembersData, ProjectMembersError, TData>({
     queryKey: projectKeys.projectmembers(projectRef),

@@ -1,19 +1,13 @@
-import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { handleError, put } from 'data/fetchers'
 import { toast } from 'sonner'
-import type { ResponseError } from 'types'
+import type { ResponseError, UseCustomMutationOptions } from 'types'
 
 import { jitDbAccessKeys } from './keys'
 
 export type JitDbAccessUpdateVariables = {
   projectRef: string
-  requestedConfig: { state: string }
-}
-
-export type SSLEnforcementUpdateResponse = {
-  appliedSuccessfully: boolean
-  currentConfig: { state: string }
-  error?: any
+  requestedConfig: { state: 'enabled' | 'disabled' | 'unavailable' }
 }
 
 export async function updateJitDbAccess({
@@ -38,7 +32,7 @@ export const useJitDbAccessUpdateMutation = ({
   onError,
   ...options
 }: Omit<
-  UseMutationOptions<JitDbAccessUpdateData, ResponseError, JitDbAccessUpdateVariables>,
+  UseCustomMutationOptions<JitDbAccessUpdateData, ResponseError, JitDbAccessUpdateVariables>,
   'mutationFn'
 > = {}) => {
   const queryClient = useQueryClient()

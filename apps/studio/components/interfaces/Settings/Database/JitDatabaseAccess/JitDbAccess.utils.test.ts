@@ -1,15 +1,15 @@
+import type { OrganizationMembersData } from 'data/organizations/organization-members-query'
 import dayjs from 'dayjs'
 import { describe, expect, it } from 'vitest'
 
-import type { OrganizationMembersData } from 'data/organizations/organization-members-query'
 import type { JitUserRuleDraft } from './JitDbAccess.types'
 import {
   computeStatusFromGrants,
   createEmptyGrant,
   getInvalidCidrs,
   getJitMemberOptions,
-  parseCommaSeparatedCidrs,
   getRelativeDatetimeByMode,
+  parseCommaSeparatedCidrs,
   serializeDraftRolesForGrantMutation,
 } from './JitDbAccess.utils'
 
@@ -127,12 +127,21 @@ describe('getJitMemberOptions', () => {
         gotrue_id: 'de305d54-75b4-431b-adb2-eb6b9e546014',
         primary_email: 'active@example.com',
         username: 'Active User',
+        is_sso_user: false,
+        mfa_enabled: false,
+        metadata: {},
+        role_ids: [],
       },
       {
+        gotrue_id: '',
         invited_id: 123,
         invited_at: '2026-03-01T00:00:00.000Z',
         primary_email: 'expired-invite@example.com',
         username: 'e',
+        is_sso_user: false,
+        mfa_enabled: false,
+        metadata: {},
+        role_ids: [],
       },
     ]
 

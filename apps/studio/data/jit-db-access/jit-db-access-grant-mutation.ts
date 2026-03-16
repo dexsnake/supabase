@@ -18,11 +18,6 @@ export type JitDbAccessGrantVariables = {
   }>
 }
 
-export type JitDbAccessGrantResponse = {
-  success: boolean
-  error?: any
-}
-
 export async function grantJitDbAccess({ projectRef, userId, roles }: JitDbAccessGrantVariables) {
   if (!projectRef) throw new Error('projectRef is required')
   if (!userId) throw new Error('userId is required')
