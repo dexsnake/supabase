@@ -120,13 +120,10 @@ export const ManageJitAccessPanel = ({ visible, onClose }: ManageJitAccessPanelP
               </FormLabel_Shadcn_>
             </div>
             <div className="col-span-8 grid gap-4">
-             
-
               <SidePanel.Separator />
 
               <div className="grid gap-4">
                 <p className="text-sm">These privileges cannot be granted via the Dashboard:</p>
-                
               </div>
             </div>
           </div>
