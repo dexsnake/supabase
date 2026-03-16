@@ -303,11 +303,7 @@ testRunner('table editor', () => {
     await page.getByRole('menuitem', { name: 'Edit table' }).click()
     await page.getByTestId('table-name-input').fill(tableNameUpdated)
     await page.getByRole('textbox', { name: 'pw_column' }).fill(columnNameUpdated)
-    const updateTablePromise = waitForApiResponse(page, 'pg-meta', ref, 'query?key=column-update', {
-      method: 'POST',
-    })
     await page.getByRole('button', { name: 'Save' }).click()
-    await updateTablePromise // update table
     await waitForTableToLoad(page, ref) // load tables
     await expect(page.getByLabel(`View ${tableNameUpdated}`, { exact: true })).toBeVisible()
     await expect(page.getByLabel(`View ${tableNameGridEditor}`, { exact: true })).not.toBeVisible()
