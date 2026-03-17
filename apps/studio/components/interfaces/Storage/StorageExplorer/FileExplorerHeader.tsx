@@ -26,6 +26,7 @@ import {
   cn,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogSection,
@@ -38,6 +39,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  FieldDescription_Shadcn_,
   Label_Shadcn_,
 } from 'ui'
 import { Input } from 'ui-patterns/DataInputs/Input'
@@ -83,9 +85,12 @@ const NavigateDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="small" aria-describedby={undefined}>
+      <DialogContent size="small">
         <DialogHeader>
           <DialogTitle>Navigate to folder</DialogTitle>
+          <DialogDescription className="sr-only">
+            Enter a folder path within this bucket.
+          </DialogDescription>
         </DialogHeader>
         <DialogSection className="flex flex-col gap-y-2">
           <Label_Shadcn_ htmlFor={inputId}>Path</Label_Shadcn_>
@@ -101,6 +106,12 @@ const NavigateDialog = ({
               if (event.key === 'Enter') onSubmit(event)
             }}
           />
+          <FieldDescription_Shadcn_
+            id={descriptionId}
+            className="text-foreground-lighter"
+          >
+            Enter a folder path within this bucket.
+          </FieldDescription_Shadcn_>
         </DialogSection>
         <DialogFooter>
           <Button type="default" onClick={onCancel}>
