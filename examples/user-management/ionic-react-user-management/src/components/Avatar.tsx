@@ -54,6 +54,14 @@ export function Avatar({
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (avatarUrl) {
+        URL.revokeObjectURL(avatarUrl);
+      }
+    };
+  }, [avatarUrl]);
+
   return (
     <div className="avatar">
       <div className="avatar_wrapper" onClick={uploadAvatar}>

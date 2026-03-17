@@ -10,10 +10,11 @@ import './theme/variables.css';
 import { LoginPage } from './pages/Login';
 import { AccountPage } from './pages/Account';
 import { useEffect, useState } from 'react';
+import type { FC } from 'react';
 
 setupIonicReact();
 
-const App: React.FC = () => {
+const App: FC = () => {
   const [claims, setClaims] = useState<any>(null);
 
   useEffect(() => {

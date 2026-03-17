@@ -69,7 +69,7 @@ export function AccountPage() {
     router.push('/', 'forward', 'replace');
   };
 
-  const updateProfile = async (e?: any, avatar_url: string = '') => {
+  const updateProfile = async (e?: any, avatar_url?: string) => {
     e?.preventDefault();
 
     await showLoading();
@@ -82,7 +82,7 @@ export function AccountPage() {
       const updates = {
         id: claims.sub,
         ...profile,
-        avatar_url: avatar_url,
+        ...(avatar_url !== undefined ? { avatar_url } : {}),
         updated_at: new Date(),
       };
 

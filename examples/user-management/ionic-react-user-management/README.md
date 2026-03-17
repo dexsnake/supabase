@@ -50,17 +50,14 @@ The `anon` key is your client-side API key. It allows "anonymous access" to your
 
 ### 4. Env vars
 
-Update your environment file `environment.ts`
+Create a `.env.local` file in the project root (or update your existing `.env.local` / `.env` file) and add:
 
-```
-export const environment = {
-  // ...
-  supabaseUrl: "YOUR_SUPBASE_URL",
-  supbaseKey: "YOUR_SUPABASE_KEY"
-};
+```bash
+REACT_APP_SUPABASE_URL=YOUR_SUPABASE_URL
+REACT_APP_SUPABASE_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
-Populate this file with your URL and Key.
+Populate these variables with your project's URL and anon key from the Supabase dashboard.
 
 ### 5. Run the application
 
@@ -72,7 +69,7 @@ Run the application: `ionic serve` and the browser will open to `https://localho
 
 This project uses very high-level Authorization using Postgres' Role Level Security.
 When you start a Postgres database on Supabase, we populate it with an `auth` schema, and some helper functions.
-When a user logs in, they are issued a JWT with the role `authenticated` and thier UUID.
+When a user logs in, they are issued a JWT with the role `authenticated` and their UUID.
 We can use these details to provide fine-grained control over what each user can and cannot do.
 
 This is a trimmed-down schema, with the policies:
