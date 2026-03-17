@@ -10,23 +10,26 @@ import './theme/variables.css';
 import { LoginPage } from './pages/Login';
 import { AccountPage } from './pages/Account';
 import { useEffect, useState } from 'react';
-import { Claims } from '@supabase/supabase-js';
 
 setupIonicReact();
 
 const App: React.FC = () => {
-  const [claims, setClaims] = useState<Claims | null>(null);
+  const [claims, setClaims] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getClaims().then(({ data: { claims } }) => {
-      setClaims(claims);
+    supabase.auth.getClaims().then(({ data }) => {
+      if (data) {
+        setClaims(data.claims);
+      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      supabase.auth.getClaims().then(({ data: { claims } }) => {
-        setClaims(claims);
+      supabase.auth.getClaims().then(({ data }) => {
+        if (data) {
+          setClaims(data.claims);
+        }
       });
     });
 

@@ -34,10 +34,9 @@ export function AccountPage() {
   const getProfile = async () => {
     await showLoading();
     try {
-      const {
-        data: { claims },
-      } = await supabase.auth.getClaims();
-      if (!claims) throw new Error('No user logged in');
+      const { data: authData } = await supabase.auth.getClaims();
+      if (!authData?.claims) throw new Error('No user logged in');
+      const { claims } = authData;
 
       setEmail(claims.email as string);
 
@@ -76,10 +75,9 @@ export function AccountPage() {
     await showLoading();
 
     try {
-      const {
-        data: { claims },
-      } = await supabase.auth.getClaims();
-      if (!claims) throw new Error('No user logged in');
+      const { data } = await supabase.auth.getClaims();
+      if (!data?.claims) throw new Error('No user logged in');
+      const { claims } = data;
 
       const updates = {
         id: claims.sub,
