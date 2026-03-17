@@ -1,7 +1,18 @@
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type PaginationState,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 
 import { getStatusLevel } from 'components/interfaces/UnifiedLogs/UnifiedLogs.utils'
+import { DataTableColumnHeader } from 'components/ui/DataTable/DataTableColumn/DataTableColumnHeader'
 import { DataTableColumnStatusCode } from 'components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import {
   Badge,
@@ -44,6 +55,45 @@ interface PlatformWebhooksEndpointDetailsProps {
 
 const DELIVERIES_PAGE_SIZE = 5
 
+const DELIVERY_COLUMNS: ColumnDef<WebhookDelivery>[] = [
+  {
+    accessorKey: 'status',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    cell: ({ row }) => (
+      <Badge variant={statusBadgeVariant[row.original.status]}>{row.original.status}</Badge>
+    ),
+  },
+  {
+    accessorKey: 'eventType',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Event type" />,
+    cell: ({ row }) => <code className="text-code-inline">{row.original.eventType}</code>,
+  },
+  {
+    accessorKey: 'responseCode',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Response" />,
+    sortingFn: (rowA, rowB, columnId) => {
+      const responseA = rowA.getValue<number | undefined>(columnId) ?? -1
+      const responseB = rowB.getValue<number | undefined>(columnId) ?? -1
+      return responseA - responseB
+    },
+    cell: ({ row }) =>
+      row.original.responseCode ? (
+        <DataTableColumnStatusCode
+          value={row.original.responseCode}
+          level={getStatusLevel(row.original.responseCode)}
+          className="text-xs"
+        />
+      ) : (
+        <span className="text-xs text-foreground-muted">–</span>
+      ),
+  },
+  {
+    accessorKey: 'attemptAt',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Attempted" />,
+    cell: ({ row }) => <TimestampInfo className="text-sm" utcTimestamp={row.original.attemptAt} />,
+  },
+]
+
 export const PlatformWebhooksEndpointDetails = ({
   deliverySearch,
   filteredDeliveries,
@@ -52,27 +102,36 @@ export const PlatformWebhooksEndpointDetails = ({
   onOpenDelivery,
 }: PlatformWebhooksEndpointDetailsProps) => {
   const hasCustomHeaders = selectedEndpoint.customHeaders.length > 0
-  const [deliveryPage, setDeliveryPage] = useState(1)
-  const deliveryPageCount = Math.max(1, Math.ceil(filteredDeliveries.length / DELIVERIES_PAGE_SIZE))
-  const currentDeliveryPage = Math.min(deliveryPage, deliveryPageCount)
-  const deliveryStartIndex = (currentDeliveryPage - 1) * DELIVERIES_PAGE_SIZE
-  const paginatedDeliveries = filteredDeliveries.slice(
-    deliveryStartIndex,
-    deliveryStartIndex + DELIVERIES_PAGE_SIZE
-  )
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'attemptAt', desc: true }])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DELIVERIES_PAGE_SIZE,
+  })
+
+  const table = useReactTable({
+    data: filteredDeliveries,
+    columns: DELIVERY_COLUMNS,
+    state: { pagination, sorting },
+    getRowId: (row) => row.id,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
+  const paginatedDeliveries = table.getRowModel().rows
+  const deliveryStartIndex =
+    table.getState().pagination.pageIndex * table.getState().pagination.pageSize
   const deliveryRangeStart = filteredDeliveries.length === 0 ? 0 : deliveryStartIndex + 1
   const deliveryRangeEnd = Math.min(
-    deliveryStartIndex + DELIVERIES_PAGE_SIZE,
+    deliveryStartIndex + table.getState().pagination.pageSize,
     filteredDeliveries.length
   )
 
   useEffect(() => {
-    setDeliveryPage(1)
+    setPagination((currentPagination) => ({ ...currentPagination, pageIndex: 0 }))
   }, [deliverySearch, selectedEndpoint.id])
-
-  useEffect(() => {
-    setDeliveryPage((currentPage) => Math.min(currentPage, deliveryPageCount))
-  }, [deliveryPageCount])
 
   return (
     <div className="space-y-16">
@@ -143,48 +202,38 @@ export const PlatformWebhooksEndpointDetails = ({
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Status</TableHead>
-                <TableHead>Event type</TableHead>
-                <TableHead>Response</TableHead>
-                <TableHead>Attempted</TableHead>
-              </TableRow>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
             </TableHeader>
             <TableBody>
               {paginatedDeliveries.length > 0 ? (
-                paginatedDeliveries.map((delivery) => (
+                paginatedDeliveries.map((row) => (
                   <TableRow
-                    key={delivery.id}
+                    key={row.id}
                     className="cursor-pointer inset-focus"
-                    onClick={() => onOpenDelivery(delivery.id)}
+                    onClick={() => onOpenDelivery(row.original.id)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault()
-                        onOpenDelivery(delivery.id)
+                        onOpenDelivery(row.original.id)
                       }
                     }}
                     tabIndex={0}
                   >
-                    <TableCell>
-                      <Badge variant={statusBadgeVariant[delivery.status]}>{delivery.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-code-inline">{delivery.eventType}</code>
-                    </TableCell>
-                    <TableCell>
-                      {delivery.responseCode ? (
-                        <DataTableColumnStatusCode
-                          value={delivery.responseCode}
-                          level={getStatusLevel(delivery.responseCode)}
-                          className="text-xs"
-                        />
-                      ) : (
-                        <span className="text-xs text-foreground-muted">–</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <TimestampInfo className="text-sm" utcTimestamp={delivery.attemptAt} />
-                    </TableCell>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))
               ) : (
@@ -211,18 +260,16 @@ export const PlatformWebhooksEndpointDetails = ({
                   aria-label="Previous page"
                   type="default"
                   size="tiny"
-                  disabled={currentDeliveryPage === 1}
-                  onClick={() => setDeliveryPage((page) => Math.max(1, page - 1))}
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.previousPage()}
                 />
                 <Button
                   icon={<ChevronRight />}
                   aria-label="Next page"
                   type="default"
                   size="tiny"
-                  disabled={currentDeliveryPage >= deliveryPageCount}
-                  onClick={() =>
-                    setDeliveryPage((page) => Math.min(deliveryPageCount, page + 1))
-                  }
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.nextPage()}
                 />
               </div>
             </CardFooter>

@@ -60,6 +60,20 @@ describe('PlatformWebhooksEndpointDetails', () => {
     expect(screen.queryByText('organization.member_removed')).not.toBeInTheDocument()
   })
 
+  it('sorts deliveries by event type from the header', async () => {
+    const user = userEvent.setup()
+
+    renderComponent()
+
+    await user.click(screen.getByRole('button', { name: 'Event type' }))
+
+    expect(screen.getAllByRole('row')[1]).toHaveTextContent('organization.member_invited')
+
+    await user.click(screen.getByRole('button', { name: 'Event type' }))
+
+    expect(screen.getAllByRole('row')[1]).toHaveTextContent('project.updated')
+  })
+
   it('resets to the first page when the delivery search changes', async () => {
     const user = userEvent.setup()
     const projectDeliveries = allDeliveries.filter((delivery) =>
