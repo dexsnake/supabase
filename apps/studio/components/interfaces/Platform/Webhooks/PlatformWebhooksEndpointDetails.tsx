@@ -1,11 +1,14 @@
-import { Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 import { getStatusLevel } from 'components/interfaces/UnifiedLogs/UnifiedLogs.utils'
 import { DataTableColumnStatusCode } from 'components/ui/DataTable/DataTableColumn/DataTableColumnStatusCode'
 import {
   Badge,
+  Button,
   Card,
   CardContent,
+  CardFooter,
   Table,
   TableBody,
   TableCell,
@@ -20,7 +23,7 @@ import { statusBadgeVariant } from './PlatformWebhooksView.utils'
 
 interface DetailItemProps {
   label: string
-  children: React.ReactNode
+  children: ReactNode
   ddClassName?: string
 }
 
@@ -39,6 +42,8 @@ interface PlatformWebhooksEndpointDetailsProps {
   onOpenDelivery: (deliveryId: string) => void
 }
 
+const DELIVERIES_PAGE_SIZE = 5
+
 export const PlatformWebhooksEndpointDetails = ({
   deliverySearch,
   filteredDeliveries,
@@ -47,6 +52,27 @@ export const PlatformWebhooksEndpointDetails = ({
   onOpenDelivery,
 }: PlatformWebhooksEndpointDetailsProps) => {
   const hasCustomHeaders = selectedEndpoint.customHeaders.length > 0
+  const [deliveryPage, setDeliveryPage] = useState(1)
+  const deliveryPageCount = Math.max(1, Math.ceil(filteredDeliveries.length / DELIVERIES_PAGE_SIZE))
+  const currentDeliveryPage = Math.min(deliveryPage, deliveryPageCount)
+  const deliveryStartIndex = (currentDeliveryPage - 1) * DELIVERIES_PAGE_SIZE
+  const paginatedDeliveries = filteredDeliveries.slice(
+    deliveryStartIndex,
+    deliveryStartIndex + DELIVERIES_PAGE_SIZE
+  )
+  const deliveryRangeStart = filteredDeliveries.length === 0 ? 0 : deliveryStartIndex + 1
+  const deliveryRangeEnd = Math.min(
+    deliveryStartIndex + DELIVERIES_PAGE_SIZE,
+    filteredDeliveries.length
+  )
+
+  useEffect(() => {
+    setDeliveryPage(1)
+  }, [deliverySearch, selectedEndpoint.id])
+
+  useEffect(() => {
+    setDeliveryPage((currentPage) => Math.min(currentPage, deliveryPageCount))
+  }, [deliveryPageCount])
 
   return (
     <div className="space-y-16">
@@ -125,8 +151,8 @@ export const PlatformWebhooksEndpointDetails = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDeliveries.length > 0 ? (
-                filteredDeliveries.map((delivery) => (
+              {paginatedDeliveries.length > 0 ? (
+                paginatedDeliveries.map((delivery) => (
                   <TableRow
                     key={delivery.id}
                     className="cursor-pointer inset-focus"
@@ -162,12 +188,45 @@ export const PlatformWebhooksEndpointDetails = ({
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={4}>No deliveries found</TableCell>
+                <TableRow className="[&>td]:hover:bg-inherit">
+                  <TableCell colSpan={4}>
+                    <p className="text-sm text-foreground">No deliveries found</p>
+                    <p className="text-sm text-foreground-lighter">
+                      Try adjusting your search to see more webhook attempts.
+                    </p>
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          {filteredDeliveries.length > 0 && (
+            <CardFooter className="border-t p-4 flex items-center justify-between">
+              <p className="text-foreground-muted text-sm">
+                Showing {deliveryRangeStart} to {deliveryRangeEnd} of {filteredDeliveries.length}{' '}
+                deliveries
+              </p>
+              <div className="flex items-center gap-x-2" aria-label="Pagination">
+                <Button
+                  icon={<ChevronLeft />}
+                  aria-label="Previous page"
+                  type="default"
+                  size="tiny"
+                  disabled={currentDeliveryPage === 1}
+                  onClick={() => setDeliveryPage((page) => Math.max(1, page - 1))}
+                />
+                <Button
+                  icon={<ChevronRight />}
+                  aria-label="Next page"
+                  type="default"
+                  size="tiny"
+                  disabled={currentDeliveryPage >= deliveryPageCount}
+                  onClick={() =>
+                    setDeliveryPage((page) => Math.min(deliveryPageCount, page + 1))
+                  }
+                />
+              </div>
+            </CardFooter>
+          )}
         </Card>
       </div>
     </div>
