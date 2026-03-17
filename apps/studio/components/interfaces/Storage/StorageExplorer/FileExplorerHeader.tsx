@@ -19,7 +19,14 @@ import {
   Upload,
   X,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type ChangeEventHandler,
+  type SyntheticEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useStorageExplorerStateSnapshot } from 'state/storage-explorer'
 import {
   Button,
@@ -67,9 +74,9 @@ interface NavigateDialogProps {
   open: boolean
   pathString: string
   onOpenChange: (open: boolean) => void
-  onPathStringChange: (event: any) => void
+  onPathStringChange: ChangeEventHandler<HTMLInputElement>
   onCancel: () => void
-  onSubmit: (event?: any) => void
+  onSubmit: (event?: SyntheticEvent) => void
 }
 
 const NavigateDialog = ({
@@ -192,7 +199,7 @@ const HeaderBreadcrumbs = ({
 interface FileExplorerHeader {
   itemSearchString: string
   setItemSearchString: (value: string) => void
-  onFilesUpload: (event: any, columnIndex?: number) => void
+  onFilesUpload: (event: ChangeEvent<HTMLInputElement>, columnIndex?: number) => void
 }
 
 export const FileExplorerHeader = ({
@@ -210,8 +217,8 @@ export const FileExplorerHeader = ({
   const [isPathDialogOpen, setIsPathDialogOpen] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const uploadButtonRef: any = useRef(null)
-  const previousBreadcrumbs: any = useRef(null)
+  const uploadButtonRef = useRef<HTMLInputElement | null>(null)
+  const previousBreadcrumbs = useRef<string[] | null>(null)
 
   const {
     columns,
@@ -263,11 +270,11 @@ export const FileExplorerHeader = ({
     if (snap.isSearching) onCancelSearch()
   }
 
-  const onUpdatePathString = (event: any) => {
+  const onUpdatePathString = (event: ChangeEvent<HTMLInputElement>) => {
     setPathString(event.target.value)
   }
 
-  const navigateByPathString = (event: any) => {
+  const navigateByPathString = (event?: SyntheticEvent) => {
     if (event) {
       event.preventDefault()
       event.stopPropagation()

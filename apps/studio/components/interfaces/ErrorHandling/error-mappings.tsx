@@ -9,7 +9,7 @@ export interface ErrorMapping {
   Troubleshooting: ComponentType
 }
 
-type ErrorConstructor = new (...args: any[]) => ClassifiedError
+type ErrorConstructor = new (...args: unknown[]) => ClassifiedError
 
 export const ERROR_MAPPINGS = new Map<ErrorConstructor, ErrorMapping>([
   [
