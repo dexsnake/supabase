@@ -101,7 +101,7 @@ describe('FileExplorerHeader', () => {
     const navigateButton = screen.getByRole('button', { name: 'Navigate' })
     const reloadButton = screen.getByRole('button', { name: 'Reload' })
 
-    expect(navigateButton.parentElement?.parentElement).toHaveClass('overflow-x-auto')
+    expect(navigateButton.closest('div.overflow-x-auto')).toHaveClass('overflow-x-auto')
     expect(navigateButton.compareDocumentPosition(reloadButton) & Node.DOCUMENT_POSITION_FOLLOWING)
       .toBeTruthy()
   })
@@ -139,7 +139,7 @@ describe('FileExplorerHeader', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Navigate to folder')).toBeInTheDocument()
     expect(screen.getByDisplayValue('images/2024')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Go to folder' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Navigate' })).toBeInTheDocument()
   })
 
   it('submits a path, tracks the submission, and calls the existing path navigation flow', async () => {
@@ -159,7 +159,7 @@ describe('FileExplorerHeader', () => {
     const input = screen.getByDisplayValue('images/2024')
     await userEvent.clear(input)
     await userEvent.type(input, 'archive/2025')
-    await userEvent.click(screen.getByRole('button', { name: 'Go to folder' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Navigate' }))
 
     await waitFor(() => {
       expect(snapshot.fetchFoldersByPath).toHaveBeenCalledWith({ paths: ['archive', '2025'] })
