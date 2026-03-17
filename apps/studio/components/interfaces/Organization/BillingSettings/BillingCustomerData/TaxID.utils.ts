@@ -22,11 +22,11 @@ export const getEffectiveTaxCountry = (taxId: TaxId): string =>
  */
 export const resolveStoredTaxId = (
   type: string,
-  country: string,
+  taxCountry: string,
   billingCountry?: string
 ): TaxId | undefined => {
   const candidates = TAX_IDS.filter((option) => option.type === type)
-  const preferredCountry = billingCountry ?? country
+  const preferredCountry = billingCountry ?? taxCountry
 
   return candidates.find((o) => o.countryIso2 === preferredCountry)
 }
