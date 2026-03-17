@@ -414,7 +414,6 @@ export function ComposedChart({
           data={data}
           syncId={syncId}
           style={{ cursor: 'crosshair' }}
-          stackOffset={undefined}
           onMouseMove={({ activeLabel, activeTooltipIndex, activePayload }) => {
             if (!activeTooltipIndex) return
 
