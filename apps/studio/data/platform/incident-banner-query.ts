@@ -21,6 +21,7 @@ async function getIncidentBanner(signal?: AbortSignal): Promise<IncidentBannerDa
   const response = await fetch(`${BASE_PATH}/api/incident-banner`, {
     signal,
     method: 'GET',
+    credentials: 'omit',
     headers: { 'Content-Type': 'application/json' },
   })
   if (!response.ok) throw new Error(`Failed to fetch incident banner: ${response.statusText}`)
@@ -31,6 +32,13 @@ export const incidentBannerQueryOptions = () =>
   queryOptions({
     queryKey: platformKeys.incidentBanner(),
     queryFn: ({ signal }) => getIncidentBanner(signal),
+    refetchOnWindowFocus: false,
+    // exponential backoff retry starting at 4s, 16s, 64s, 256s etc. Hard capped at 5 minutes to prevent excessively
+    // long retry delays.
+    retryDelay: (attemptIndex) => Math.min(1000 * 4 ** attemptIndex, 1000 * 60 * 5),
     staleTime: 1000 * 60 * 5,
-    enabled: IS_PLATFORM,
+    // temporarily disable incident status queries until we have the capacity to handle potential increased load
+    // from retries.
+    enabled: false,
+    // enabled: IS_PLATFORM,
   })
