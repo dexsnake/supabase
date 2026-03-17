@@ -71,6 +71,7 @@ export interface ComposedChartProps<D = Datum> extends CommonChartProps<D> {
   sql?: string
   highlightActions?: ChartHighlightAction[]
   showNewBadge?: boolean
+  stackedPercent?: boolean
 }
 
 interface CustomizedDotProps {
@@ -130,6 +131,7 @@ export function ComposedChart({
   highlightActions,
   titleTooltip,
   showNewBadge,
+  stackedPercent = false,
 }: ComposedChartProps) {
   const { resolvedTheme } = useTheme()
   const { hoveredIndex, syncTooltip, setHover, clearHover } = useChartHoverState(
@@ -412,6 +414,7 @@ export function ComposedChart({
           data={data}
           syncId={syncId}
           style={{ cursor: 'crosshair' }}
+          stackOffset={stackedPercent && chartStyle !== 'bar' ? 'expand' : undefined}
           onMouseMove={({ activeLabel, activeTooltipIndex, activePayload }) => {
             if (!activeTooltipIndex) return
 
@@ -457,7 +460,14 @@ export function ComposedChart({
             hide={hideYAxis}
             axisLine={{ stroke: CHART_COLORS.AXIS }}
             tickLine={{ stroke: CHART_COLORS.AXIS }}
-            domain={yAxisDomain}
+            domain={
+              stackedPercent && chartStyle !== 'bar' ? ([0, 1] as [number, number]) : yAxisDomain
+            }
+            tickFormatter={
+              stackedPercent && chartStyle !== 'bar'
+                ? (v: number) => `${Math.round(v * 100)}%`
+                : _YAxisProps.tickFormatter
+            }
             key={yAxisKey}
           />
           <XAxis
@@ -580,6 +590,7 @@ export function ComposedChart({
                   isActiveHoveredChart={
                     isActiveHoveredChart || (!!syncId && syncTooltip && hoveredIndex !== null)
                   }
+                  stackedPercent={stackedPercent}
                 />
               ) : null
             }

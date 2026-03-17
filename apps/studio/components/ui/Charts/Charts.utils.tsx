@@ -175,40 +175,6 @@ export function computeYAxisDomain({
 }
 
 /**
- * Normalizes stacked chart data so the sum of specified attributes
- * never exceeds `cap`. When the sum exceeds the cap, each attribute
- * is scaled proportionally so the total equals the cap.
- *
- * This matches Grafana's "100% stacking" behavior.
- */
-export function normalizeStackedData(
-  data: Record<string, unknown>[],
-  stackedAttributeNames: string[],
-  cap: number
-): Record<string, unknown>[] {
-  return data.map((point) => {
-    const sum = stackedAttributeNames.reduce((acc, name) => {
-      const val = point[name]
-      return acc + (typeof val === 'number' ? val : 0)
-    }, 0)
-
-    if (sum <= cap) return point
-
-    const scale = cap / sum
-    const normalized = { ...point }
-
-    for (const name of stackedAttributeNames) {
-      const val = point[name]
-      if (typeof val === 'number') {
-        normalized[name] = val * scale
-      }
-    }
-
-    return normalized
-  })
-}
-
-/**
  * Hook to create common wrapping components, perform data transformations
  * returns a Container component and the minHeight set
  */

@@ -33,8 +33,7 @@ export interface ReportAttributes {
     tickFormatter?: (value: any) => string
   }
   hideHighlightedValue?: boolean
-  /** When set, stacked values are normalized so their sum never exceeds this cap (e.g. 100 for CPU %) */
-  normalizeStacked?: number
+  stackedPercent?: boolean
 }
 
 export type Provider = 'infra-monitoring' | 'daily-stats' | 'mock' | 'reference-line' | 'logs'
@@ -120,6 +119,7 @@ interface TooltipProps {
   showMaxValue?: boolean
   showTotal?: boolean
   isActiveHoveredChart?: boolean
+  stackedPercent?: boolean
 }
 
 const isMaxAttribute = (attributes?: MultiAttribute[]) => attributes?.find((a) => a.isMaxValue)
@@ -147,6 +147,7 @@ export const CustomTooltip = ({
   valuePrecision,
   showTotal,
   isActiveHoveredChart,
+  stackedPercent,
 }: TooltipProps) => {
   if (active && payload && payload.length) {
     /**
@@ -209,12 +210,15 @@ export const CustomTooltip = ({
             {attribute?.label || entry.name}
           </span>
           <span className="ml-3.5 flex items-end gap-1">
-            {formatNumeric(entry.value) + (!isPercentage && format !== 'ms' ? byteUnitSuffix : '')}
-            {isPercentage ? '%' : ''}
-            {format === 'ms' ? 'ms' : ''}
+            {stackedPercent
+              ? formatPercentage(entry.value * 100, valuePrecision)
+              : formatNumeric(entry.value) +
+                (!isPercentage && format !== 'ms' ? byteUnitSuffix : '')}
+            {!stackedPercent && isPercentage ? '%' : ''}
+            {!stackedPercent && format === 'ms' ? 'ms' : ''}
 
             {/* Show percentage if max value is set */}
-            {!!maxValueData && !isMax && !isPercentage && (
+            {!stackedPercent && !!maxValueData && !isMax && !isPercentage && (
               <span className="text-[11px] text-foreground-light mb-0.5">({percentage}%)</span>
             )}
           </span>

@@ -14,7 +14,6 @@ import { Card, cn, WarningIcon } from 'ui'
 
 import type { ChartHighlightAction } from './ChartHighlightActions'
 import type { ChartData } from './Charts.types'
-import { normalizeStackedData } from './Charts.utils'
 import { ComposedChart } from './ComposedChart'
 import { MultiAttribute } from './ComposedChart.utils'
 import { useChartHighlight } from './useChartHighlight'
@@ -44,7 +43,7 @@ export interface ComposedChartHandlerProps {
   docsUrl?: string
   hide?: boolean
   syncId?: string
-  normalizeStacked?: number
+  stackedPercent?: boolean
 }
 
 /**
@@ -116,7 +115,7 @@ const ComposedChartHandler = ({
   isVisible = true,
   id,
   syncId,
-  normalizeStacked,
+  stackedPercent,
   ...otherProps
 }: PropsWithChildren<ComposedChartHandlerProps>) => {
   const router = useRouter()
@@ -205,22 +204,6 @@ const ComposedChartHandler = ({
     return combined as DataPoint[]
   }, [data, attributeQueries, attributes])
 
-  const isStackedStyle = chartStyle !== 'bar'
-
-  const normalizedData = useMemo(() => {
-    if (!combinedData || !normalizeStacked || !isStackedStyle) return combinedData
-
-    const stackedAttributeNames = attributes
-      .filter((a) => a.provider !== 'reference-line' && !a.isMaxValue && a.enabled !== false)
-      .map((a) => a.attribute)
-
-    return normalizeStackedData(
-      combinedData as Record<string, unknown>[],
-      stackedAttributeNames,
-      normalizeStacked
-    )
-  }, [combinedData, normalizeStacked, isStackedStyle, attributes])
-
   const loading = isLoading || attributeQueries.some((query: any) => query.isLoading)
 
   const _highlightedValue = useMemo(() => {
@@ -279,7 +262,7 @@ const ComposedChartHandler = ({
     )
   }
 
-  if (!normalizedData) {
+  if (!combinedData) {
     return (
       <div className="flex h-52 w-full flex-col items-center justify-center gap-y-2">
         <WarningIcon />
@@ -300,7 +283,7 @@ const ComposedChartHandler = ({
         <div className="absolute right-6 z-50 flex justify-between scroll-mt-16">{children}</div>
         <ComposedChart
           attributes={attributes}
-          data={normalizedData as DataPoint[]}
+          data={combinedData as DataPoint[]}
           format={format}
           // [Joshen] This is where it's messing up
           xAxisKey="period_start"
@@ -320,6 +303,7 @@ const ComposedChartHandler = ({
           hideChartType={hideChartType}
           syncId={syncId}
           highlightActions={highlightActions}
+          stackedPercent={stackedPercent}
           {...otherProps}
         />
       </Panel.Content>

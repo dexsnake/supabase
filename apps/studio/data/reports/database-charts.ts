@@ -69,7 +69,7 @@ export const getReportAttributesV2: (
       label: 'CPU usage',
       docsUrl: `${DOCS_URL}/guides/telemetry/reports#cpu-usage`,
       syncId: 'database-reports',
-      normalizeStacked: 100,
+      stackedPercent: true,
       format: '%',
       valuePrecision: 2,
       hide: false,
