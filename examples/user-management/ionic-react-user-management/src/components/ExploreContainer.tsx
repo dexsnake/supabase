@@ -1,8 +1,9 @@
 import './ExploreContainer.css';
+import type { FC } from 'react';
 
 interface ContainerProps { }
 
-const ExploreContainer: React.FC<ContainerProps> = () => {
+const ExploreContainer: FC<ContainerProps> = () => {
   return (
     <div className="container">
       <strong>Ready to create an app?</strong>
