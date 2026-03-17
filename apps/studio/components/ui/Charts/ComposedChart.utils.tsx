@@ -210,15 +210,12 @@ export const CustomTooltip = ({
             {attribute?.label || entry.name}
           </span>
           <span className="ml-3.5 flex items-end gap-1">
-            {stackedPercent
-              ? formatPercentage(entry.value * 100, valuePrecision)
-              : formatNumeric(entry.value) +
-                (!isPercentage && format !== 'ms' ? byteUnitSuffix : '')}
-            {!stackedPercent && isPercentage ? '%' : ''}
-            {!stackedPercent && format === 'ms' ? 'ms' : ''}
+            {formatNumeric(entry.value) + (!isPercentage && format !== 'ms' ? byteUnitSuffix : '')}
+            {isPercentage ? '%' : ''}
+            {format === 'ms' ? 'ms' : ''}
 
             {/* Show percentage if max value is set */}
-            {!stackedPercent && !!maxValueData && !isMax && !isPercentage && (
+            {!!maxValueData && !isMax && !isPercentage && (
               <span className="text-[11px] text-foreground-light mb-0.5">({percentage}%)</span>
             )}
           </span>
