@@ -588,7 +588,6 @@ export function ComposedChart({
                   isActiveHoveredChart={
                     isActiveHoveredChart || (!!syncId && syncTooltip && hoveredIndex !== null)
                   }
-                  stackedPercent={stackedPercent}
                 />
               ) : null
             }

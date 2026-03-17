@@ -119,7 +119,6 @@ interface TooltipProps {
   showMaxValue?: boolean
   showTotal?: boolean
   isActiveHoveredChart?: boolean
-  stackedPercent?: boolean
 }
 
 const isMaxAttribute = (attributes?: MultiAttribute[]) => attributes?.find((a) => a.isMaxValue)
@@ -147,7 +146,6 @@ export const CustomTooltip = ({
   valuePrecision,
   showTotal,
   isActiveHoveredChart,
-  stackedPercent,
 }: TooltipProps) => {
   if (active && payload && payload.length) {
     /**

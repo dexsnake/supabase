@@ -79,11 +79,6 @@ export const getReportAttributesV2: (
       showGrid: true,
       YAxisProps: {
         width: 45,
-        tickFormatter: (value: any) => {
-          // avoid displaying 100.00%
-          if (value === 100) return '100%'
-          return `${numberFormatter(value, 2)}%`
-        },
       },
       hideChartType: false,
       defaultChartStyle: 'bar',
@@ -131,7 +126,7 @@ export const getReportAttributesV2: (
           attribute: 'cpu_usage_max',
           provider: 'reference-line',
           label: 'Max',
-          value: 100,
+          value: 1, // stackedPercent uses [0, 1] domain via stackOffset="expand"
           tooltip: 'Max CPU usage',
           isMaxValue: true,
         },
