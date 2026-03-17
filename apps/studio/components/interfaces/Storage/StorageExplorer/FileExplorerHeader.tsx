@@ -106,10 +106,7 @@ const NavigateDialog = ({
               if (event.key === 'Enter') onSubmit(event)
             }}
           />
-          <FieldDescription_Shadcn_
-            id={descriptionId}
-            className="text-foreground-lighter"
-          >
+          <FieldDescription_Shadcn_ id={descriptionId} className="text-foreground-lighter">
             Enter a folder path within this bucket.
           </FieldDescription_Shadcn_>
         </DialogSection>

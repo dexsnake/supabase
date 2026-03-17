@@ -102,8 +102,9 @@ describe('FileExplorerHeader', () => {
     const reloadButton = screen.getByRole('button', { name: 'Reload' })
 
     expect(navigateButton.closest('div.overflow-x-auto')).toHaveClass('overflow-x-auto')
-    expect(navigateButton.compareDocumentPosition(reloadButton) & Node.DOCUMENT_POSITION_FOLLOWING)
-      .toBeTruthy()
+    expect(
+      navigateButton.compareDocumentPosition(reloadButton) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
   })
 
   it('uses breadcrumb clicks to navigate back to a previous folder level', async () => {
