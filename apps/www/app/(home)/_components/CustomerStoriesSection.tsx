@@ -67,6 +67,19 @@ const aiBuilderStories = [
   },
 ]
 
+function LovableLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 121 122" fill="none" className={className}>
+      <path
+        fill="white"
+        fillRule="evenodd"
+        d="M36.069 0c19.92 0 36.068 16.155 36.068 36.084v13.713h12.004c19.92 0 36.069 16.156 36.069 36.084 0 19.928-16.149 36.083-36.069 36.083H0v-85.88C0 16.155 16.148 0 36.069 0Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
 export function CustomerStoriesSection() {
   const [activeIdx, setActiveIdx] = useState(0)
   const active = customerStories[activeIdx]
@@ -157,7 +170,7 @@ export function CustomerStoriesSection() {
       </div>
 
       {/* AI Builder stories */}
-      <div className="">
+      <div className="mt-10">
         <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8">
             <div className="flex flex-col min-h-[320px] gap-4 justify-between">
@@ -181,14 +194,18 @@ export function CustomerStoriesSection() {
                 <Link
                   key={story.slug}
                   href={`/customers/${story.slug}`}
-                  className="group relative overflow-hidden rounded-xl w-full h-full flex items-center justify-center"
+                  className="group relative overflow-hidden rounded-md w-full h-full flex items-center justify-center"
                   style={{ background: story.gradient }}
                 >
-                  <img
-                    src={story.logo}
-                    alt={story.name}
-                    className="h-8 w-auto object-contain brightness-0 invert relative z-10 select-none"
-                  />
+                  {story.slug === 'lovable' ? (
+                    <LovableLogo className="h-12 w-auto relative z-10 select-none" />
+                  ) : (
+                    <img
+                      src={story.logo}
+                      alt={story.name}
+                      className="h-12 w-auto object-contain brightness-0 invert relative z-10 select-none"
+                    />
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <p className="text-white text-sm font-medium mb-1">{story.name}</p>
                     <p className="text-white/70 text-xs leading-relaxed text-pretty">
