@@ -1,4 +1,7 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
+import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
+import { BASE_PATH } from 'lib/constants'
+import { formatBytes } from 'lib/helpers'
 import { find, isEmpty, isEqual } from 'lodash'
 import {
   AlertCircle,
@@ -8,19 +11,15 @@ import {
   File,
   Film,
   Image,
-  Loader,
+  LoaderCircle,
   MoreVertical,
   Move,
   Music,
   Trash2,
 } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { useContextMenu } from 'react-contexify'
 import SVG from 'react-inlinesvg'
-
-import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
-import { BASE_PATH } from 'lib/constants'
-import { formatBytes } from 'lib/helpers'
-import type { CSSProperties } from 'react'
 import { useStorageExplorerStateSnapshot } from 'state/storage-explorer'
 import {
   Checkbox,
@@ -38,6 +37,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from 'ui'
+
 import {
   CONTEXT_MENU_KEYS,
   STORAGE_ROW_STATUS,
@@ -398,10 +398,9 @@ export const FileExplorerRow = ({
           }
         >
           {item.status === STORAGE_ROW_STATUS.LOADING ? (
-            <Loader
-              className={`animate-spin ${view === STORAGE_VIEWS.LIST ? 'invisible' : ''}`}
-              size={16}
-              strokeWidth={2}
+            <LoaderCircle
+              className={`animate-spin text-foreground-lighter ${view === STORAGE_VIEWS.LIST ? 'invisible' : ''}`}
+              size={14}
             />
           ) : (
             <DropdownMenu>

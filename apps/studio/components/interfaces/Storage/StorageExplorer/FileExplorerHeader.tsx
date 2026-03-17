@@ -26,7 +26,6 @@ import {
   cn,
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogSection,
@@ -84,12 +83,9 @@ const NavigateDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="small">
+      <DialogContent size="small" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Navigate to folder</DialogTitle>
-          <DialogDescription id={descriptionId}>
-            Enter a folder path within this bucket.
-          </DialogDescription>
         </DialogHeader>
         <DialogSection className="flex flex-col gap-y-2">
           <Label_Shadcn_ htmlFor={inputId}>Path</Label_Shadcn_>
@@ -322,207 +318,206 @@ export const FileExplorerHeader = ({
   }
 
   return (
-    <div
-      className={cn(
-        'flex min-h-[40px] pl-2',
-        'items-start justify-between',
-        'rounded-t-md border-b border-overlay bg-surface-100'
-      )}
-    >
-      {/* Navigation */}
-      <div className="flex min-w-0 flex-1 items-center overflow-hidden py-[7px]">
-        {breadcrumbs.length > 1 && (
-          <>
-            <Button
-              icon={<ArrowLeft size={16} strokeWidth={2} />}
-              size="tiny"
-              type="text"
-              className="shrink-0 px-1"
-              disabled={backDisabled}
-              onClick={() => {
-                setIsPathDialogOpen(false)
-                onSelectBack()
-              }}
-            />
-            <div className="mx-1 h-5 shrink-0 border-r border-strong" />
-          </>
-        )}
-        {breadcrumbs.length > 1 ? (
-          <HeaderBreadcrumbs
-            loading={loading}
-            breadcrumbs={breadcrumbs}
-            selectBreadcrumb={selectBreadcrumb}
-          />
-        ) : null}
-      </div>
+    <div className="rounded-t-md border-b border-overlay bg-surface-100">
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div className="flex min-h-[40px] w-max min-w-full items-center justify-between">
+          {/* Navigation */}
+          <div className="flex min-w-0 flex-1 items-center overflow-hidden pl-2 py-[7px]">
+            {breadcrumbs.length > 1 && (
+              <>
+                <Button
+                  icon={<ArrowLeft size={16} strokeWidth={2} />}
+                  size="tiny"
+                  type="text"
+                  className="shrink-0 px-1"
+                  disabled={backDisabled}
+                  onClick={() => {
+                    setIsPathDialogOpen(false)
+                    onSelectBack()
+                  }}
+                />
+                <div className="mx-1 h-5 shrink-0 border-r border-strong" />
+              </>
+            )}
+            {breadcrumbs.length > 1 ? (
+              <HeaderBreadcrumbs
+                loading={loading}
+                breadcrumbs={breadcrumbs}
+                selectBreadcrumb={selectBreadcrumb}
+              />
+            ) : null}
+          </div>
 
-      {/* Actions */}
-      <div className="min-w-0 max-w-full overflow-x-auto overflow-y-hidden pt-[7px]">
-        <div className="flex min-w-max items-center whitespace-nowrap">
-          <div className="flex shrink-0 items-center space-x-1 px-2">
-          {snap.view === STORAGE_VIEWS.COLUMNS && (
-            <Button
-              size="tiny"
-              icon={<Edit2 />}
-              type="text"
-              disabled={isPathDialogOpen || loading.isLoading}
-              onClick={onOpenNavigate}
-            >
-              Navigate
-            </Button>
-          )}
-          <Button
-            size="tiny"
-            icon={<RefreshCw />}
-            type="text"
-            loading={isRefreshing}
-            onClick={refreshData}
-          >
-            Reload
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          {/* Actions */}
+          <div className="flex shrink-0 items-center whitespace-nowrap py-[7px]">
+            <div className="flex shrink-0 items-center space-x-1 px-2">
+              {snap.view === STORAGE_VIEWS.COLUMNS && (
+                <Button
+                  size="tiny"
+                  icon={<Edit2 />}
+                  type="text"
+                  disabled={isPathDialogOpen || loading.isLoading}
+                  onClick={onOpenNavigate}
+                >
+                  Navigate
+                </Button>
+              )}
               <Button
+                size="tiny"
+                icon={<RefreshCw />}
                 type="text"
-                icon={
-                  snap.view === 'LIST' ? (
-                    <List size={16} strokeWidth={2} />
-                  ) : (
-                    <Columns size={16} strokeWidth={2} />
-                  )
-                }
+                loading={isRefreshing}
+                onClick={refreshData}
               >
-                View
+                Reload
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 min-w-0">
-              {VIEW_OPTIONS.map((option) => (
-                <DropdownMenuItem key={option.key} onClick={() => snap.setView(option.key)}>
-                  <div className="flex items-center justify-between w-full">
-                    <p>{option.name}</p>
-                    {snap.view === option.key && (
-                      <Check size={16} className="text-brand" strokeWidth={2} />
-                    )}
-                  </div>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Sort by</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-44">
-                  {SORT_BY_OPTIONS.map((option) => (
-                    <DropdownMenuItem key={option.key} onClick={() => setSortBy(option.key)}>
-                      <div className="flex items-center justify-between w-full">
-                        <p>{option.name}</p>
-                        {sortBy === option.key && (
-                          <Check size={16} className="text-brand" strokeWidth={2} />
-                        )}
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Sort order</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {SORT_ORDER_OPTIONS.map((option) => (
-                    <DropdownMenuItem key={option.key} onClick={() => setSortByOrder(option.key)}>
-                      <div className="flex items-center justify-between w-full">
-                        <p>{option.name}</p>
-                        {sortByOrder === option.key && (
-                          <Check size={16} className="text-brand" strokeWidth={2} />
-                        )}
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
 
-          <div className="h-6 shrink-0 border-r border-control" />
-          <div className="flex shrink-0 items-center space-x-1 px-2">
-            <div className="hidden">
-              <input ref={uploadButtonRef} type="file" multiple onChange={onFilesUpload} />
-            </div>
-            <ButtonTooltip
-              icon={<Upload size={16} strokeWidth={2} />}
-              type="text"
-              disabled={!canUpdateStorage || breadcrumbs.length === 0}
-              onClick={onSelectUpload}
-              tooltip={{
-                content: {
-                  side: 'bottom',
-                  text: !canUpdateStorage
-                    ? 'You need additional permissions to upload files'
-                    : undefined,
-                },
-              }}
-            >
-              Upload files
-            </ButtonTooltip>
-            <ButtonTooltip
-              icon={<FolderPlus size={16} strokeWidth={2} />}
-              type="text"
-              disabled={!canUpdateStorage || breadcrumbs.length === 0}
-              onClick={() => addNewFolderPlaceholder(-1)}
-              tooltip={{
-                content: {
-                  side: 'bottom',
-                  text: !canUpdateStorage
-                    ? 'You need additional permissions to create folders'
-                    : undefined,
-                },
-              }}
-            >
-              Create folder
-            </ButtonTooltip>
-          </div>
-
-          <div className="h-6 shrink-0 border-r border-control" />
-          <div className="flex shrink-0 items-center px-2">
-            {snap.isSearching ? (
-              <Input
-                size="tiny"
-                autoFocus
-                className="w-52"
-                icon={<Search />}
-                actions={[
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
-                    key="cancel"
-                    size="tiny"
                     type="text"
-                    icon={<X />}
-                    onClick={onCancelSearch}
-                    className="p-0 h-5 w-5"
-                  />,
-                ]}
-                placeholder="Search for a file or folder"
+                    icon={
+                      snap.view === 'LIST' ? (
+                        <List size={16} strokeWidth={2} />
+                      ) : (
+                        <Columns size={16} strokeWidth={2} />
+                      )
+                    }
+                  >
+                    View
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 min-w-0">
+                  {VIEW_OPTIONS.map((option) => (
+                    <DropdownMenuItem key={option.key} onClick={() => snap.setView(option.key)}>
+                      <div className="flex items-center justify-between w-full">
+                        <p>{option.name}</p>
+                        {snap.view === option.key && (
+                          <Check size={16} className="text-brand" strokeWidth={2} />
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Sort by</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="w-44">
+                      {SORT_BY_OPTIONS.map((option) => (
+                        <DropdownMenuItem key={option.key} onClick={() => setSortBy(option.key)}>
+                          <div className="flex items-center justify-between w-full">
+                            <p>{option.name}</p>
+                            {sortBy === option.key && (
+                              <Check size={16} className="text-brand" strokeWidth={2} />
+                            )}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Sort order</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {SORT_ORDER_OPTIONS.map((option) => (
+                        <DropdownMenuItem
+                          key={option.key}
+                          onClick={() => setSortByOrder(option.key)}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <p>{option.name}</p>
+                            {sortByOrder === option.key && (
+                              <Check size={16} className="text-brand" strokeWidth={2} />
+                            )}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="h-6 shrink-0 border-r border-control" />
+            <div className="flex shrink-0 items-center space-x-1 px-2">
+              <div className="hidden">
+                <input ref={uploadButtonRef} type="file" multiple onChange={onFilesUpload} />
+              </div>
+              <ButtonTooltip
+                icon={<Upload size={16} strokeWidth={2} />}
                 type="text"
-                value={itemSearchString}
-                onChange={(event) => setItemSearchString(event.target.value)}
-              />
-            ) : (
-              <Button
-                icon={<Search />}
-                size="tiny"
+                disabled={!canUpdateStorage || breadcrumbs.length === 0}
+                onClick={onSelectUpload}
+                tooltip={{
+                  content: {
+                    side: 'bottom',
+                    text: !canUpdateStorage
+                      ? 'You need additional permissions to upload files'
+                      : undefined,
+                  },
+                }}
+              >
+                Upload files
+              </ButtonTooltip>
+              <ButtonTooltip
+                icon={<FolderPlus size={16} strokeWidth={2} />}
                 type="text"
-                className="px-1"
-                onClick={toggleSearch}
-              />
+                disabled={!canUpdateStorage || breadcrumbs.length === 0}
+                onClick={() => addNewFolderPlaceholder(-1)}
+                tooltip={{
+                  content: {
+                    side: 'bottom',
+                    text: !canUpdateStorage
+                      ? 'You need additional permissions to create folders'
+                      : undefined,
+                  },
+                }}
+              >
+                Create folder
+              </ButtonTooltip>
+            </div>
+
+            <div className="h-6 shrink-0 border-r border-control" />
+            <div className="flex shrink-0 items-center px-2">
+              {snap.isSearching ? (
+                <Input
+                  size="tiny"
+                  autoFocus
+                  className="w-52"
+                  icon={<Search />}
+                  actions={[
+                    <Button
+                      key="cancel"
+                      size="tiny"
+                      type="text"
+                      icon={<X />}
+                      onClick={onCancelSearch}
+                      className="p-0 h-5 w-5"
+                    />,
+                  ]}
+                  placeholder="Search for a file or folder"
+                  type="text"
+                  value={itemSearchString}
+                  onChange={(event) => setItemSearchString(event.target.value)}
+                />
+              ) : (
+                <Button
+                  icon={<Search />}
+                  size="tiny"
+                  type="text"
+                  className="px-1"
+                  onClick={toggleSearch}
+                />
+              )}
+            </div>
+
+            {isNewAPIDocsEnabled && (
+              <>
+                <div className="h-6 shrink-0 border-r border-control" />
+                <div className="mx-2 shrink-0">
+                  <APIDocsButton section={['storage', selectedBucket.name]} source="storage" />
+                </div>
+              </>
             )}
           </div>
-
-          {isNewAPIDocsEnabled && (
-            <>
-              <div className="h-6 shrink-0 border-r border-control" />
-              <div className="mx-2 shrink-0">
-                <APIDocsButton section={['storage', selectedBucket.name]} source="storage" />
-              </div>
-            </>
-          )}
         </div>
       </div>
 
