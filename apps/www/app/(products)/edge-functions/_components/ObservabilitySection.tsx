@@ -55,26 +55,33 @@ function ObservabilityCard({
 
 export function ObservabilitySection() {
   return (
-    <div>
-      {/* Header row */}
-      <div className="border-b border-border">
-        <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
-          <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl pt-40 pb-8">
-            Built-in <span className="text-foreground">observability</span>
+    <div className="py-24 flex flex-col gap-16">
+      {/* Header */}
+      <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end">
+          <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
+            Debug and monitor with <br />
+            <span className="text-foreground">built-in observability</span>
           </h3>
+          <p className="text-foreground-lighter text-sm lg:text-base">
+            Monitor, debug, and optimize your Edge Functions with realtime logs, queryable log
+            explorer, and health dashboards — all built into the Supabase Dashboard.
+          </p>
         </div>
       </div>
 
       {/* 3-column grid */}
-      <div className="mx-auto max-w-[var(--container-max-w,75rem)] border-x border-border">
-        <div className="grid grid-cols-1 md:grid-cols-3">
-          {cards.map((card, i) => (
-            <ObservabilityCard
-              key={card.id}
-              card={card}
-              className={cn(i < cards.length - 1 && 'md:border-r')}
-            />
-          ))}
+      <div className="mx-auto max-w-[var(--container-max-w,75rem)] w-full">
+        <div className="border border-border rounded-md overflow-clip">
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {cards.map((card, i) => (
+              <ObservabilityCard
+                key={card.id}
+                card={card}
+                className={cn(i < cards.length - 1 && 'md:border-r border-border')}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
