@@ -414,7 +414,7 @@ export function ComposedChart({
           data={data}
           syncId={syncId}
           style={{ cursor: 'crosshair' }}
-          stackOffset={stackedPercent ? 'expand' : undefined}
+          stackOffset={undefined}
           onMouseMove={({ activeLabel, activeTooltipIndex, activePayload }) => {
             if (!activeTooltipIndex) return
 
@@ -460,10 +460,8 @@ export function ComposedChart({
             hide={hideYAxis}
             axisLine={{ stroke: CHART_COLORS.AXIS }}
             tickLine={{ stroke: CHART_COLORS.AXIS }}
-            domain={stackedPercent ? ([0, 1] as [number, number]) : yAxisDomain}
-            tickFormatter={
-              stackedPercent ? (v: number) => `${Math.round(v * 100)}%` : _YAxisProps.tickFormatter
-            }
+            domain={stackedPercent ? ([0, 100] as [number, number]) : yAxisDomain}
+            tickFormatter={_YAxisProps.tickFormatter}
             key={yAxisKey}
           />
           <XAxis

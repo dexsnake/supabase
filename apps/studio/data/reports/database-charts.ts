@@ -126,7 +126,7 @@ export const getReportAttributesV2: (
           attribute: 'cpu_usage_max',
           provider: 'reference-line',
           label: 'Max',
-          value: 1, // stackedPercent uses [0, 1] domain via stackOffset="expand"
+          value: 100,
           tooltip: 'Max CPU usage',
           isMaxValue: true,
         },
