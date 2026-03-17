@@ -140,7 +140,7 @@ const ComposedChartHandler = ({
   )
 
   const combinedData = useMemo(() => {
-    if (data) return data
+    if (data) return data.data
 
     const isLoading = attributeQueries.some((query: any) => query.isLoading)
     if (isLoading) return undefined
@@ -212,7 +212,11 @@ const ComposedChartHandler = ({
       .filter((a) => a.provider !== 'reference-line' && !a.isMaxValue)
       .map((a) => a.attribute)
 
-    return normalizeStackedData(combinedData, stackedAttributeNames, normalizeStacked)
+    return normalizeStackedData(
+      combinedData as Record<string, unknown>[],
+      stackedAttributeNames,
+      normalizeStacked
+    )
   }, [combinedData, normalizeStacked, attributes])
 
   const loading = isLoading || attributeQueries.some((query: any) => query.isLoading)
