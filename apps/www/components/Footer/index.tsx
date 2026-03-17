@@ -163,7 +163,7 @@ const Footer = (props: Props) => {
               </a>
 
               <a
-                href="https://www.tiktok.com/@supabasecom"
+                href="https://www.tiktok.com/@supabase.com"
                 className="text-foreground-lighter hover:text-foreground transition"
               >
                 <span className="sr-only">TikTok</span>
