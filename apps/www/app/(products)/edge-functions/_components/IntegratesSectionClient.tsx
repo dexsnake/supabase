@@ -72,7 +72,7 @@ export function IntegratesSectionClient({ useCases }: { useCases: UseCase[] }) {
   }
 
   return (
-    <div ref={inViewRef} className="py-24 flex flex-col gap-16 border-b border-border">
+    <div ref={inViewRef} className="py-24 flex flex-col gap-16">
       {/* Header */}
       <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 w-full">
         <h3 className="text-2xl md:text-4xl text-foreground-lighter max-w-xl">
@@ -115,7 +115,12 @@ export function IntegratesSectionClient({ useCases }: { useCases: UseCase[] }) {
                       {useCase.paragraph}
                     </p>
                     {/* Progress bar — hide on last item to avoid doubling with section border */}
-                    <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-border-strong overflow-hidden", index === useCases.length - 1 && 'hidden')}>
+                    <div
+                      className={cn(
+                        'absolute bottom-0 left-0 right-0 h-[1px] bg-border-strong overflow-hidden',
+                        index === useCases.length - 1 && 'hidden'
+                      )}
+                    >
                       {isActive && (
                         <motion.div
                           className={cn(
