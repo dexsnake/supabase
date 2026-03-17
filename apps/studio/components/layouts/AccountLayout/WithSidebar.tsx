@@ -1,7 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { PropsWithChildren, ReactNode } from 'react'
-import { useAppStateSnapshot } from 'state/app-state'
 import { cn, Menu } from 'ui'
 
 import type { SidebarSection } from './AccountLayout.types'
@@ -31,7 +30,6 @@ export const WithSidebar = ({
   backToDashboardURL,
 }: PropsWithChildren<WithSidebarProps>) => {
   const noContent = !sections && !customSidebarContent
-  const { mobileMenuOpen, setMobileMenuOpen } = useAppStateSnapshot()
 
   return (
     <div className="flex flex-col md:flex-row h-full">

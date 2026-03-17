@@ -7,18 +7,13 @@ import { useCheckLatestDeploy } from 'hooks/use-check-latest-deploy'
 import { useRouter } from 'next/router'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import { useAppStateSnapshot } from 'state/app-state'
-import { ResizablePanel, ResizablePanelGroup, SidebarProvider } from 'ui'
+import { ResizablePanel, ResizablePanelGroup } from 'ui'
 
-import { BannerStack } from '../ui/BannerStack/BannerStack'
-import { BannerStackProvider } from '../ui/BannerStack/BannerStackProvider'
+import { DefaultLayoutProviders } from './DefaultLayoutProviders'
 import { LayoutHeader } from './Navigation/LayoutHeader/LayoutHeader'
 import MobileNavigationBar from './Navigation/NavigationBar/MobileNavigationBar'
-import { MobileSheetProvider } from './Navigation/NavigationBar/MobileSheetContext'
-import { StudioMobileSheetNav } from './Navigation/NavigationBar/StudioMobileSheetNav'
 import { DefaultLayoutV2 } from './NavigationV2/DefaultLayoutV2'
 import { LayoutSidebar } from './ProjectLayout/LayoutSidebar'
-import { LayoutSidebarProvider } from './ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
-import { ProjectContextProvider } from './ProjectLayout/ProjectContext'
 
 export interface DefaultLayoutProps {
   headerTitle?: string
@@ -43,7 +38,11 @@ export const DefaultLayout = ({
   const isNavigationV2 = useIsNavigationV2Enabled()
 
   if (isNavigationV2) {
-    return <DefaultLayoutV2 headerTitle={headerTitle}>{children}</DefaultLayoutV2>
+    return (
+      <DefaultLayoutV2 headerTitle={headerTitle} hideMobileMenu={hideMobileMenu}>
+        {children}
+      </DefaultLayoutV2>
+    )
   }
 
   return (
@@ -58,7 +57,6 @@ const DefaultLayoutV1 = ({
   headerTitle,
   hideMobileMenu,
 }: PropsWithChildren<DefaultLayoutProps>) => {
-  const { ref } = useParams()
   const router = useRouter()
   const appSnap = useAppStateSnapshot()
 
@@ -93,56 +91,45 @@ const DefaultLayoutV1 = ({
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <LayoutSidebarProvider>
-        <ProjectContextProvider projectRef={ref}>
-          <MobileSheetProvider>
-            <BannerStackProvider>
-              <div className="flex flex-col h-screen w-screen">
-                {/* Top Banner */}
-                <AppBannerWrapper />
-                <div className="flex-shrink-0">
-                  <MobileNavigationBar
-                    hideMobileMenu={hideMobileMenu}
-                    backToDashboardURL={backToDashboardURL}
-                  />
-                  <LayoutHeader headerTitle={headerTitle} backToDashboardURL={backToDashboardURL} />
-                </div>
-                {/* Main Content Area */}
-                <div className="flex flex-1 w-full overflow-y-hidden">
-                  {/* Sidebar - Only show for project pages, not account pages */}
-                  {!router.pathname.startsWith('/account') && <Sidebar />}
-                  {/* Main Content with Layout Sidebar */}
-                  <ResizablePanelGroup
-                    orientation="horizontal"
-                    className="h-full w-full overflow-x-hidden flex-1 flex flex-row gap-0"
-                    autoSaveId="default-layout-content"
-                  >
-                    <ResizablePanel
-                      id="panel-content"
-                      className="w-full"
-                      minSize={`${contentMinSizePercentage}`}
-                      maxSize={`${contentMaxSizePercentage}`}
-                      defaultSize={`${contentMaxSizePercentage}`}
-                    >
-                      <div className="h-full overflow-y-auto">{children}</div>
-                    </ResizablePanel>
-                    <LayoutSidebar
-                      minSize={`${100 - contentMaxSizePercentage}`}
-                      maxSize={`${100 - contentMinSizePercentage}`}
-                      defaultSize={`${100 - contentMaxSizePercentage}`}
-                    />
-                  </ResizablePanelGroup>
-                </div>
-              </div>
-
-              <BannerStack />
-              <StudioMobileSheetNav />
-            </BannerStackProvider>
-          </MobileSheetProvider>
-        </ProjectContextProvider>
-      </LayoutSidebarProvider>
-    </SidebarProvider>
+    <DefaultLayoutProviders>
+      <div className="flex flex-col h-screen w-screen">
+        {/* Top Banner */}
+        <AppBannerWrapper />
+        <div className="flex-shrink-0">
+          <MobileNavigationBar
+            hideMobileMenu={hideMobileMenu}
+            backToDashboardURL={backToDashboardURL}
+          />
+          <LayoutHeader headerTitle={headerTitle} backToDashboardURL={backToDashboardURL} />
+        </div>
+        {/* Main Content Area */}
+        <div className="flex flex-1 w-full overflow-y-hidden">
+          {/* Sidebar - Only show for project pages, not account pages */}
+          {!router.pathname.startsWith('/account') && <Sidebar />}
+          {/* Main Content with Layout Sidebar */}
+          <ResizablePanelGroup
+            orientation="horizontal"
+            className="h-full w-full overflow-x-hidden flex-1 flex flex-row gap-0"
+            autoSaveId="default-layout-content"
+          >
+            <ResizablePanel
+              id="panel-content"
+              className="w-full"
+              minSize={`${contentMinSizePercentage}`}
+              maxSize={`${contentMaxSizePercentage}`}
+              defaultSize={`${contentMaxSizePercentage}`}
+            >
+              <div className="h-full overflow-y-auto">{children}</div>
+            </ResizablePanel>
+            <LayoutSidebar
+              minSize={`${100 - contentMaxSizePercentage}`}
+              maxSize={`${100 - contentMinSizePercentage}`}
+              defaultSize={`${100 - contentMaxSizePercentage}`}
+            />
+          </ResizablePanelGroup>
+        </div>
+      </div>
+    </DefaultLayoutProviders>
   )
 }
 

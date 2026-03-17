@@ -1,20 +1,19 @@
-import { useBreakpoint, useParams } from 'common'
+import { LOCAL_STORAGE_KEYS, useBreakpoint } from 'common'
 import { AppBannerWrapper } from 'components/interfaces/App/AppBannerWrapper'
-import { MobileSheetProvider } from 'components/layouts/Navigation/NavigationBar/MobileSheetContext'
-import { StudioMobileSheetNav } from 'components/layouts/Navigation/NavigationBar/StudioMobileSheetNav'
-import { LayoutSidebarProvider } from 'components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
-import { ProjectContextProvider } from 'components/layouts/ProjectLayout/ProjectContext'
-import { BannerStack } from 'components/ui/BannerStack/BannerStack'
-import { BannerStackProvider } from 'components/ui/BannerStack/BannerStackProvider'
+import MobileNavigationBar from 'components/layouts/Navigation/NavigationBar/MobileNavigationBar'
+import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useRouter } from 'next/router'
 import { PropsWithChildren } from 'react'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup, SidebarProvider } from 'ui'
+import { useAppStateSnapshot } from 'state/app-state'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'ui'
 
+import { DefaultLayoutProviders } from '../DefaultLayoutProviders'
 import { AppSidebarV2 } from './AppSidebarV2'
 import { RightRailLayout } from './RightIconRail'
 
 export interface DefaultLayoutV2Props {
   headerTitle?: string
+  hideMobileMenu?: boolean
 }
 
 const leftSidebarMinSize = 180
@@ -33,60 +32,68 @@ const leftSidebarDefaultSize = '250px'
  * when the navigation V2 feature flag is enabled. The key difference is that there is no longer a
  * secondary product menu sidebar - all navigation is handled in the primary sidebar with collapsible groups.
  */
-export const DefaultLayoutV2 = ({ children }: PropsWithChildren<DefaultLayoutV2Props>) => {
-  const { ref } = useParams()
+export const DefaultLayoutV2 = ({
+  children,
+  hideMobileMenu,
+}: PropsWithChildren<DefaultLayoutV2Props>) => {
   const router = useRouter()
-  const isMobile = useBreakpoint('md')
+  const appSnap = useAppStateSnapshot()
   const scope = router.pathname.startsWith('/project') ? 'project' : 'organization'
-  const showLeftSidebar = !router.pathname.startsWith('/account') && !isMobile
+  const showLeftSidebar = !router.pathname.startsWith('/account')
+
+  const [lastVisitedOrganization] = useLocalStorageQuery(
+    LOCAL_STORAGE_KEYS.LAST_VISITED_ORGANIZATION,
+    ''
+  )
+
+  const backToDashboardURL = router.pathname.startsWith('/account')
+    ? appSnap.lastRouteBeforeVisitingAccountPage.length > 0
+      ? appSnap.lastRouteBeforeVisitingAccountPage
+      : !!lastVisitedOrganization
+        ? `/org/${lastVisitedOrganization}`
+        : '/organizations'
+    : undefined
 
   return (
-    <ProjectContextProvider projectRef={ref}>
-      <LayoutSidebarProvider>
-        <MobileSheetProvider>
-          <BannerStackProvider>
-            <div className="flex h-dvh w-screen flex-col overflow-hidden">
-              <AppBannerWrapper />
-              <RightRailLayout>
-                <SidebarProvider defaultOpen={true} className="h-full min-h-0 overflow-hidden">
-                  {showLeftSidebar ? (
-                    <ResizablePanelGroup
-                      orientation="horizontal"
-                      autoSaveId="default-layout-v2-left-sidebar"
-                      className="h-full w-full overflow-hidden"
-                    >
-                      <ResizablePanel
-                        id="panel-v2-left-sidebar"
-                        minSize={leftSidebarMinSize}
-                        maxSize={leftSidebarMaxSize}
-                        defaultSize={leftSidebarDefaultSize}
-                        className="h-full min-h-0 overflow-hidden"
-                      >
-                        <AppSidebarV2 scope={scope} />
-                      </ResizablePanel>
-                      <ResizableHandle withHandle className="hidden md:flex bg-background" />
-                      <ResizablePanel
-                        id="panel-v2-main-content"
-                        // minSize={`${100 - contentMaxSizePercentage}`}
-                        // maxSize={`${100 - contentMinSizePercentage}`}
-                        // defaultSize={`${100 - contentMaxSizePercentage}`}
-                        className="h-full min-h-0 min-w-0 overflow-hidden"
-                      >
-                        <div className="flex h-full min-h-0 flex-1 overflow-hidden">{children}</div>
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
-                  ) : (
-                    <div className="flex h-full min-h-0 flex-1 overflow-hidden">{children}</div>
-                  )}
-                </SidebarProvider>
-              </RightRailLayout>
-            </div>
-            <BannerStack />
-            <StudioMobileSheetNav />
-          </BannerStackProvider>
-        </MobileSheetProvider>
-      </LayoutSidebarProvider>
-    </ProjectContextProvider>
+    <DefaultLayoutProviders>
+      <div className="flex flex-col h-screen w-screen">
+        <AppBannerWrapper />
+        <div className="flex-shrink-0">
+          <MobileNavigationBar
+            hideMobileMenu={hideMobileMenu}
+            backToDashboardURL={backToDashboardURL}
+          />
+        </div>
+        <RightRailLayout>
+          {showLeftSidebar ? (
+            <ResizablePanelGroup
+              orientation="horizontal"
+              autoSaveId="default-layout-v2-left-sidebar"
+              className="h-full w-full overflow-hidden"
+            >
+              <ResizablePanel
+                id="panel-v2-left-sidebar"
+                minSize={leftSidebarMinSize}
+                maxSize={leftSidebarMaxSize}
+                defaultSize={leftSidebarDefaultSize}
+                className="h-full min-h-0 overflow-hidden"
+              >
+                <AppSidebarV2 scope={scope} />
+              </ResizablePanel>
+              <ResizableHandle withHandle className="hidden md:flex bg-background" />
+              <ResizablePanel
+                id="panel-v2-main-content"
+                className="h-full min-h-0 min-w-0 overflow-hidden"
+              >
+                <div className="flex h-full min-h-0 flex-1 overflow-hidden">{children}</div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            <div className="flex h-full min-h-0 flex-1 overflow-hidden">{children}</div>
+          )}
+        </RightRailLayout>
+      </div>
+    </DefaultLayoutProviders>
   )
 }
 
