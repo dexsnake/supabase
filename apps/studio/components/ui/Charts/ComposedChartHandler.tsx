@@ -140,7 +140,7 @@ const ComposedChartHandler = ({
   )
 
   const combinedData = useMemo(() => {
-    if (data) return data.data
+    if (data) return Array.isArray(data) ? data : data.data
 
     const isLoading = attributeQueries.some((query: any) => query.isLoading)
     if (isLoading) return undefined
@@ -205,11 +205,13 @@ const ComposedChartHandler = ({
     return combined as DataPoint[]
   }, [data, attributeQueries, attributes])
 
+  const isStackedStyle = chartStyle !== 'bar'
+
   const normalizedData = useMemo(() => {
-    if (!combinedData || !normalizeStacked) return combinedData
+    if (!combinedData || !normalizeStacked || !isStackedStyle) return combinedData
 
     const stackedAttributeNames = attributes
-      .filter((a) => a.provider !== 'reference-line' && !a.isMaxValue)
+      .filter((a) => a.provider !== 'reference-line' && !a.isMaxValue && a.enabled !== false)
       .map((a) => a.attribute)
 
     return normalizeStackedData(
@@ -217,7 +219,7 @@ const ComposedChartHandler = ({
       stackedAttributeNames,
       normalizeStacked
     )
-  }, [combinedData, normalizeStacked, attributes])
+  }, [combinedData, normalizeStacked, isStackedStyle, attributes])
 
   const loading = isLoading || attributeQueries.some((query: any) => query.isLoading)
 
