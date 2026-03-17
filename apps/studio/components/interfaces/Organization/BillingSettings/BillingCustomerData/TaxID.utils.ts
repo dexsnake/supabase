@@ -20,7 +20,11 @@ export const getEffectiveTaxCountry = (taxId: TaxId): string =>
  *
  * When billingCountry is unavailable, falls back to the stored country.
  */
-export const resolveStoredTaxId = (type: string, country: string, billingCountry?: string): TaxId | undefined => {
+export const resolveStoredTaxId = (
+  type: string,
+  country: string,
+  billingCountry?: string
+): TaxId | undefined => {
   const candidates = TAX_IDS.filter((option) => option.type === type)
   const preferredCountry = billingCountry ?? country
 

@@ -13,7 +13,10 @@ import {
 } from '@stripe/stripe-js'
 import { Form } from '@ui/components/shadcn/ui/form'
 import { TAX_IDS } from 'components/interfaces/Organization/BillingSettings/BillingCustomerData/TaxID.constants'
-import { resolveStoredTaxId, getEffectiveTaxCountry } from 'components/interfaces/Organization/BillingSettings/BillingCustomerData/TaxID.utils'
+import {
+  resolveStoredTaxId,
+  getEffectiveTaxCountry,
+} from 'components/interfaces/Organization/BillingSettings/BillingCustomerData/TaxID.utils'
 import type { CustomerAddress, CustomerTaxId } from 'data/organizations/types'
 import { getURL } from 'lib/helpers'
 import { Check, ChevronsUpDown } from 'lucide-react'

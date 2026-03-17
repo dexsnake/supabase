@@ -67,7 +67,7 @@ export const BillingCustomerData = () => {
       tax_id_value: taxId?.value,
       tax_id_name: taxId
         ? (resolveStoredTaxId(taxId.type, taxId.country, customerProfile?.address?.country)?.name ??
-            '')
+          '')
         : '',
     }),
     [customerProfile, taxId]
