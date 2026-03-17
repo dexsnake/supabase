@@ -1,0 +1,181 @@
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { FileExplorerHeader } from './FileExplorerHeader'
+import { STORAGE_SORT_BY, STORAGE_SORT_BY_ORDER, STORAGE_VIEWS } from '../Storage.constants'
+import { customRender as render } from 'tests/lib/custom-render'
+
+const {
+  mockTrack,
+  mockUseStorageExplorerStateSnapshot,
+  mockUseAsyncCheckPermissions,
+  mockIsAPIDocsSidePanelEnabled,
+} = vi.hoisted(() => ({
+  mockTrack: vi.fn(),
+  mockUseStorageExplorerStateSnapshot: vi.fn(),
+  mockUseAsyncCheckPermissions: vi.fn(),
+  mockIsAPIDocsSidePanelEnabled: vi.fn(),
+}))
+
+vi.mock('lib/telemetry/track', () => ({ useTrack: () => mockTrack }))
+vi.mock('state/storage-explorer', () => ({
+  useStorageExplorerStateSnapshot: () => mockUseStorageExplorerStateSnapshot(),
+}))
+vi.mock('hooks/misc/useCheckPermissions', () => ({
+  useAsyncCheckPermissions: () => mockUseAsyncCheckPermissions(),
+}))
+vi.mock('components/interfaces/App/FeaturePreview/FeaturePreviewContext', () => ({
+  useIsAPIDocsSidePanelEnabled: () => mockIsAPIDocsSidePanelEnabled(),
+}))
+vi.mock('components/ui/APIDocsButton', () => ({
+  APIDocsButton: () => null,
+}))
+
+function makeColumn(name: string) {
+  return {
+    id: name,
+    name,
+    status: 'READY',
+    items: [],
+  }
+}
+
+function createSnapshot(view: STORAGE_VIEWS = STORAGE_VIEWS.COLUMNS) {
+  return {
+    columns: [makeColumn('my-bucket'), makeColumn('images'), makeColumn('2024')],
+    sortBy: STORAGE_SORT_BY.NAME,
+    setSortBy: vi.fn(),
+    sortByOrder: STORAGE_SORT_BY_ORDER.ASC,
+    setSortByOrder: vi.fn(),
+    popColumn: vi.fn(),
+    popColumnAtIndex: vi.fn(),
+    popOpenedFolders: vi.fn(),
+    popOpenedFoldersAtIndex: vi.fn(),
+    fetchFoldersByPath: vi.fn().mockResolvedValue(undefined),
+    refetchAllOpenedFolders: vi.fn().mockResolvedValue(undefined),
+    addNewFolderPlaceholder: vi.fn(),
+    clearOpenedFolders: vi.fn(),
+    setSelectedFilePreview: vi.fn(),
+    selectedBucket: { id: 'bucket-id', name: 'my-bucket' },
+    isSearching: false,
+    setIsSearching: vi.fn(),
+    view,
+    setView: vi.fn(),
+  }
+}
+
+describe('FileExplorerHeader', () => {
+  beforeEach(() => {
+    mockTrack.mockReset()
+    mockUseStorageExplorerStateSnapshot.mockReset()
+    mockUseAsyncCheckPermissions.mockReset()
+    mockIsAPIDocsSidePanelEnabled.mockReset()
+
+    mockUseStorageExplorerStateSnapshot.mockReturnValue(createSnapshot())
+    mockUseAsyncCheckPermissions.mockReturnValue({ can: true })
+    mockIsAPIDocsSidePanelEnabled.mockReturnValue(false)
+  })
+
+  it('renders full breadcrumbs in column view and places Navigate before Reload', () => {
+    render(
+      <FileExplorerHeader
+        itemSearchString=""
+        setItemSearchString={vi.fn()}
+        onFilesUpload={vi.fn()}
+      />
+    )
+
+    const rootBreadcrumb = screen.getByText('my-bucket')
+    const inactiveBreadcrumb = screen.getByText('images')
+    const activeBreadcrumb = screen.getByText('2024')
+
+    expect(rootBreadcrumb).toBeInTheDocument()
+    expect(inactiveBreadcrumb).toBeInTheDocument()
+    expect(activeBreadcrumb).toBeInTheDocument()
+    expect(inactiveBreadcrumb).toHaveClass('text-foreground-lighter', 'cursor-pointer')
+    expect(activeBreadcrumb).toHaveClass('text-foreground')
+    expect(activeBreadcrumb).not.toHaveClass('text-foreground-lighter')
+
+    const navigateButton = screen.getByRole('button', { name: 'Navigate' })
+    const reloadButton = screen.getByRole('button', { name: 'Reload' })
+
+    expect(navigateButton.compareDocumentPosition(reloadButton) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy()
+  })
+
+  it('uses breadcrumb clicks to navigate back to a previous folder level', async () => {
+    const snapshot = createSnapshot()
+    mockUseStorageExplorerStateSnapshot.mockReturnValue(snapshot)
+
+    render(
+      <FileExplorerHeader
+        itemSearchString=""
+        setItemSearchString={vi.fn()}
+        onFilesUpload={vi.fn()}
+      />
+    )
+
+    await userEvent.click(screen.getByText('images'))
+
+    expect(snapshot.popColumnAtIndex).toHaveBeenCalledWith(1)
+    expect(snapshot.popOpenedFoldersAtIndex).toHaveBeenCalledWith(0)
+  })
+
+  it('opens path edit mode from Navigate and tracks the click', async () => {
+    render(
+      <FileExplorerHeader
+        itemSearchString=""
+        setItemSearchString={vi.fn()}
+        onFilesUpload={vi.fn()}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Navigate' }))
+
+    expect(mockTrack).toHaveBeenCalledWith('storage_explorer_navigate_clicked')
+    expect(screen.getByDisplayValue('images/2024')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Go to folder' })).toBeInTheDocument()
+  })
+
+  it('submits a path, tracks the submission, and calls the existing path navigation flow', async () => {
+    const snapshot = createSnapshot()
+    mockUseStorageExplorerStateSnapshot.mockReturnValue(snapshot)
+
+    render(
+      <FileExplorerHeader
+        itemSearchString=""
+        setItemSearchString={vi.fn()}
+        onFilesUpload={vi.fn()}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Navigate' }))
+
+    const input = screen.getByDisplayValue('images/2024')
+    await userEvent.clear(input)
+    await userEvent.type(input, 'archive/2025')
+    await userEvent.click(screen.getByRole('button', { name: 'Go to folder' }))
+
+    await waitFor(() => {
+      expect(snapshot.fetchFoldersByPath).toHaveBeenCalledWith({ paths: ['archive', '2025'] })
+    })
+
+    expect(mockTrack).toHaveBeenCalledWith('storage_explorer_navigate_clicked')
+    expect(mockTrack).toHaveBeenCalledWith('storage_explorer_navigate_submitted')
+  })
+
+  it('does not render Navigate in list view', () => {
+    mockUseStorageExplorerStateSnapshot.mockReturnValue(createSnapshot(STORAGE_VIEWS.LIST))
+
+    render(
+      <FileExplorerHeader
+        itemSearchString=""
+        setItemSearchString={vi.fn()}
+        onFilesUpload={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: 'Navigate' })).not.toBeInTheDocument()
+  })
+})

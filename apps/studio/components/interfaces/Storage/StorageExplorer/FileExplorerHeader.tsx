@@ -3,10 +3,11 @@ import { useIsAPIDocsSidePanelEnabled } from 'components/interfaces/App/FeatureP
 import { APIDocsButton } from 'components/ui/APIDocsButton'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
+import { useTrack } from 'lib/telemetry/track'
 import { compact, isEqual, noop } from 'lodash'
 import {
+  ArrowLeft,
   Check,
-  ChevronLeft,
   ChevronRight,
   Columns,
   Edit2,
@@ -53,33 +54,6 @@ const SORT_ORDER_OPTIONS = [
   { key: STORAGE_SORT_BY_ORDER.DESC, name: 'Descending' },
 ]
 
-const HeaderPathEdit = ({ loading, isSearching, breadcrumbs, togglePathEdit }: any) => {
-  return (
-    <div
-      className={cn('group', !loading && 'cursor-pointer')}
-      onClick={() => (!loading.isLoading ? togglePathEdit() : {})}
-    >
-      {loading.isLoading ? (
-        <div className="ml-2 flex items-center gap-x-3">
-          <Loader size={14} strokeWidth={2} className="animate-spin" />
-          <p className="text-sm text-foreground-light">{loading.message}</p>
-        </div>
-      ) : (
-        <div className="flex cursor-pointer items-center gap-x-3">
-          {breadcrumbs.length > 1 && (
-            <p className="ml-2 text-sm truncate">{breadcrumbs[breadcrumbs.length - 1] || ''}</p>
-          )}
-          {!isSearching && (
-            <Button type="text" icon={<Edit2 />} className="transition opacity-0 hover:opacity-100">
-              Navigate
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 const HeaderBreadcrumbs = ({
   loading,
   isSearching,
@@ -118,19 +92,32 @@ const HeaderBreadcrumbs = ({
     </div>
   ) : (
     <div className={`ml-3 flex items-center ${isSearching && 'max-w-[140px] overflow-x-auto'}`}>
-      {formattedBreadcrumbs.map((crumb, idx: number) => (
-        <div className="flex items-center" key={crumb.name}>
-          {idx !== 0 && <ChevronRight size={10} strokeWidth={2} className="mx-3" />}
-          <p
-            key={crumb.name}
-            className={`truncate text-sm ${crumb.name !== ellipsis ? 'cursor-pointer' : ''}`}
-            style={{ maxWidth: '6rem' }}
-            onClick={() => (crumb.name !== ellipsis ? selectBreadcrumb(crumb.index) : {})}
-          >
-            {crumb.name}
-          </p>
-        </div>
-      ))}
+      {formattedBreadcrumbs.map((crumb, idx: number) => {
+        const isEllipsis = crumb.name === ellipsis
+        const isActive = crumb.index === breadcrumbs.length - 1
+
+        return (
+          <div className="flex items-center" key={crumb.name}>
+            {idx !== 0 && (
+              <ChevronRight size={14} strokeWidth={2} className="text-foreground-muted mx-1" />
+            )}
+            <p
+              className={cn(
+                'truncate text-sm transition-colors',
+                isEllipsis && 'text-foreground-light',
+                !isEllipsis && isActive && 'text-foreground',
+                !isEllipsis &&
+                  !isActive &&
+                  'cursor-pointer text-foreground-lighter hover:text-foreground'
+              )}
+              style={{ maxWidth: '6rem' }}
+              onClick={() => (!isEllipsis && !isActive ? selectBreadcrumb(crumb.index) : {})}
+            >
+              {crumb.name}
+            </p>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -148,6 +135,7 @@ export const FileExplorerHeader = ({
 }: FileExplorerHeader) => {
   const snap = useStorageExplorerStateSnapshot()
   const isNewAPIDocsEnabled = useIsAPIDocsSidePanelEnabled()
+  const track = useTrack()
 
   const [pathString, setPathString] = useState('')
   const [loading, setLoading] = useState({ isLoading: false, message: '' })
@@ -217,6 +205,7 @@ export const FileExplorerHeader = ({
       event.preventDefault()
       event.stopPropagation()
     }
+    track('storage_explorer_navigate_submitted')
     setIsEditingPath(false)
     onSetPathByString(compact(pathString.split('/')))
   }
@@ -264,6 +253,11 @@ export const FileExplorerHeader = ({
     setIsRefreshing(false)
   }
 
+  const onOpenNavigate = () => {
+    track('storage_explorer_navigate_clicked')
+    togglePathEdit()
+  }
+
   return (
     <div
       className={cn(
@@ -275,17 +269,20 @@ export const FileExplorerHeader = ({
       {/* Navigation */}
       <div className={`flex items-center ${isEditingPath ? 'w-1/2' : ''}`}>
         {breadcrumbs.length > 1 && (
-          <Button
-            icon={<ChevronLeft size={16} strokeWidth={2} />}
-            size="tiny"
-            type="text"
-            className="opacity-100 px-1"
-            disabled={backDisabled}
-            onClick={() => {
-              setIsEditingPath(false)
-              onSelectBack()
-            }}
-          />
+          <>
+            <Button
+              icon={<ArrowLeft size={16} strokeWidth={2} />}
+              size="tiny"
+              type="text"
+              className="opacity-100 px-1"
+              disabled={backDisabled}
+              onClick={() => {
+                setIsEditingPath(false)
+                onSelectBack()
+              }}
+            />
+            <div className="mx-1 h-5 border-r border-strong" />
+          </>
         )}
         {isEditingPath ? (
           <form className="ml-2 flex-grow">
@@ -317,13 +314,6 @@ export const FileExplorerHeader = ({
               ]}
             />
           </form>
-        ) : snap.view === STORAGE_VIEWS.COLUMNS ? (
-          <HeaderPathEdit
-            loading={loading}
-            isSearching={snap.isSearching}
-            breadcrumbs={breadcrumbs}
-            togglePathEdit={togglePathEdit}
-          />
         ) : breadcrumbs.length > 1 ? (
           <HeaderBreadcrumbs
             loading={loading}
@@ -337,6 +327,17 @@ export const FileExplorerHeader = ({
       {/* Actions */}
       <div className="flex items-center">
         <div className="flex items-center space-x-1 px-2">
+          {snap.view === STORAGE_VIEWS.COLUMNS && (
+            <Button
+              size="tiny"
+              icon={<Edit2 />}
+              type="text"
+              disabled={isEditingPath || loading.isLoading}
+              onClick={onOpenNavigate}
+            >
+              Navigate
+            </Button>
+          )}
           <Button
             size="tiny"
             icon={<RefreshCw />}
