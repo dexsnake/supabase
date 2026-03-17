@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 
 import { BillingCustomerDataFormValues, BillingCustomerDataSchema } from './BillingCustomerDataForm'
 import { TAX_IDS } from './TaxID.constants'
-import { getTaxIdCountry, sanitizeTaxIdValue } from './TaxID.utils'
+import { getEffectiveTaxCountry, sanitizeTaxIdValue } from './TaxID.utils'
 import { components } from 'api-types'
 import type { CustomerAddress } from 'data/organizations/types'
 
@@ -88,7 +88,7 @@ export function useBillingCustomerDataForm({
                 value: values.tax_id_value,
                 name: form.getValues().tax_id_name,
               }),
-              country: getTaxIdCountry(selectedTaxId),
+              country: getEffectiveTaxCountry(selectedTaxId),
             }
           : null,
     })

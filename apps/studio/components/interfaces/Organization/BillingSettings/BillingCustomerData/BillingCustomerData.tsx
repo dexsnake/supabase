@@ -25,7 +25,7 @@ import {
   BillingCustomerDataForm,
   type BillingCustomerDataFormValues,
 } from './BillingCustomerDataForm'
-import { findTaxIdOption } from './TaxID.utils'
+import { resolveStoredTaxId } from './TaxID.utils'
 import { useBillingCustomerDataForm } from './useBillingCustomerDataForm'
 
 export const BillingCustomerData = () => {
@@ -66,7 +66,8 @@ export const BillingCustomerData = () => {
       tax_id_type: taxId?.type,
       tax_id_value: taxId?.value,
       tax_id_name: taxId
-        ? findTaxIdOption(taxId.type, taxId.country, customerProfile?.address?.country)?.name || ''
+        ? (resolveStoredTaxId(taxId.type, taxId.country, customerProfile?.address?.country)?.name ??
+            '')
         : '',
     }),
     [customerProfile, taxId]
