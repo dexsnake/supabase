@@ -96,10 +96,12 @@ describe('FileExplorerHeader', () => {
     expect(inactiveBreadcrumb).toHaveClass('text-foreground-lighter', 'cursor-pointer')
     expect(activeBreadcrumb).toHaveClass('text-foreground')
     expect(activeBreadcrumb).not.toHaveClass('text-foreground-lighter')
+    expect(rootBreadcrumb.parentElement?.parentElement).not.toHaveClass('overflow-x-auto')
 
     const navigateButton = screen.getByRole('button', { name: 'Navigate' })
     const reloadButton = screen.getByRole('button', { name: 'Reload' })
 
+    expect(navigateButton.parentElement?.parentElement).toHaveClass('overflow-x-auto')
     expect(navigateButton.compareDocumentPosition(reloadButton) & Node.DOCUMENT_POSITION_FOLLOWING)
       .toBeTruthy()
   })
@@ -134,6 +136,8 @@ describe('FileExplorerHeader', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Navigate' }))
 
     expect(mockTrack).toHaveBeenCalledWith('storage_explorer_navigate_clicked')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Navigate to folder')).toBeInTheDocument()
     expect(screen.getByDisplayValue('images/2024')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Go to folder' })).toBeInTheDocument()
   })

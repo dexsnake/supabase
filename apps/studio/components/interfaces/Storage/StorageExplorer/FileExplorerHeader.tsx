@@ -13,7 +13,7 @@ import {
   Edit2,
   FolderPlus,
   List,
-  Loader,
+  LoaderCircle,
   RefreshCw,
   Search,
   Upload,
@@ -24,6 +24,12 @@ import { useStorageExplorerStateSnapshot } from 'state/storage-explorer'
 import {
   Button,
   cn,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogSection,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -32,8 +38,9 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  Input,
+  Label_Shadcn_,
 } from 'ui'
+import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { STORAGE_SORT_BY, STORAGE_SORT_BY_ORDER, STORAGE_VIEWS } from '../Storage.constants'
 
@@ -54,14 +61,69 @@ const SORT_ORDER_OPTIONS = [
   { key: STORAGE_SORT_BY_ORDER.DESC, name: 'Descending' },
 ]
 
+interface NavigateDialogProps {
+  open: boolean
+  pathString: string
+  onOpenChange: (open: boolean) => void
+  onPathStringChange: (event: any) => void
+  onCancel: () => void
+  onSubmit: (event?: any) => void
+}
+
+const NavigateDialog = ({
+  open,
+  pathString,
+  onOpenChange,
+  onPathStringChange,
+  onCancel,
+  onSubmit,
+}: NavigateDialogProps) => {
+  const inputId = 'storage-explorer-navigate-path'
+  const descriptionId = 'storage-explorer-navigate-path-description'
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent size="small" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Navigate to folder</DialogTitle>
+        </DialogHeader>
+        <DialogSection className="flex flex-col gap-y-2">
+          <Label_Shadcn_ htmlFor={inputId}>Path</Label_Shadcn_>
+          <Input
+            id={inputId}
+            autoFocus
+            size="small"
+            value={pathString}
+            onChange={onPathStringChange}
+            placeholder="parent/child/grandchild"
+            aria-describedby={descriptionId}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') onSubmit(event)
+            }}
+          />
+          <p id={descriptionId} className="text-sm text-foreground-lighter">
+            Enter a folder path within this bucket.
+          </p>
+        </DialogSection>
+        <DialogFooter>
+          <Button type="default" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="primary" onClick={onSubmit}>
+            Navigate
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 const HeaderBreadcrumbs = ({
   loading,
-  isSearching,
   breadcrumbs,
   selectBreadcrumb,
 }: {
   loading: { isLoading: boolean; message: string }
-  isSearching: boolean
   breadcrumbs: string[]
   selectBreadcrumb: (i: number) => void
 }) => {
@@ -87,17 +149,17 @@ const HeaderBreadcrumbs = ({
 
   return loading.isLoading ? (
     <div className="ml-2 flex items-center">
-      <Loader size={16} strokeWidth={2} className="animate-spin" />
+      <LoaderCircle size={14} className="animate-spin text-foreground-lighter" />
       <p className="ml-3 text-sm">{loading.message}</p>
     </div>
   ) : (
-    <div className={`ml-3 flex items-center ${isSearching && 'max-w-[140px] overflow-x-auto'}`}>
+    <div className="ml-3 flex min-w-0 flex-1 items-center overflow-hidden">
       {formattedBreadcrumbs.map((crumb, idx: number) => {
         const isEllipsis = crumb.name === ellipsis
         const isActive = crumb.index === breadcrumbs.length - 1
 
         return (
-          <div className="flex items-center" key={crumb.name}>
+          <div className="flex shrink-0 items-center" key={crumb.name}>
             {idx !== 0 && (
               <ChevronRight size={14} strokeWidth={2} className="text-foreground-muted mx-1" />
             )}
@@ -140,7 +202,7 @@ export const FileExplorerHeader = ({
   const [pathString, setPathString] = useState('')
   const [loading, setLoading] = useState({ isLoading: false, message: '' })
 
-  const [isEditingPath, setIsEditingPath] = useState(false)
+  const [isPathDialogOpen, setIsPathDialogOpen] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const uploadButtonRef: any = useRef(null)
@@ -172,7 +234,7 @@ export const FileExplorerHeader = ({
     // [Joshen] Somehow toggle search triggers this despite breadcrumbs
     // being unchanged. Manually doing a prop check to fix this
     if (!isEqual(previousBreadcrumbs.current, breadcrumbs)) {
-      setIsEditingPath(false)
+      setIsPathDialogOpen(false)
       previousBreadcrumbs.current = breadcrumbs
     }
   }, [breadcrumbs])
@@ -191,7 +253,7 @@ export const FileExplorerHeader = ({
 
   /** Methods for path editings */
   const togglePathEdit = () => {
-    setIsEditingPath(true)
+    setIsPathDialogOpen(true)
     setPathString(breadcrumbs.slice(1).join('/'))
     if (snap.isSearching) onCancelSearch()
   }
@@ -206,7 +268,7 @@ export const FileExplorerHeader = ({
       event.stopPropagation()
     }
     track('storage_explorer_navigate_submitted')
-    setIsEditingPath(false)
+    setIsPathDialogOpen(false)
     onSetPathByString(compact(pathString.split('/')))
   }
 
@@ -224,14 +286,14 @@ export const FileExplorerHeader = ({
   }
 
   const cancelSetPathString = () => {
-    setIsEditingPath(false)
+    setIsPathDialogOpen(false)
   }
 
   /** Methods for searching */
   // Search is currently within local scope when the view is set to list
   // Searching for column view requires much more thinking
   const toggleSearch = () => {
-    setIsEditingPath(false)
+    setIsPathDialogOpen(false)
     snap.setIsSearching(true)
   }
 
@@ -267,57 +329,26 @@ export const FileExplorerHeader = ({
       )}
     >
       {/* Navigation */}
-      <div className={`flex items-center ${isEditingPath ? 'w-1/2' : ''}`}>
+      <div className="flex min-w-0 flex-1 items-center overflow-hidden">
         {breadcrumbs.length > 1 && (
           <>
             <Button
               icon={<ArrowLeft size={16} strokeWidth={2} />}
               size="tiny"
               type="text"
-              className="opacity-100 px-1"
+              className="shrink-0 px-1"
               disabled={backDisabled}
               onClick={() => {
-                setIsEditingPath(false)
+                setIsPathDialogOpen(false)
                 onSelectBack()
               }}
             />
-            <div className="mx-1 h-5 border-r border-strong" />
+            <div className="mx-1 h-5 shrink-0 border-r border-strong" />
           </>
         )}
-        {isEditingPath ? (
-          <form className="ml-2 flex-grow">
-            <Input
-              autoFocus
-              key="pathSet"
-              type="text"
-              size="small"
-              value={pathString}
-              onChange={onUpdatePathString}
-              placeholder="e.g Parent Folder/Child Folder"
-              actions={[
-                <Button
-                  key="cancelPath"
-                  type="default"
-                  htmlType="button"
-                  onClick={cancelSetPathString}
-                >
-                  Cancel
-                </Button>,
-                <Button
-                  key="setPath"
-                  type="primary"
-                  htmlType="submit"
-                  onClick={navigateByPathString}
-                >
-                  Go to folder
-                </Button>,
-              ]}
-            />
-          </form>
-        ) : breadcrumbs.length > 1 ? (
+        {breadcrumbs.length > 1 ? (
           <HeaderBreadcrumbs
             loading={loading}
-            isSearching={snap.isSearching}
             breadcrumbs={breadcrumbs}
             selectBreadcrumb={selectBreadcrumb}
           />
@@ -325,14 +356,14 @@ export const FileExplorerHeader = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center">
-        <div className="flex items-center space-x-1 px-2">
+      <div className="flex min-w-0 max-w-full items-center overflow-x-auto overflow-y-hidden whitespace-nowrap">
+        <div className="flex shrink-0 items-center space-x-1 px-2">
           {snap.view === STORAGE_VIEWS.COLUMNS && (
             <Button
               size="tiny"
               icon={<Edit2 />}
               type="text"
-              disabled={isEditingPath || loading.isLoading}
+              disabled={isPathDialogOpen || loading.isLoading}
               onClick={onOpenNavigate}
             >
               Navigate
@@ -409,8 +440,8 @@ export const FileExplorerHeader = ({
           </DropdownMenu>
         </div>
 
-        <div className="h-6 border-r border-control" />
-        <div className="flex items-center space-x-1 px-2">
+        <div className="h-6 shrink-0 border-r border-control" />
+        <div className="flex shrink-0 items-center space-x-1 px-2">
           <div className="hidden">
             <input ref={uploadButtonRef} type="file" multiple onChange={onFilesUpload} />
           </div>
@@ -448,8 +479,8 @@ export const FileExplorerHeader = ({
           </ButtonTooltip>
         </div>
 
-        <div className="h-6 border-r border-control" />
-        <div className="flex items-center px-2">
+        <div className="h-6 shrink-0 border-r border-control" />
+        <div className="flex shrink-0 items-center px-2">
           {snap.isSearching ? (
             <Input
               size="tiny"
@@ -484,13 +515,22 @@ export const FileExplorerHeader = ({
 
         {isNewAPIDocsEnabled && (
           <>
-            <div className="h-6 border-r border-control" />
-            <div className="mx-2">
+            <div className="h-6 shrink-0 border-r border-control" />
+            <div className="mx-2 shrink-0">
               <APIDocsButton section={['storage', selectedBucket.name]} source="storage" />
             </div>
           </>
         )}
       </div>
+
+      <NavigateDialog
+        open={isPathDialogOpen}
+        pathString={pathString}
+        onOpenChange={setIsPathDialogOpen}
+        onPathStringChange={onUpdatePathString}
+        onCancel={cancelSetPathString}
+        onSubmit={navigateByPathString}
+      />
     </div>
   )
 }
