@@ -42,7 +42,6 @@ export const DeleteOrganizationButton = () => {
   const [acknowledgedAll, setAcknowledgedAll] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  // Reset state when modal opens or org changes
   useEffect(() => {
     if (isOpen) {
       setCheckedProjects({})
@@ -57,7 +56,6 @@ export const DeleteOrganizationButton = () => {
     }))
   }
 
-  // Clearer logic (per review)
   const isDeletionConfirmed = () => {
     if (projects.length === 0) return true
 
