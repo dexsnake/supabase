@@ -13,6 +13,7 @@
     "clean": "rimraf node_modules .next .turbo"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.0.0",
     "common": "workspace:*",
     "config": "workspace:*",
     "icons": "workspace:*",
@@ -21,6 +22,7 @@
     "next-themes": "^0.3.0",
     "platform": "workspace:*",
     "react": "catalog:",
+    "react-data-grid": "7.0.0-beta.47",
     "react-dom": "catalog:",
     "ui": "workspace:*",
     "ui-patterns": "workspace:*"

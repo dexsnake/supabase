@@ -1,10 +1,44 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { AdapterProvider, TableList, TableDataGrid, CreateTableDialog } from 'platform'
+import { adapter } from '@/lib/adapter'
+import { queryClient } from '@/lib/query-client'
+
 export default function TablesPage() {
+  const [selectedTable, setSelectedTable] = useState<string | null>('todos')
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+
+  const handleTableCreated = useCallback((name: string) => {
+    setSelectedTable(name)
+  }, [])
+
   return (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-foreground">Tables</h2>
-        <p className="text-sm text-foreground-light mt-1">View and browse your database schema</p>
-      </div>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AdapterProvider adapter={adapter}>
+        <div className="flex h-full">
+          <TableList
+            selectedTable={selectedTable}
+            onSelectTable={setSelectedTable}
+            onCreateTable={() => setCreateDialogOpen(true)}
+          />
+          <div className="flex-1 overflow-hidden">
+            {selectedTable ? (
+              <TableDataGrid tableName={selectedTable} pageSize={25} />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-foreground-light">Select a table to browse its data</p>
+              </div>
+            )}
+          </div>
+          <CreateTableDialog
+            visible={createDialogOpen}
+            onClose={() => setCreateDialogOpen(false)}
+            onCreated={handleTableCreated}
+          />
+        </div>
+      </AdapterProvider>
+    </QueryClientProvider>
   )
 }

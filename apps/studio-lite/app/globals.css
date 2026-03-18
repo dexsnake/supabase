@@ -17,3 +17,46 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* react-data-grid dark mode overrides */
+.rdg {
+  @apply bg-dash-sidebar border-t;
+  --rdg-background-color: hsl(var(--background-dash-sidebar));
+  --rdg-header-background-color: hsl(var(--background-surface-200));
+  --rdg-row-hover-background-color: hsl(var(--background-surface-200));
+  --rdg-selection-color: #24b47e;
+  --rdg-border-color: hsl(var(--border-default));
+  contain: strict;
+  font-size: 13px;
+}
+
+.rdg-header-row {
+  @apply bg-surface-200;
+}
+
+.rdg-header-row .rdg-cell {
+  @apply bg-surface-200 text-foreground-light border-default border-b;
+}
+
+.rdg-row {
+  @apply bg-dash-sidebar;
+}
+
+.rdg-row:hover .rdg-cell {
+  @apply bg-surface-200;
+}
+
+.rdg-cell {
+  @apply text-foreground border-default border-r border-b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rdg-cell[aria-selected='true'] {
+  box-shadow: inset 0 0 0 1px #24b47e;
+}
+
+.rdg-cell.rdg-editor-container > * {
+  background-color: inherit;
+}

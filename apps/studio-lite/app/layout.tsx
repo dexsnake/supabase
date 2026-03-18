@@ -1,4 +1,5 @@
 import { ThemeProvider } from 'next-themes'
+import 'react-data-grid/lib/styles.css'
 import './globals.css'
 
 export const metadata = {

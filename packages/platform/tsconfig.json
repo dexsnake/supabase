@@ -1,5 +1,10 @@
 {
   "extends": "tsconfig/react-library.json",
-  "include": ["."],
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "bundler"
+  },
+  "include": [".", "../../packages/ui/src/**/*.d.ts"],
   "exclude": ["node_modules"]
 }
