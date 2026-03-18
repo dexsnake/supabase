@@ -95,7 +95,7 @@ export const getNotionEvents = async (): Promise<SupabaseEvent[]> => {
         const eventUrl = getRichText(page, 'URL')
         const meetingLink = getUrl(page, 'Book Meeting Link')
         const location = getRichText(page, 'Location')
-        const categories = getMultiSelect(page, 'Category').map((c) => c.toLowerCase())
+        const categories = ['conference']
         const speakingAnswers = getMultiSelect(page, 'Are you speaking at this event?')
         const isSpeaking = speakingAnswers.includes('Yes')
 
@@ -111,7 +111,7 @@ export const getNotionEvents = async (): Promise<SupabaseEvent[]> => {
           path: '',
           url: eventUrl || 'https://supabase.com/events',
           tags: categories,
-          categories: categories.length > 0 ? categories : ['conference'],
+          categories,
           timezone: '',
           location,
           hosts: [SUPABASE_HOST],
