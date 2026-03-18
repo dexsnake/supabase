@@ -18,7 +18,7 @@ interface UsePreventNavigationOnUnsavedChangesReturn {
    */
   handleCancel: () => void
   /*
-   * Confirm the navigation and loose the changes
+   * Confirm the navigation and lose the changes
    */
   handleConfirm: () => void
   /*
@@ -29,7 +29,7 @@ interface UsePreventNavigationOnUnsavedChangesReturn {
 }
 
 /*
- * Hook that prevent navigation when users could loose their changes.
+ * Hook that prevents navigation when users could lose their changes.
  * It prevents both NextJS and browser navigation (such as when closing the tab)
  */
 export const usePreventNavigationOnUnsavedChanges = ({
