@@ -1,9 +1,12 @@
-import { useRouter } from 'next/router'
 import { InstallationDetails } from 'components/interfaces/Organization/PrivateApps/InstallationDetails'
-import { PrivateAppsProvider, usePrivateApps } from 'components/interfaces/Organization/PrivateApps/PrivateAppsContext'
+import {
+  PrivateAppsProvider,
+  usePrivateApps,
+} from 'components/interfaces/Organization/PrivateApps/PrivateAppsContext'
 import DefaultLayout from 'components/layouts/DefaultLayout'
 import OrganizationLayout from 'components/layouts/OrganizationLayout'
 import OrganizationSettingsLayout from 'components/layouts/ProjectLayout/OrganizationSettingsLayout'
+import { useRouter } from 'next/router'
 import type { NextPageWithLayout } from 'types'
 import {
   PageHeader,
