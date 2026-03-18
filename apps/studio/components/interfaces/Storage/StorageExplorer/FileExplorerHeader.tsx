@@ -161,7 +161,7 @@ const HeaderBreadcrumbs = ({
 
   return loading.isLoading ? (
     <div className="ml-2 flex items-center">
-      <LoaderCircle size={14} className="animate-spin text-foreground-lighter" />
+      <LoaderCircle size={14} strokeWidth={2} className="animate-spin text-foreground-lighter" />
       <p className="ml-3 text-sm">{loading.message}</p>
     </div>
   ) : (
