@@ -181,7 +181,7 @@ function useBreadcrumbs() {
     const breadcrumbs = [
       { name: 'Getting started', url: '/guides/getting-started' },
       { name: 'AI Tools' },
-      { name: 'Skills', url: '/guides/getting-started/ai-skills' },
+      { name: 'Agent Skills', url: '/guides/getting-started/ai-skills' },
     ]
     return breadcrumbs
   }

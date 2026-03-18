@@ -500,7 +500,7 @@ export const gettingstarted: NavMenuConstant = {
           url: '/guides/getting-started/ai-prompts' as `/${string}`,
         },
         {
-          name: 'Skills',
+          name: 'Agent Skills',
           url: '/guides/getting-started/ai-skills' as `/${string}`,
         },
         {

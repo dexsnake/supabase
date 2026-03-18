@@ -1,35 +1,45 @@
 ---
-title: AI Skills
-subtitle: Specialized knowledge packages for working with Supabase
+title: Agent Skills
 ---
 
-Agent Skills are modular packages that extend AI assistants with specialized knowledge, workflows, and best practices for specific domains.
+Agent Skills are folders of instructions, scripts, and resources that agents can discover and use to do things more accurately and efficiently. Agents are increasingly capable, but often don't have the context they need to do real work reliably. Skills solve this by giving agents access to procedural knowledge and company-, team-, and user-specific context they can load on demand. Agents with access to a set of skills can extend their capabilities based on the task they're working on.
 
-## What are Skills?
+## Installing skills
 
-Skills provide AI-powered development tools with:
+Install all Supabase skills using the skills CLI:
 
-- Specialized workflows for specific domains
-- Best practices and optimization rules
-- Domain expertise and patterns
-- Procedural knowledge for complex tasks
+```bash
+npx skills add supabase/agent-skills
+```
 
-Unlike prompts (which are conversation-level instructions for one-off tasks), Skills load on-demand and provide reusable, filesystem-based resources that transform general-purpose agents into specialists.
+To install a specific skill from the repository:
 
-## Available Skills
+```bash
+npx skills add supabase/agent-skills --skill <skill-name>
+```
+
+### Claude code plugin
+
+You can also install the skills as Claude Code plugins:
+
+```bash
+/plugin marketplace add supabase/agent-skills
+/plugin install postgres-best-practices@supabase-agent-skills
+```
+
+Skills work with 18+ AI agents including Claude Code, GitHub Copilot, Cursor, Cline, and many others.
+
+## Available skills
 
 <AiSkillsIndex />
 
-## How to use
+## Finding more skills
 
-Skills can be integrated into various AI-powered development environments:
+Browse the [skills.sh directory](https://skills.sh) to discover skills from the community. You can also search for skills using the CLI:
 
-| Environment    | How to use                                     |
-| -------------- | ---------------------------------------------- |
-| Cursor         | Add to `.cursor/rules/*.md`                    |
-| GitHub Copilot | Reference in `.github/copilot-instructions.md` |
-| Claude Desktop | Use with MCP skill servers                     |
-| Claude Code    | Add to `.claude/skills/` directory             |
+```bash
+npx skills find <query>
+```
 
 ## Learn more
 
