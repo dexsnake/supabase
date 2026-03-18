@@ -1,8 +1,8 @@
 import { IS_PLATFORM, LOCAL_STORAGE_KEYS, useParams } from 'common'
 import {
+  convertResultsToCSV,
   convertResultsToJSON,
   convertResultsToMarkdown,
-  formatResults,
 } from 'components/interfaces/SQLEditor/UtilityPanel/Results.utils'
 import saveAs from 'file-saver'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
@@ -10,7 +10,6 @@ import { useHotKey } from 'hooks/ui/useHotKey'
 import { ChevronDown, Copy, Download, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import Papa from 'papaparse'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import {
@@ -49,27 +48,19 @@ export const DownloadResultsButton = ({
   const { ref } = useParams()
   const pathname = usePathname()
   const isLogs = pathname?.includes?.('/logs') ?? false
-  const formattedResults = useMemo(() => formatResults(results), [results])
-
   const [copyMarkdownEnabled] = useLocalStorageQuery(LOCAL_STORAGE_KEYS.HOTKEY_COPY_MARKDOWN, true)
   const [copyJsonEnabled] = useLocalStorageQuery(LOCAL_STORAGE_KEYS.HOTKEY_COPY_JSON, true)
   const [downloadCsvEnabled] = useLocalStorageQuery(LOCAL_STORAGE_KEYS.HOTKEY_DOWNLOAD_CSV, true)
 
-  const headers = useMemo(() => {
-    if (results) {
-      const firstRow = Array.from(results)[0]
-      if (firstRow) return Object.keys(firstRow)
-    }
-    return undefined
-  }, [results])
+  const isEmpty = useMemo(() => results.length === 0, [results])
 
   const downloadAsCSV = () => {
-    if (results.length === 0) {
+    const csv = convertResultsToCSV(results)
+    if (!csv) {
       toast('Results are empty')
       return
     }
 
-    const csv = Papa.unparse(formattedResults, { columns: headers })
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     saveAs(blob, `${fileName}.csv`)
     toast.success('Downloading results as CSV')
@@ -106,7 +97,7 @@ export const DownloadResultsButton = ({
       copyAsMarkdown()
     },
     'm',
-    { enabled: copyMarkdownEnabled ?? true }
+    { enabled: copyMarkdownEnabled ?? isEmpty }
   )
 
   useHotKey(
@@ -115,7 +106,7 @@ export const DownloadResultsButton = ({
       copyAsJSON()
     },
     'o',
-    { enabled: copyJsonEnabled ?? true }
+    { enabled: copyJsonEnabled ?? isEmpty }
   )
 
   useHotKey(
@@ -124,7 +115,7 @@ export const DownloadResultsButton = ({
       downloadAsCSV()
     },
     'l',
-    { enabled: downloadCsvEnabled ?? true }
+    { enabled: downloadCsvEnabled ?? isEmpty }
   )
 
   return (

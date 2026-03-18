@@ -1,4 +1,5 @@
 import { markdownTable } from 'markdown-table'
+import Papa from 'papaparse'
 
 type ResultRow = Record<string, unknown>
 
@@ -27,4 +28,19 @@ export function convertResultsToMarkdown(results: ResultRow[]): string | undefin
 export function convertResultsToJSON(results: ResultRow[]): string | undefined {
   if (results.length === 0) return undefined
   return JSON.stringify(results, null, 2)
+}
+
+export function getResultsHeaders(results: ResultRow[]): string[] | undefined {
+  const firstRow = Array.from(results)[0]
+  if (firstRow) return Object.keys(firstRow)
+  return undefined
+}
+
+export function convertResultsToCSV(results: ResultRow[]): string | undefined {
+  if (results.length === 0) return undefined
+
+  const headers = getResultsHeaders(results)
+  const formatted = formatResults(results)
+
+  return Papa.unparse(formatted, { columns: headers })
 }
