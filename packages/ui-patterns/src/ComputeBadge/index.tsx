@@ -20,7 +20,7 @@ export function ComputeBadge({ infraComputeSize, className, ...props }: ComputeB
     <div
       className={cn(
         // Base styles
-        'inline-flex items-center justify-center rounded-md text-center font-mono uppercase',
+        'inline-flex items-center justify-center rounded text-center font-mono uppercase',
         'whitespace-nowrap font-medium tracking-[0.06em] text-[11px] leading-[1.1] px-[5.5px] py-[3px]',
         'transition-all',
         // Variant styles

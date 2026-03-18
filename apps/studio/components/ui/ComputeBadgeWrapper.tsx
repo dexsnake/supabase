@@ -26,6 +26,7 @@ interface ComputeBadgeWrapperProps {
   projectRef?: string
   cloudProvider?: string
   computeSize?: ProjectDetail['infra_compute_size']
+  badgeClassName?: string
 }
 
 export const ComputeBadgeWrapper = ({
@@ -33,6 +34,7 @@ export const ComputeBadgeWrapper = ({
   projectRef,
   cloudProvider,
   computeSize,
+  badgeClassName,
 }: ComputeBadgeWrapperProps) => {
   // handles the state of the hover card
   // once open it will fetch the addons
@@ -80,7 +82,7 @@ export const ComputeBadgeWrapper = ({
     <HoverCard onOpenChange={() => setOpenState(!open)} openDelay={280}>
       <HoverCardTrigger asChild className="group" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center">
-          <ComputeBadge infraComputeSize={computeSize} />
+          <ComputeBadge infraComputeSize={computeSize} className={badgeClassName} />
         </div>
       </HoverCardTrigger>
       <HoverCardContent
