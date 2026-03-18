@@ -37,6 +37,7 @@ export interface ComposedChartHandlerProps {
   showLegend?: boolean
   showTotal?: boolean
   showMaxValue?: boolean
+  normalizeVisibleStackToPercent?: boolean
   updateDateRange?: UpdateDateRange
   valuePrecision?: number
   isVisible?: boolean
