@@ -12,9 +12,10 @@ message = "Invalid JWT"
 A 401 response from an Edge Function means either:
 
 - The function failed the [legacy auth verification check](/docs/guides/functions/development-tips#skipping-authorization-checks)
-- Your function code explicitly returned a 401 response
+- Your function's logic deliberately returned a 401 response
 
 ## Quick triage
+
 
 Check the response body returned by the request
 
@@ -34,7 +35,7 @@ Go to: [Built-in JWT check failures](#built-in-jwt-check-failures)
 
 ### Case 2: Custom message or empty body
 
-If the body contains a message you wrote, or nothing at all, then your function code _did_ execute and returned a 401 itself.
+If the response body contains a message you coded, or nothing at all, then your function code _did_ execute and returned a 401 itself.
 
 Go to: [Your function returned a 401](#your-function-returned-a-401)
 
@@ -89,7 +90,7 @@ Depending on the output, you can use this table to find the appropriate debuggin
 
 ## Your function returned a 401
 
-The auth check passed (or is disabled). Your function ran, and somewhere in your code it's logic returned a 401.
+Your function ran, and somewhere in your code, its logic returned a 401.
 
 **Example:**
 
@@ -103,7 +104,7 @@ return new Response(JSON.stringify(data), {
 **How to fix:**
 
 1. Search your function code for `401`. Look for explicit status codes on `Response` objects.
-2. Trace the condition that triggered it. If you're interacting with a third-party API in your code, that service may be returning 401 and you're forwarding it.
+2. Trace the condition that triggered it. If you're interacting with a third-party API in your code, that service may be returning 401 that you're forwarding in the response object.
 3. Add logging before the return so future occurrences leave a trace:
 
 ```js
@@ -148,7 +149,7 @@ supabase functions deploy YOUR_FUNCTION_NAME --no-verify-jwt
 
 **Option C: Management API**
 
-Disable the legacy auth check with the [Supabase Management API](https://supabase.com/docs/reference/api/introduction):
+Disable the legacy auth check with the [Supabase Management API](/docs/reference/api/introduction):
 
 1. Generate a token at [Account Preferences](/dashboard/account/tokens).
 2. Get your project ID from [General Settings](/dashboard/project/_/settings/general).
@@ -170,6 +171,13 @@ The built-in check is enabled and the key you sent is properly formatted but doe
 
 **Fix (alternative):** If you want to keep the built-in check, ensure you're sending a valid key. Use one of your [legacy API keys](/dashboard/project/_/settings/api-keys/legacy) with the [Supabase client library](https://supabase.com/docs/guides/api/rest/client-libs) when making your request.
 
+```js
+const supabase = createClient(
+    'https://xyzcompany.supabase.co', 
+    'anon-key-or-service_role-key'
+)
+```
+
 ### Missing Authorization header
 
 The built-in check is enabled but your request has no `Authorization` header at all.
@@ -188,7 +196,13 @@ Alternatively, you can disable the built-in check entirely (see [Incompatible ke
 
 ## Additional resources
 
-- [Securing Edge Functions](/docs/guides/functions/auth)
-- [Debugging Edge Functions](/docs/guides/functions/logging)
+- [Securing Edge Functions with Auth](/docs/guides/functions/auth)
+- [Logging Edge Function Requests](/docs/guides/functions/logging)
+- [Error Handling Edge Functions](/docs/guides/functions/error-handling)
 - [Quickstart: Dashboard deployment](/docs/guides/functions/quickstart-dashboard)
 - [Quickstart: CLI deployment](/docs/guides/functions/quickstart)
+
+## Still Stuck?
+
+- Check the [Discord](https://discord.com/channels/839993398554656828/1006358244786196510), [Supabase GitHub Discussions](https://github.com/orgs/supabase/discussions), and [Reddit page](https://www.reddit.com/r/Supabase/) for similar reports that can help with debugging
+- Open a [support ticket](/dashboard/support/new) for your project if the problem persists and you believe it is a platform issue 
