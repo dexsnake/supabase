@@ -1,19 +1,13 @@
-import { formatDistanceToNow } from 'date-fns'
+import dayjs from 'dayjs'
 import { Edit, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  Button,
-  ScrollArea,
-  Separator,
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  cn,
-} from 'ui'
+import { Button, ScrollArea, Sheet, SheetContent, SheetHeader, cn } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import CopyButton from 'components/ui/CopyButton'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
+import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import { EditScopeModal } from './EditScopeModal'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
@@ -23,36 +17,39 @@ interface ViewInstallationSheetProps {
   onClose: () => void
 }
 
-export function ViewInstallationSheet({ installation, visible, onClose }: ViewInstallationSheetProps) {
-  const { slug, apps, toggleInstallationStatus, deleteInstallation } = usePrivateApps()
+export function ViewInstallationSheet({
+  installation,
+  visible,
+  onClose,
+}: ViewInstallationSheetProps) {
+  const { slug, apps, removeInstallation } = usePrivateApps()
   const [showEditScope, setShowEditScope] = useState(false)
   const [showUninstallModal, setShowUninstallModal] = useState(false)
 
   const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
   const allProjects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
-  const app = apps.find((a) => a.id === installation?.appId)
+  const { mutate: deleteInstallation, isPending: isDeleting } =
+    usePlatformAppInstallationDeleteMutation({
+      onSuccess: (_, vars) => {
+        removeInstallation(vars.installationId)
+        toast.success('App uninstalled')
+        setShowUninstallModal(false)
+        onClose()
+      },
+    })
 
+  const app = apps.find((a) => a.id === installation?.app_id)
+  const appName = app?.name ?? installation?.app_id ?? ''
+  const projectScope = installation?.projectScope ?? 'all'
   const scopeProjects =
-    installation && installation.projectScope !== 'all'
-      ? allProjects.filter((p) => (installation.projectScope as string[]).includes(p.ref))
+    projectScope !== 'all'
+      ? allProjects.filter((p) => (projectScope as string[]).includes(p.ref))
       : []
 
-  const orgPermissions: { id: string; label: string; description: string }[] = []
-  const projectPermissions: { id: string; label: string; description: string }[] = []
-
-  function handleToggleStatus() {
-    if (!installation) return
-    toggleInstallationStatus(installation.id)
-    toast.success(`Installation ${installation.status === 'active' ? 'suspended' : 'activated'}`)
-  }
-
   function handleUninstall() {
-    if (!installation) return
-    deleteInstallation(installation.id)
-    toast.success(`Uninstalled "${installation.appName}"`)
-    setShowUninstallModal(false)
-    onClose()
+    if (!installation || !slug) return
+    deleteInstallation({ slug, installationId: installation.id })
   }
 
   return (
@@ -63,59 +60,47 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
           size="default"
           className="!min-w-[600px] flex flex-col h-full gap-0"
         >
-          <SheetHeader className={cn('flex flex-row justify-between gap-x-4 items-center border-b')}>
-            <p className="truncate font-medium">{installation?.appName}</p>
+          <SheetHeader
+            className={cn('flex flex-row justify-between gap-x-4 items-center border-b')}
+          >
+            <p className="truncate font-medium">{appName}</p>
             <Button type="text" icon={<X size={16} />} className="px-1" onClick={onClose} />
           </SheetHeader>
 
           <ScrollArea className="flex-1 max-h-[calc(100vh-60px)]">
             {installation && (
-              <div className="space-y-0">
-                {/* App info */}
-                <div className="px-5 sm:px-6 py-6 space-y-3">
-                  <h3 className="text-sm font-medium">App Information</h3>
-                  <div className="border border-default rounded-lg divide-y divide-default">
+              <div className="space-y-8 px-5 sm:px-6 py-6">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">Installation Details</h3>
+                  <div className="border border-border rounded-lg divide-y divide-border">
                     <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">App name</span>
-                      <span className="text-sm">{installation.appName}</span>
+                      <span className="text-sm text-foreground-light w-28 shrink-0">App</span>
+                      <span className="text-sm font-medium">{appName}</span>
                     </div>
                     <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">Client ID</span>
+                      <span className="text-sm text-foreground-light w-28 shrink-0">App ID</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-mono text-sm truncate">{installation.appId}</span>
+                        <span className="font-mono text-sm truncate">{installation.app_id}</span>
                         <CopyButton
                           type="default"
                           iconOnly
-                          text={installation.appId}
+                          text={installation.app_id}
                           className="px-1 shrink-0"
                         />
                       </div>
                     </div>
                     <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">Status</span>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          installation.status === 'active'
-                            ? 'bg-brand/20 text-brand'
-                            : 'bg-warning/20 text-warning'
-                        }`}
-                      >
-                        {installation.status === 'active' ? 'Active' : 'Suspended'}
-                      </span>
-                    </div>
-                    <div className="flex items-center px-4 py-3 gap-4">
                       <span className="text-sm text-foreground-light w-28 shrink-0">Installed</span>
-                      <span className="text-sm">
-                        {formatDistanceToNow(installation.installedAt, { addSuffix: true })}
-                      </span>
+                      <TimestampInfo
+                        utcTimestamp={installation.created_at}
+                        label={dayjs(installation.created_at).fromNow()}
+                        className="text-sm text-foreground-light"
+                      />
                     </div>
                   </div>
                 </div>
 
-                <Separator />
-
-                {/* Project scope */}
-                <div className="px-5 sm:px-6 py-6 space-y-3">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium">Project Scope</h3>
                     <Button
@@ -127,8 +112,8 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
                       Edit scope
                     </Button>
                   </div>
-                  <div className="border border-default rounded-lg p-4">
-                    {installation.projectScope === 'all' ? (
+                  <div className="border border-border rounded-lg p-4">
+                    {projectScope === 'all' ? (
                       <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs font-medium">
                         All projects
                       </span>
@@ -147,104 +132,9 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
                   </div>
                 </div>
 
-                <Separator />
-
-                {/* Granted permissions */}
-                <div className="px-5 sm:px-6 py-6 space-y-3">
-                  <h3 className="text-sm font-medium">Granted Permissions</h3>
-                  <div className="border border-default rounded-lg">
-                    {orgPermissions.length === 0 && projectPermissions.length === 0 ? (
-                      <div className="px-4 py-3">
-                        <p className="text-sm text-foreground-muted italic">
-                          No permissions information available
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        {orgPermissions.length > 0 && (
-                          <>
-                            <div className="px-3 py-2 bg-surface-100 rounded-t-lg">
-                              <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                                Organization
-                              </p>
-                            </div>
-                            {orgPermissions.map((p, i) => (
-                              <div key={p!.id}>
-                                <div className="px-4 py-3 flex items-start gap-3">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                                  <div>
-                                    <p className="text-sm font-mono">{p!.label}</p>
-                                    <p className="text-xs text-foreground-light">{p!.description}</p>
-                                  </div>
-                                </div>
-                                {i < orgPermissions.length - 1 && (
-                                  <div className="border-t border-border" />
-                                )}
-                              </div>
-                            ))}
-                          </>
-                        )}
-
-                        {orgPermissions.length > 0 && projectPermissions.length > 0 && (
-                          <div className="border-t border-border" />
-                        )}
-
-                        {projectPermissions.length > 0 && (
-                          <>
-                            <div
-                              className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}
-                            >
-                              <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                                Project
-                              </p>
-                            </div>
-                            {projectPermissions.map((p, i) => (
-                              <div key={p!.id}>
-                                <div className="px-4 py-3 flex items-start gap-3">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                                  <div>
-                                    <p className="text-sm font-mono">{p!.label}</p>
-                                    <p className="text-xs text-foreground-light">{p!.description}</p>
-                                  </div>
-                                </div>
-                                {i < projectPermissions.length - 1 && (
-                                  <div className="border-t border-border" />
-                                )}
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Danger zone */}
-                <div className="px-5 sm:px-6 py-6 space-y-3">
+                <div className="space-y-3">
                   <h3 className="text-sm font-medium text-destructive">Danger Zone</h3>
-                  <div className="border border-destructive/30 rounded-lg divide-y divide-default">
-                    <div className="flex items-center justify-between px-4 py-3 gap-4">
-                      <div>
-                        <p className="text-sm font-medium">
-                          {installation.status === 'active'
-                            ? 'Suspend installation'
-                            : 'Activate installation'}
-                        </p>
-                        <p className="text-xs text-foreground-light">
-                          {installation.status === 'active'
-                            ? 'Temporarily disable token generation for this installation'
-                            : 'Re-enable token generation for this installation'}
-                        </p>
-                      </div>
-                      <Button
-                        type={installation.status === 'active' ? 'warning' : 'default'}
-                        onClick={handleToggleStatus}
-                      >
-                        {installation.status === 'active' ? 'Suspend' : 'Activate'}
-                      </Button>
-                    </div>
+                  <div className="border border-destructive/30 rounded-lg">
                     <div className="flex items-center justify-between px-4 py-3 gap-4">
                       <div>
                         <p className="text-sm font-medium">Uninstall app</p>
@@ -277,14 +167,15 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
       <ConfirmationModal
         variant="destructive"
         visible={showUninstallModal}
-        title={`Uninstall "${installation?.appName}"`}
+        title={`Uninstall "${appName}"`}
         confirmLabel="Uninstall"
+        confirmLabelLoading="Uninstalling..."
         onCancel={() => setShowUninstallModal(false)}
         onConfirm={handleUninstall}
       >
         <p className="text-sm text-foreground-light py-2">
-          Are you sure you want to uninstall <strong>{installation?.appName}</strong>? Any tokens
-          generated through this installation will stop working.
+          Are you sure you want to uninstall <strong>{appName}</strong>? Any tokens generated
+          through this installation will stop working.
         </p>
       </ConfirmationModal>
     </>

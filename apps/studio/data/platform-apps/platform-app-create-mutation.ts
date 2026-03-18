@@ -36,6 +36,10 @@ export const usePlatformAppCreateMutation = ({
     mutationFn: (vars) => createPlatformApp(vars),
     async onSuccess(data, variables, context) {
       await queryClient.invalidateQueries({ queryKey: platformAppKeys.list(variables.slug) })
+      // Seed the detail cache so ViewAppSheet can show permissions without a separate GET call
+      if (data?.id) {
+        queryClient.setQueryData(platformAppKeys.detail(variables.slug, data.id), data)
+      }
       await onSuccess?.(data, variables, context)
     },
     async onError(data, variables, context) {

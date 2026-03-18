@@ -19,22 +19,32 @@ import {
   SelectValue_Shadcn_,
 } from 'ui'
 import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
-import { Installation, usePrivateApps } from './PrivateAppsContext'
+import { usePlatformAppInstallationCreateMutation } from 'data/platform-apps/platform-app-installation-create-mutation'
+import { usePrivateApps } from './PrivateAppsContext'
 
 interface CreateInstallationModalProps {
   visible: boolean
   onClose: () => void
-  onCreated: (installation: Installation) => void
 }
 
-export function CreateInstallationModal({
-  visible,
-  onClose,
-  onCreated,
-}: CreateInstallationModalProps) {
-  const { slug, apps, createInstallation } = usePrivateApps()
+export function CreateInstallationModal({ visible, onClose }: CreateInstallationModalProps) {
+  const { slug, apps, addInstallation } = usePrivateApps()
   const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
   const projects = projectsData?.pages.flatMap((p) => p.projects) ?? []
+
+  const { mutate: installApp, isPending: isInstalling } =
+    usePlatformAppInstallationCreateMutation({
+      onSuccess: (data) => {
+        if (data) {
+          const scope: 'all' | string[] =
+            scopeType === 'all' ? 'all' : Array.from(selectedProjects)
+          addInstallation(data, scope)
+        }
+        reset()
+        onClose()
+      },
+    })
+
   const [selectedAppId, setSelectedAppId] = useState('')
   const [scopeType, setScopeType] = useState<'all' | 'selected'>('all')
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set())
@@ -51,32 +61,21 @@ export function CreateInstallationModal({
   }
 
   function handleInstall() {
-    const projectScope: 'all' | string[] =
-      scopeType === 'all' ? 'all' : Array.from(selectedProjects)
-    const installation = createInstallation({ appId: selectedAppId, projectScope })
-    reset()
-    onCreated(installation)
+    if (!slug || !selectedAppId) return
+    installApp({ slug, app_id: selectedAppId })
   }
 
-  function toggleProject(id: string) {
+  function toggleProject(ref: string) {
     setSelectedProjects((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
+      if (next.has(ref)) next.delete(ref)
+      else next.add(ref)
       return next
     })
   }
 
-  const selectedApp = apps.find((a) => a.id === selectedAppId)
-
   const canInstall =
-    selectedAppId !== '' &&
-    (scopeType === 'all' || selectedProjects.size > 0)
-
-  const appPermissions: { id: string; label: string; description: string }[] = []
+    selectedAppId !== '' && (scopeType === 'all' || selectedProjects.size > 0)
 
   return (
     <Dialog open={visible} onOpenChange={(open) => !open && handleClose()}>
@@ -89,7 +88,6 @@ export function CreateInstallationModal({
         </DialogHeader>
 
         <DialogSection className="space-y-5">
-          {/* App selector */}
           <div className="space-y-2">
             <Label_Shadcn_>Select app</Label_Shadcn_>
             {apps.length === 0 ? (
@@ -97,10 +95,7 @@ export function CreateInstallationModal({
                 No private apps available. Create an app first.
               </p>
             ) : (
-              <Select_Shadcn_
-                value={selectedAppId}
-                onValueChange={setSelectedAppId}
-              >
+              <Select_Shadcn_ value={selectedAppId} onValueChange={setSelectedAppId}>
                 <SelectTrigger_Shadcn_>
                   <SelectValue_Shadcn_ placeholder="Choose an app..." />
                 </SelectTrigger_Shadcn_>
@@ -115,22 +110,6 @@ export function CreateInstallationModal({
             )}
           </div>
 
-          {/* Permissions preview */}
-          {selectedApp && appPermissions.length > 0 && (
-            <div className="space-y-2">
-              <Label_Shadcn_>Permissions requested by this app</Label_Shadcn_>
-              <div className="rounded-md border border-control bg-surface-100 p-3 space-y-1 max-h-36 overflow-y-auto">
-                {appPermissions.map((p) => (
-                  <div key={p!.id} className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-foreground-light">{p!.label}</span>
-                    <span className="text-xs text-foreground-muted">— {p!.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Project scope */}
           <div className="space-y-3">
             <Label_Shadcn_>Project scope</Label_Shadcn_>
             <RadioGroup_Shadcn_
@@ -153,36 +132,38 @@ export function CreateInstallationModal({
             </RadioGroup_Shadcn_>
 
             {scopeType === 'selected' && (
-              <div className="ml-6 space-y-2 rounded-md border border-control p-3">
-                {projects.map((project) => (
-                  <label key={project.ref} className="flex items-center gap-3 cursor-pointer">
-                    <Checkbox_Shadcn_
-                      id={project.ref}
-                      checked={selectedProjects.has(project.ref)}
-                      onCheckedChange={() => toggleProject(project.ref)}
-                    />
-                    <Label_Shadcn_ htmlFor={project.ref} className="cursor-pointer font-normal">
-                      {project.name}
-                    </Label_Shadcn_>
-                  </label>
-                ))}
+              <div className="ml-6 space-y-2 rounded-md border border-control p-3 max-h-48 overflow-y-auto">
+                {projects.length === 0 ? (
+                  <p className="text-sm text-foreground-light">No projects found.</p>
+                ) : (
+                  projects.map((project) => (
+                    <label key={project.ref} className="flex items-center gap-3 cursor-pointer">
+                      <Checkbox_Shadcn_
+                        id={project.ref}
+                        checked={selectedProjects.has(project.ref)}
+                        onCheckedChange={() => toggleProject(project.ref)}
+                      />
+                      <Label_Shadcn_ htmlFor={project.ref} className="cursor-pointer font-normal">
+                        {project.name}
+                      </Label_Shadcn_>
+                    </label>
+                  ))
+                )}
               </div>
             )}
           </div>
-
-          {/* Warning */}
-          {selectedApp && (
-            <p className="text-xs text-foreground-muted">
-              This installation will grant all requested permissions to the selected projects.
-            </p>
-          )}
         </DialogSection>
 
         <DialogFooter>
-          <Button type="default" onClick={handleClose}>
+          <Button type="default" onClick={handleClose} disabled={isInstalling}>
             Cancel
           </Button>
-          <Button type="primary" disabled={!canInstall} onClick={handleInstall}>
+          <Button
+            type="primary"
+            disabled={!canInstall}
+            loading={isInstalling}
+            onClick={handleInstall}
+          >
             Install
           </Button>
         </DialogFooter>

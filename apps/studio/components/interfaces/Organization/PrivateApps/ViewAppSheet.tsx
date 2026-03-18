@@ -33,10 +33,11 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
   const [nameValue, setNameValue] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  const { data: detail, isLoading: isLoadingDetail } = usePlatformAppQuery(
-    { slug, id: app?.id },
-    { enabled: visible && app !== null }
-  )
+  const {
+    data: detail,
+    isLoading: isLoadingDetail,
+    error: detailError,
+  } = usePlatformAppQuery({ slug, id: app?.id }, { enabled: visible && app !== null })
 
   const { mutate: updateApp, isPending: isUpdating } = usePlatformAppUpdateMutation({
     onSuccess: () => {

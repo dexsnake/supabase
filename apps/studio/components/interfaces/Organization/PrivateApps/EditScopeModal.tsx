@@ -22,7 +22,7 @@ interface EditScopeModalProps {
 }
 
 export function EditScopeModal({ installation, visible, onClose }: EditScopeModalProps) {
-  const { slug, updateInstallationScope } = usePrivateApps()
+  const { slug, setProjectScope } = usePrivateApps()
   const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
   const projects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
@@ -34,7 +34,6 @@ export function EditScopeModal({ installation, visible, onClose }: EditScopeModa
     new Set(currentScope === 'all' ? [] : (currentScope as string[]))
   )
 
-  // Sync when installation changes
   function initState() {
     const scope = installation?.projectScope ?? 'all'
     setScopeType(scope === 'all' ? 'all' : 'selected')
@@ -50,7 +49,7 @@ export function EditScopeModal({ installation, visible, onClose }: EditScopeModa
     if (!installation) return
     const projectScope: 'all' | string[] =
       scopeType === 'all' ? 'all' : Array.from(selectedProjects)
-    updateInstallationScope(installation.id, projectScope)
+    setProjectScope(installation.id, projectScope)
     onClose()
   }
 

@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 
 import type { components } from 'api-types'
-import { get, handleError } from 'data/fetchers'
+import { constructHeaders, fetchHandler, handleError } from 'data/fetchers'
+import { API_URL } from 'lib/constants'
 import type { ResponseError, UseCustomQueryOptions } from 'types'
 import { platformAppKeys } from './keys'
 
@@ -10,19 +11,23 @@ export type PlatformAppVariables = {
   id?: string
 }
 
-export type PlatformAppDetail = components['schemas']['CreatePlatformAppResponse']
+export type PlatformAppDetail = components['schemas']['GetPlatformAppResponse']
 
 export async function getPlatformApp({ slug, id }: PlatformAppVariables, signal?: AbortSignal) {
   if (!slug) throw new Error('slug is required')
   if (!id) throw new Error('id is required')
 
-  const { data, error } = await get('/platform/organizations/{slug}/apps/{id}', {
-    params: { path: { slug, app_id: id } },
-    signal,
-  })
+  const baseUrl = API_URL?.replace('/platform', '')
+  const url = `${baseUrl}/platform/organizations/${slug}/apps/${id}`
+  const headers = await constructHeaders()
+  const res = await fetchHandler(url, { method: 'GET', headers, signal })
 
-  if (error) handleError(error)
-  return data
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    handleError(body)
+  }
+
+  return res.json() as Promise<PlatformAppDetail>
 }
 
 export type PlatformAppData = Awaited<ReturnType<typeof getPlatformApp>>

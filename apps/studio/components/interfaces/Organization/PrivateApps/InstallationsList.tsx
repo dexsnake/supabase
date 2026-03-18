@@ -20,33 +20,31 @@ import {
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
+import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import { CreateInstallationModal } from './CreateInstallationModal'
-import { ViewInstallationSheet } from './ViewInstallationSheet'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
-  const { installations, deleteInstallation, toggleInstallationStatus } = usePrivateApps()
+  const { installations, apps, slug, removeInstallation } = usePrivateApps()
+  const { mutate: deleteInstallation, isPending: isDeleting } =
+    usePlatformAppInstallationDeleteMutation({
+      onSuccess: (_, vars) => {
+        removeInstallation(vars.installationId)
+        toast.success(`App uninstalled`)
+        setInstallationToDelete(null)
+      },
+    })
 
   const [showCreate, setShowCreate] = useState(false)
-  const [viewInstallation, setViewInstallation] = useState<Installation | null>(null)
   const [installationToDelete, setInstallationToDelete] = useState<Installation | null>(null)
 
-  function handleCreated(installation: Installation) {
-    setShowCreate(false)
-    setViewInstallation(installation)
+  function getAppName(appId: string) {
+    return apps.find((a) => a.id === appId)?.name ?? appId
   }
 
   function handleDelete() {
-    if (!installationToDelete) return
-    deleteInstallation(installationToDelete.id)
-    toast.success(`Uninstalled "${installationToDelete.appName}"`)
-    setInstallationToDelete(null)
-  }
-
-  function getScopeLabel(projectScope: 'all' | string[]) {
-    if (projectScope === 'all') return 'All projects'
-    const count = projectScope.length
-    return count === 1 ? '1 project' : `${count} projects`
+    if (!installationToDelete || !slug) return
+    deleteInstallation({ slug, installationId: installationToDelete.id })
   }
 
   return (
@@ -54,7 +52,7 @@ export function InstallationsList() {
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
           <p className="text-sm text-foreground-light">
-            Manage where private apps are installed across your organization's projects.
+            Manage where private apps are installed across your organization.
           </p>
           <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
             Install app
@@ -96,43 +94,32 @@ export function InstallationsList() {
                   <TableHead>App name</TableHead>
                   <TableHead>Scope</TableHead>
                   <TableHead>Installed</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {installations.map((inst) => (
+                {installations.map((inst) => {
+                  const scope = inst.projectScope
+                  const scopeLabel =
+                    scope === 'all'
+                      ? 'All projects'
+                      : scope.length === 1
+                        ? '1 project'
+                        : `${scope.length} projects`
+                  return (
                   <TableRow key={inst.id}>
-                    <TableCell>
-                      <button
-                        className="font-medium hover:underline text-left"
-                        onClick={() => setViewInstallation(inst)}
-                      >
-                        {inst.appName}
-                      </button>
-                    </TableCell>
+                    <TableCell className="font-medium">{getAppName(inst.app_id)}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs">
-                        {getScopeLabel(inst.projectScope)}
+                        {scopeLabel}
                       </span>
                     </TableCell>
                     <TableCell>
                       <TimestampInfo
-                        utcTimestamp={inst.installedAt.toISOString()}
-                        label={dayjs(inst.installedAt).fromNow()}
+                        utcTimestamp={inst.created_at}
+                        label={dayjs(inst.created_at).fromNow()}
                         className="text-sm text-foreground-light"
                       />
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          inst.status === 'active'
-                            ? 'bg-brand/20 text-brand'
-                            : 'bg-warning/20 text-warning'
-                        }`}
-                      >
-                        {inst.status === 'active' ? 'Active' : 'Suspended'}
-                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -144,12 +131,6 @@ export function InstallationsList() {
                           />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" side="bottom" className="w-40">
-                          <DropdownMenuItem onClick={() => setViewInstallation(inst)}>
-                            View details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toggleInstallationStatus(inst.id)}>
-                            {inst.status === 'active' ? 'Suspend' : 'Activate'}
-                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="!text-destructive gap-x-2"
@@ -162,7 +143,8 @@ export function InstallationsList() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </Card>
@@ -172,26 +154,21 @@ export function InstallationsList() {
       <CreateInstallationModal
         visible={showCreate}
         onClose={() => setShowCreate(false)}
-        onCreated={handleCreated}
-      />
-
-      <ViewInstallationSheet
-        installation={viewInstallation}
-        visible={viewInstallation !== null}
-        onClose={() => setViewInstallation(null)}
       />
 
       <ConfirmationModal
         variant="destructive"
         visible={installationToDelete !== null}
-        title={`Uninstall "${installationToDelete?.appName}"`}
+        title={`Uninstall "${getAppName(installationToDelete?.app_id ?? '')}"`}
         confirmLabel="Uninstall"
+        confirmLabelLoading="Uninstalling..."
         onCancel={() => setInstallationToDelete(null)}
         onConfirm={handleDelete}
       >
         <p className="text-sm text-foreground-light py-2">
-          Are you sure you want to uninstall <strong>{installationToDelete?.appName}</strong>? Any
-          tokens generated through this installation will stop working.
+          Are you sure you want to uninstall{' '}
+          <strong>{getAppName(installationToDelete?.app_id ?? '')}</strong>? Any tokens generated
+          through this installation will stop working.
         </p>
       </ConfirmationModal>
     </>
