@@ -1,16 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { SIDEBAR_KEYS } from 'components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
+import { useForm } from 'react-hook-form'
 import {
   Card,
   CardContent,
+  Form_Shadcn_,
   FormControl_Shadcn_,
   FormField_Shadcn_,
-  Form_Shadcn_,
   KeyboardShortcut,
   Switch,
 } from 'ui'
@@ -23,11 +21,15 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
+import * as z from 'zod'
 
 const HotkeySchema = z.object({
   commandMenuEnabled: z.boolean(),
   aiAssistantEnabled: z.boolean(),
   inlineEditorEnabled: z.boolean(),
+  copyMarkdownEnabled: z.boolean(),
+  copyJsonEnabled: z.boolean(),
+  downloadCsvEnabled: z.boolean(),
 })
 
 export const HotkeySettings = () => {
@@ -43,6 +45,18 @@ export const HotkeySettings = () => {
     LOCAL_STORAGE_KEYS.HOTKEY_SIDEBAR(SIDEBAR_KEYS.AI_ASSISTANT),
     true
   )
+  const [copyMarkdownEnabled, setCopyMarkdownEnabled] = useLocalStorageQuery(
+    LOCAL_STORAGE_KEYS.HOTKEY_COPY_MARKDOWN,
+    true
+  )
+  const [copyJsonEnabled, setCopyJsonEnabled] = useLocalStorageQuery(
+    LOCAL_STORAGE_KEYS.HOTKEY_COPY_JSON,
+    true
+  )
+  const [downloadCsvEnabled, setDownloadCsvEnabled] = useLocalStorageQuery(
+    LOCAL_STORAGE_KEYS.HOTKEY_DOWNLOAD_CSV,
+    true
+  )
 
   const form = useForm<z.infer<typeof HotkeySchema>>({
     resolver: zodResolver(HotkeySchema),
@@ -50,6 +64,9 @@ export const HotkeySettings = () => {
       commandMenuEnabled: commandMenuEnabled ?? true,
       aiAssistantEnabled: aiAssistantEnabled ?? true,
       inlineEditorEnabled: inlineEditorEnabled ?? true,
+      copyMarkdownEnabled: copyMarkdownEnabled ?? true,
+      copyJsonEnabled: copyJsonEnabled ?? true,
+      downloadCsvEnabled: downloadCsvEnabled ?? true,
     },
   })
 
@@ -120,7 +137,7 @@ export const HotkeySettings = () => {
                 )}
               />
             </CardContent>
-            <CardContent>
+            <CardContent className="border-b">
               <FormField_Shadcn_
                 control={form.control}
                 name="inlineEditorEnabled"
@@ -140,6 +157,87 @@ export const HotkeySettings = () => {
                         onCheckedChange={(value) => {
                           field.onChange(value)
                           setInlineEditorEnabled(value)
+                        }}
+                      />
+                    </FormControl_Shadcn_>
+                  </FormItemLayout>
+                )}
+              />
+            </CardContent>
+            <CardContent className="border-b">
+              <FormField_Shadcn_
+                control={form.control}
+                name="copyMarkdownEnabled"
+                render={({ field }) => (
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={
+                      <div className="flex items-center gap-x-3">
+                        <KeyboardShortcut keys={['Meta', 'm']} />
+                        <span>Copy results as Markdown</span>
+                      </div>
+                    }
+                  >
+                    <FormControl_Shadcn_>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(value) => {
+                          field.onChange(value)
+                          setCopyMarkdownEnabled(value)
+                        }}
+                      />
+                    </FormControl_Shadcn_>
+                  </FormItemLayout>
+                )}
+              />
+            </CardContent>
+            <CardContent className="border-b">
+              <FormField_Shadcn_
+                control={form.control}
+                name="copyJsonEnabled"
+                render={({ field }) => (
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={
+                      <div className="flex items-center gap-x-3">
+                        <KeyboardShortcut keys={['Meta', 'o']} />
+                        <span>Copy results as JSON</span>
+                      </div>
+                    }
+                  >
+                    <FormControl_Shadcn_>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(value) => {
+                          field.onChange(value)
+                          setCopyJsonEnabled(value)
+                        }}
+                      />
+                    </FormControl_Shadcn_>
+                  </FormItemLayout>
+                )}
+              />
+            </CardContent>
+            <CardContent>
+              <FormField_Shadcn_
+                control={form.control}
+                name="downloadCsvEnabled"
+                render={({ field }) => (
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={
+                      <div className="flex items-center gap-x-3">
+                        <KeyboardShortcut keys={['Meta', 'l']} />
+                        <span>Download results as CSV</span>
+                      </div>
+                    }
+                  >
+                    <FormControl_Shadcn_>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(value) => {
+                          field.onChange(value)
+                          setDownloadCsvEnabled(value)
                         }}
                       />
                     </FormControl_Shadcn_>
