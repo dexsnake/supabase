@@ -3,16 +3,7 @@ import { LOCAL_STORAGE_KEYS } from 'common'
 import { SIDEBAR_KEYS } from 'components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useForm } from 'react-hook-form'
-import {
-  Card,
-  CardContent,
-  Form_Shadcn_,
-  FormControl_Shadcn_,
-  FormField_Shadcn_,
-  KeyboardShortcut,
-  Switch,
-} from 'ui'
-import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import { Card, Form_Shadcn_ } from 'ui'
 import {
   PageSection,
   PageSectionContent,
@@ -22,6 +13,8 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 import * as z from 'zod'
+
+import { HotkeyToggle } from './HotkeyToggle'
 
 const HotkeySchema = z.object({
   commandMenuEnabled: z.boolean(),
@@ -83,168 +76,49 @@ export const HotkeySettings = () => {
       <PageSectionContent>
         <Form_Shadcn_ {...form}>
           <Card>
-            <CardContent className="border-b">
-              <FormField_Shadcn_
-                control={form.control}
-                name="commandMenuEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'k']} />
-                        <span>Command menu</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setCommandMenuEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
-            <CardContent className="border-b">
-              <FormField_Shadcn_
-                control={form.control}
-                name="aiAssistantEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'i']} />
-                        <span>AI Assistant Panel</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setAiAssistantEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
-            <CardContent className="border-b">
-              <FormField_Shadcn_
-                control={form.control}
-                name="inlineEditorEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'e']} />
-                        <span>Inline SQL Editor Panel</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setInlineEditorEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
-            <CardContent className="border-b">
-              <FormField_Shadcn_
-                control={form.control}
-                name="copyMarkdownEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'm']} />
-                        <span>Copy results as Markdown</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setCopyMarkdownEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
-            <CardContent className="border-b">
-              <FormField_Shadcn_
-                control={form.control}
-                name="copyJsonEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'o']} />
-                        <span>Copy results as JSON</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setCopyJsonEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
-            <CardContent>
-              <FormField_Shadcn_
-                control={form.control}
-                name="downloadCsvEnabled"
-                render={({ field }) => (
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={
-                      <div className="flex items-center gap-x-3">
-                        <KeyboardShortcut keys={['Meta', 'l']} />
-                        <span>Download results as CSV</span>
-                      </div>
-                    }
-                  >
-                    <FormControl_Shadcn_>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(value) => {
-                          field.onChange(value)
-                          setDownloadCsvEnabled(value)
-                        }}
-                      />
-                    </FormControl_Shadcn_>
-                  </FormItemLayout>
-                )}
-              />
-            </CardContent>
+            <HotkeyToggle
+              form={form}
+              name="commandMenuEnabled"
+              keys={['Meta', 'k']}
+              label="Command menu"
+              onToggle={setCommandMenuEnabled}
+            />
+            <HotkeyToggle
+              form={form}
+              name="aiAssistantEnabled"
+              keys={['Meta', 'i']}
+              label="AI Assistant Panel"
+              onToggle={setAiAssistantEnabled}
+            />
+            <HotkeyToggle
+              form={form}
+              name="inlineEditorEnabled"
+              keys={['Meta', 'e']}
+              label="Inline SQL Editor Panel"
+              onToggle={setInlineEditorEnabled}
+            />
+            <HotkeyToggle
+              form={form}
+              name="copyMarkdownEnabled"
+              keys={['Meta', 'm']}
+              label="Copy results as Markdown"
+              onToggle={setCopyMarkdownEnabled}
+            />
+            <HotkeyToggle
+              form={form}
+              name="copyJsonEnabled"
+              keys={['Meta', 'o']}
+              label="Copy results as JSON"
+              onToggle={setCopyJsonEnabled}
+            />
+            <HotkeyToggle
+              form={form}
+              name="downloadCsvEnabled"
+              keys={['Meta', 'l']}
+              label="Download results as CSV"
+              onToggle={setDownloadCsvEnabled}
+              isLast
+            />
           </Card>
         </Form_Shadcn_>
       </PageSectionContent>
