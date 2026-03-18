@@ -65,10 +65,10 @@ export const DeleteOrganizationButton = () => {
     }
   }, [isOpen, orgSlug])
 
-  const toggleProject = (ref: string) => {
+  const toggleProject = (ref: string, checked?: boolean | 'indeterminate') => {
     setCheckedProjects((prev) => ({
       ...prev,
-      [ref]: !prev[ref],
+      [ref]: checked === undefined ? !prev[ref] : checked === true,
     }))
   }
 
