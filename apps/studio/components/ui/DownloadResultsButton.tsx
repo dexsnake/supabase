@@ -148,21 +148,21 @@ export const DownloadResultsButton = ({
           <Copy size={14} />
           <p>Copy as markdown</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'M']} />
+            <KeyboardShortcut keys={['Meta', 'm']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyAsJSON} className="gap-x-2">
           <Copy size={14} />
           <p>Copy as JSON</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'O']} />
+            <KeyboardShortcut keys={['Meta', 'o']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem className="gap-x-2" onClick={() => downloadAsCSV()}>
           <Download size={14} />
           <p>Download CSV</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'L']} />
+            <KeyboardShortcut keys={['Meta', 'l']} />
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
