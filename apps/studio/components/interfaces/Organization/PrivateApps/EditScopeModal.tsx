@@ -12,7 +12,7 @@ import {
   RadioGroupItem_Shadcn_,
   RadioGroup_Shadcn_,
 } from 'ui'
-import { MOCK_PROJECTS } from './PrivateApps.constants'
+import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 interface EditScopeModalProps {
@@ -22,7 +22,9 @@ interface EditScopeModalProps {
 }
 
 export function EditScopeModal({ installation, visible, onClose }: EditScopeModalProps) {
-  const { updateInstallationScope } = usePrivateApps()
+  const { slug, updateInstallationScope } = usePrivateApps()
+  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
+  const projects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
   const currentScope = installation?.projectScope ?? 'all'
   const [scopeType, setScopeType] = useState<'all' | 'selected'>(
@@ -95,15 +97,15 @@ export function EditScopeModal({ installation, visible, onClose }: EditScopeModa
 
           {scopeType === 'selected' && (
             <div className="ml-6 space-y-2 rounded-md border border-control p-3">
-              {MOCK_PROJECTS.map((project) => (
-                <label key={project.id} className="flex items-center gap-3 cursor-pointer">
+              {projects.map((project) => (
+                <label key={project.ref} className="flex items-center gap-3 cursor-pointer">
                   <Checkbox_Shadcn_
-                    id={`edit-${project.id}`}
-                    checked={selectedProjects.has(project.id)}
-                    onCheckedChange={() => toggleProject(project.id)}
+                    id={`edit-${project.ref}`}
+                    checked={selectedProjects.has(project.ref)}
+                    onCheckedChange={() => toggleProject(project.ref)}
                   />
                   <Label_Shadcn_
-                    htmlFor={`edit-${project.id}`}
+                    htmlFor={`edit-${project.ref}`}
                     className="cursor-pointer font-normal"
                   >
                     {project.name}

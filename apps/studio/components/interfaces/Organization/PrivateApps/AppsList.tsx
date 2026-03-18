@@ -14,43 +14,48 @@ import {
 import { Admonition } from 'ui-patterns'
 import Table from 'components/to-be-cleaned/Table'
 import CopyButton from 'components/ui/CopyButton'
+import type { components } from 'api-types'
+import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
 import { CreateAppSheet } from './CreateAppSheet'
 import { DeleteAppModal } from './DeleteAppModal'
 import { ViewAppSheet } from './ViewAppSheet'
 import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
 
+type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppResponse']
+
 interface NewAppKey {
-  app: PrivateApp
-  privateKey: string
+  app: CreatePlatformAppResponse
   confirmed: boolean
 }
 
 export function AppsList() {
-  const { apps, deleteApp } = usePrivateApps()
+  const { apps, isLoading, slug } = usePrivateApps()
+  const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
+    onSuccess: (_, vars) => {
+      toast.success(`Deleted app`)
+      if (appToDelete?.id === vars.appId) setAppToDelete(null)
+    },
+  })
 
   const [showCreate, setShowCreate] = useState(false)
   const [newAppKey, setNewAppKey] = useState<NewAppKey | null>(null)
   const [viewApp, setViewApp] = useState<PrivateApp | null>(null)
   const [appToDelete, setAppToDelete] = useState<PrivateApp | null>(null)
 
-  function handleCreated(app: PrivateApp, privateKey: string) {
+  function handleCreated(app: CreatePlatformAppResponse) {
     setShowCreate(false)
-    setNewAppKey({ app, privateKey, confirmed: false })
-  }
-
-  function handleKeyDismiss() {
-    setNewAppKey(null)
+    setNewAppKey({ app, confirmed: false })
   }
 
   function handleCopyKey() {
     if (!newAppKey) return
-    navigator.clipboard.writeText(newAppKey.privateKey)
+    navigator.clipboard.writeText(newAppKey.app.signing_key.private_key)
     toast.success('Private key copied to clipboard')
   }
 
   function handleDownloadKey() {
     if (!newAppKey) return
-    const blob = new Blob([newAppKey.privateKey], { type: 'text/plain' })
+    const blob = new Blob([newAppKey.app.signing_key.private_key], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -60,14 +65,8 @@ export function AppsList() {
   }
 
   function handleDelete() {
-    if (!appToDelete) return
-    deleteApp(appToDelete.id)
-    toast.success(`Deleted "${appToDelete.name}"`)
-    setAppToDelete(null)
-  }
-
-  function getPermissionsLabel(permissions: string[]) {
-    return permissions.length === 1 ? '1 permission' : `${permissions.length} permissions`
+    if (!appToDelete || !slug) return
+    deleteApp({ slug, appId: appToDelete.id })
   }
 
   return (
@@ -94,7 +93,7 @@ export function AppsList() {
                   type="text"
                   icon={<X />}
                   className="w-7 h-7 absolute top-2.5 right-2.5"
-                  onClick={handleKeyDismiss}
+                  onClick={() => setNewAppKey(null)}
                 />
               ) : undefined
             }
@@ -106,8 +105,8 @@ export function AppsList() {
                   <span className="font-medium">{newAppKey.app.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground-light">Client ID</span>
-                  <span className="font-mono text-xs">{newAppKey.app.clientId}</span>
+                  <span className="text-foreground-light">App ID</span>
+                  <span className="font-mono text-xs">{newAppKey.app.id}</span>
                 </div>
               </div>
 
@@ -135,7 +134,7 @@ export function AppsList() {
                 </div>
                 <textarea
                   readOnly
-                  value={newAppKey.privateKey}
+                  value={newAppKey.app.signing_key.private_key}
                   rows={8}
                   className="w-full rounded-md border border-control bg-surface-200 px-3 py-2 text-xs font-mono resize-none focus:outline-none"
                 />
@@ -146,7 +145,7 @@ export function AppsList() {
                   id="key-confirmed"
                   checked={newAppKey.confirmed}
                   onCheckedChange={(v) =>
-                    setNewAppKey((prev) => prev ? { ...prev, confirmed: Boolean(v) } : null)
+                    setNewAppKey((prev) => (prev ? { ...prev, confirmed: Boolean(v) } : null))
                   }
                 />
                 <Label_Shadcn_ htmlFor="key-confirmed" className="cursor-pointer">
@@ -157,7 +156,11 @@ export function AppsList() {
           </Admonition>
         )}
 
-        {apps.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-foreground-light">Loading apps...</div>
+          </div>
+        ) : apps.length === 0 ? (
           <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-full bg-surface-300 flex items-center justify-center">
               <svg
@@ -188,8 +191,7 @@ export function AppsList() {
           <Table
             head={[
               <Table.th key="name">Name</Table.th>,
-              <Table.th key="client-id">Client ID</Table.th>,
-              <Table.th key="permissions">Permissions</Table.th>,
+              <Table.th key="app-id">App ID</Table.th>,
               <Table.th key="created">Created</Table.th>,
               <Table.th key="actions"></Table.th>,
             ]}
@@ -205,20 +207,13 @@ export function AppsList() {
                 </Table.td>
                 <Table.td>
                   <div className="flex items-center gap-x-2">
-                    <span className="font-mono text-xs truncate max-w-[160px]">
-                      {app.clientId}
-                    </span>
-                    <CopyButton type="default" iconOnly text={app.clientId} className="px-1" />
+                    <span className="font-mono text-xs truncate max-w-[200px]">{app.id}</span>
+                    <CopyButton type="default" iconOnly text={app.id} className="px-1" />
                   </div>
                 </Table.td>
                 <Table.td>
-                  <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs">
-                    {getPermissionsLabel(app.permissions)}
-                  </span>
-                </Table.td>
-                <Table.td>
                   <span className="text-sm text-foreground-light">
-                    {formatDistanceToNow(app.createdAt, { addSuffix: true })}
+                    {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
                   </span>
                 </Table.td>
                 <Table.td align="right">
@@ -264,6 +259,7 @@ export function AppsList() {
         visible={appToDelete !== null}
         onClose={() => setAppToDelete(null)}
         onConfirm={handleDelete}
+        isLoading={isDeleting}
       />
     </>
   )

@@ -18,7 +18,7 @@ import {
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
 } from 'ui'
-import { MOCK_PERMISSIONS, MOCK_PROJECTS } from './PrivateApps.constants'
+import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 interface CreateInstallationModalProps {
@@ -32,7 +32,9 @@ export function CreateInstallationModal({
   onClose,
   onCreated,
 }: CreateInstallationModalProps) {
-  const { apps, createInstallation } = usePrivateApps()
+  const { slug, apps, createInstallation } = usePrivateApps()
+  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
+  const projects = projectsData?.pages.flatMap((p) => p.projects) ?? []
   const [selectedAppId, setSelectedAppId] = useState('')
   const [scopeType, setScopeType] = useState<'all' | 'selected'>('all')
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set())
@@ -74,11 +76,7 @@ export function CreateInstallationModal({
     selectedAppId !== '' &&
     (scopeType === 'all' || selectedProjects.size > 0)
 
-  const appPermissions = selectedApp
-    ? selectedApp.permissions
-        .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
-        .filter(Boolean)
-    : []
+  const appPermissions: { id: string; label: string; description: string }[] = []
 
   return (
     <Dialog open={visible} onOpenChange={(open) => !open && handleClose()}>
@@ -156,14 +154,14 @@ export function CreateInstallationModal({
 
             {scopeType === 'selected' && (
               <div className="ml-6 space-y-2 rounded-md border border-control p-3">
-                {MOCK_PROJECTS.map((project) => (
-                  <label key={project.id} className="flex items-center gap-3 cursor-pointer">
+                {projects.map((project) => (
+                  <label key={project.ref} className="flex items-center gap-3 cursor-pointer">
                     <Checkbox_Shadcn_
-                      id={project.id}
-                      checked={selectedProjects.has(project.id)}
-                      onCheckedChange={() => toggleProject(project.id)}
+                      id={project.ref}
+                      checked={selectedProjects.has(project.ref)}
+                      onCheckedChange={() => toggleProject(project.ref)}
                     />
-                    <Label_Shadcn_ htmlFor={project.id} className="cursor-pointer font-normal">
+                    <Label_Shadcn_ htmlFor={project.ref} className="cursor-pointer font-normal">
                       {project.name}
                     </Label_Shadcn_>
                   </label>

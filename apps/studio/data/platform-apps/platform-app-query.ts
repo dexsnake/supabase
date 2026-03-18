@@ -17,7 +17,7 @@ export async function getPlatformApp({ slug, id }: PlatformAppVariables, signal?
   if (!id) throw new Error('id is required')
 
   const { data, error } = await get('/platform/organizations/{slug}/apps/{id}', {
-    params: { path: { slug, id } },
+    params: { path: { slug, app_id: id } },
     signal,
   })
 

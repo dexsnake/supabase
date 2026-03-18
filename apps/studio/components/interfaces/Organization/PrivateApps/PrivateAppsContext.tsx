@@ -1,40 +1,26 @@
 import { createContext, PropsWithChildren, useContext, useState } from 'react'
-import { MOCK_PUBLIC_KEY } from './PrivateApps.constants'
 
-export interface PrivateApp {
-  id: string
-  name: string
-  description: string
-  clientId: string
-  publicKey: string
-  permissions: string[]
-  createdAt: Date
-}
+import type { components } from 'api-types'
+import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { usePlatformAppsQuery } from 'data/platform-apps/platform-apps-query'
+
+export type PrivateApp = components['schemas']['ListPlatformAppsResponse']['apps'][number]
 
 export interface Installation {
   id: string
   appId: string
   appName: string
-  clientId: string
   projectScope: 'all' | string[]
   status: 'active' | 'suspended'
   installedAt: Date
 }
 
 interface PrivateAppsContextValue {
+  slug: string | undefined
   apps: PrivateApp[]
+  isLoading: boolean
   installations: Installation[]
-  createApp: (data: {
-    name: string
-    description: string
-    permissions: string[]
-  }) => PrivateApp
-  updateApp: (id: string, data: Partial<Pick<PrivateApp, 'name' | 'description'>>) => void
-  deleteApp: (id: string) => void
-  createInstallation: (data: {
-    appId: string
-    projectScope: 'all' | string[]
-  }) => Installation
+  createInstallation: (data: { appId: string; projectScope: 'all' | string[] }) => Installation
   updateInstallationScope: (id: string, projectScope: 'all' | string[]) => void
   toggleInstallationStatus: (id: string) => void
   deleteInstallation: (id: string) => void
@@ -42,50 +28,20 @@ interface PrivateAppsContextValue {
 
 const PrivateAppsContext = createContext<PrivateAppsContextValue | null>(null)
 
-function generateClientId() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = 'app_'
-  for (let i = 0; i < 16; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
-
 export function PrivateAppsProvider({ children }: PropsWithChildren) {
-  const [apps, setApps] = useState<PrivateApp[]>([])
+  const { data: org } = useSelectedOrganizationQuery()
+  const slug = org?.slug
+
+  const { data, isLoading } = usePlatformAppsQuery({ slug })
+
   const [installations, setInstallations] = useState<Installation[]>([])
 
-  function createApp(data: { name: string; description: string; permissions: string[] }) {
-    const app: PrivateApp = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      description: data.description,
-      clientId: generateClientId(),
-      publicKey: MOCK_PUBLIC_KEY,
-      permissions: data.permissions,
-      createdAt: new Date(),
-    }
-    setApps((prev) => [...prev, app])
-    return app
-  }
-
-  function updateApp(id: string, data: Partial<Pick<PrivateApp, 'name' | 'description'>>) {
-    setApps((prev) => prev.map((app) => (app.id === id ? { ...app, ...data } : app)))
-  }
-
-  function deleteApp(id: string) {
-    setApps((prev) => prev.filter((app) => app.id !== id))
-    setInstallations((prev) => prev.filter((inst) => inst.appId !== id))
-  }
-
   function createInstallation(data: { appId: string; projectScope: 'all' | string[] }) {
-    const app = apps.find((a) => a.id === data.appId)
-    if (!app) throw new Error('App not found')
+    const app = (data as any).apps?.find((a: PrivateApp) => a.id === data.appId)
     const installation: Installation = {
       id: crypto.randomUUID(),
       appId: data.appId,
-      appName: app.name,
-      clientId: app.clientId,
+      appName: app?.name ?? '',
       projectScope: data.projectScope,
       status: 'active',
       installedAt: new Date(),
@@ -117,11 +73,10 @@ export function PrivateAppsProvider({ children }: PropsWithChildren) {
   return (
     <PrivateAppsContext.Provider
       value={{
-        apps,
+        slug,
+        apps: data?.apps ?? [],
+        isLoading,
         installations,
-        createApp,
-        updateApp,
-        deleteApp,
         createInstallation,
         updateInstallationScope,
         toggleInstallationStatus,

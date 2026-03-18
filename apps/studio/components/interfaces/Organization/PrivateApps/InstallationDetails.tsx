@@ -8,7 +8,7 @@ import { Button } from 'ui'
 import { ScaffoldContainer, ScaffoldSection } from 'components/layouts/Scaffold'
 import CopyButton from 'components/ui/CopyButton'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
-import { MOCK_PERMISSIONS, MOCK_PROJECTS } from './PrivateApps.constants'
+import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
 import { EditScopeModal } from './EditScopeModal'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
@@ -18,8 +18,10 @@ interface InstallationDetailsProps {
 
 export function InstallationDetails({ installation }: InstallationDetailsProps) {
   const router = useRouter()
-  const { slug } = router.query as { slug: string }
-  const { apps, toggleInstallationStatus, deleteInstallation } = usePrivateApps()
+  const { slug: routerSlug } = router.query as { slug: string }
+  const { slug, apps, toggleInstallationStatus, deleteInstallation } = usePrivateApps()
+  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
+  const allProjects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
   const [showEditScope, setShowEditScope] = useState(false)
   const [showUninstallModal, setShowUninstallModal] = useState(false)
@@ -29,7 +31,7 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
   function handleUninstall() {
     deleteInstallation(installation.id)
     toast.success(`Uninstalled "${installation.appName}"`)
-    router.push(`/org/${slug}/installations`)
+    router.push(`/org/${routerSlug}/installations`)
   }
 
   function handleToggleStatus() {
@@ -41,17 +43,11 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
 
   const scopeProjects =
     installation.projectScope !== 'all'
-      ? MOCK_PROJECTS.filter((p) => (installation.projectScope as string[]).includes(p.id))
+      ? allProjects.filter((p) => (installation.projectScope as string[]).includes(p.ref))
       : []
 
-  const appPermissions = app
-    ? app.permissions
-        .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
-        .filter(Boolean)
-    : []
-
-  const orgPermissions = appPermissions.filter((p) => p!.group === 'organization')
-  const projectPermissions = appPermissions.filter((p) => p!.group === 'project')
+  const orgPermissions: { id: string; label: string; description: string }[] = []
+  const projectPermissions: { id: string; label: string; description: string }[] = []
 
   return (
     <>
@@ -65,7 +61,7 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
                 <span className="text-sm text-foreground-light w-32 shrink-0">App name</span>
                 {app ? (
                   <Link
-                    href={`/org/${slug}/private-apps/${app.id}`}
+                    href={`/org/${routerSlug}/private-apps/${app.id}`}
                     className="text-sm font-medium hover:underline"
                   >
                     {installation.appName}
@@ -77,8 +73,8 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
               <div className="flex items-center px-4 py-3 gap-4">
                 <span className="text-sm text-foreground-light w-32 shrink-0">Client ID</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm">{installation.clientId}</span>
-                  <CopyButton type="default" iconOnly text={installation.clientId} className="px-1" />
+                  <span className="font-mono text-sm">{installation.appId}</span>
+                  <CopyButton type="default" iconOnly text={installation.appId} className="px-1" />
                 </div>
               </div>
               <div className="flex items-center px-4 py-3 gap-4">
@@ -112,7 +108,7 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
                 <div className="space-y-2">
                   {scopeProjects.length > 0 ? (
                     scopeProjects.map((p) => (
-                      <div key={p.id} className="flex items-center gap-2">
+                      <div key={p.ref} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted" />
                         <span className="text-sm">{p.name}</span>
                       </div>
@@ -165,7 +161,7 @@ export function InstallationDetails({ installation }: InstallationDetailsProps) 
                   </div>
                 </div>
               )}
-              {appPermissions.length === 0 && (
+              {orgPermissions.length === 0 && projectPermissions.length === 0 && (
                 <div className="px-4 py-3">
                   <p className="text-sm text-foreground-muted italic">
                     No permissions information available

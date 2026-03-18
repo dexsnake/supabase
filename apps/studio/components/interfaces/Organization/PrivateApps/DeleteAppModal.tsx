@@ -4,17 +4,20 @@ import { PrivateApp } from './PrivateAppsContext'
 interface DeleteAppModalProps {
   app: PrivateApp | null
   visible: boolean
+  isLoading?: boolean
   onClose: () => void
   onConfirm: () => void
 }
 
-export function DeleteAppModal({ app, visible, onClose, onConfirm }: DeleteAppModalProps) {
+export function DeleteAppModal({ app, visible, isLoading, onClose, onConfirm }: DeleteAppModalProps) {
   return (
     <ConfirmationModal
       variant="destructive"
       visible={visible}
       title={`Delete "${app?.name}"`}
       confirmLabel="Delete app"
+      confirmLabelLoading="Deleting..."
+      loading={isLoading}
       onCancel={onClose}
       onConfirm={onConfirm}
       alert={{

@@ -79,8 +79,8 @@ export function PrivateKeyModal({ app, privateKey, visible, onDone }: PrivateKey
                 <span className="font-medium">{app.name}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-foreground-light w-20">Client ID</span>
-                <span className="font-mono text-xs">{app.clientId}</span>
+                <span className="text-foreground-light w-20">App ID</span>
+                <span className="font-mono text-xs">{app.id}</span>
               </div>
             </div>
           )}

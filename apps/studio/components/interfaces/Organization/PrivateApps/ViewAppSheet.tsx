@@ -11,8 +11,12 @@ import {
   SheetHeader,
   cn,
 } from 'ui'
+import type { components } from 'api-types'
 import CopyButton from 'components/ui/CopyButton'
-import { MOCK_PERMISSIONS } from './PrivateApps.constants'
+import { usePlatformAppQuery } from 'data/platform-apps/platform-app-query'
+import { usePlatformAppUpdateMutation } from 'data/platform-apps/platform-app-update-mutation'
+import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
+import { PERMISSIONS } from './PrivateApps.constants'
 import { DeleteAppModal } from './DeleteAppModal'
 import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
 
@@ -24,10 +28,31 @@ interface ViewAppSheetProps {
 }
 
 export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetProps) {
-  const { updateApp, deleteApp } = usePrivateApps()
+  const { slug } = usePrivateApps()
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const { data: detail, isLoading: isLoadingDetail } = usePlatformAppQuery(
+    { slug, id: app?.id },
+    { enabled: visible && app !== null }
+  )
+
+  const { mutate: updateApp, isPending: isUpdating } = usePlatformAppUpdateMutation({
+    onSuccess: () => {
+      toast.success('App name updated')
+      setEditingName(false)
+    },
+  })
+
+  const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
+    onSuccess: () => {
+      toast.success(`Deleted "${app?.name}"`)
+      setShowDeleteModal(false)
+      onClose()
+      onDeleted()
+    },
+  })
 
   function handleOpen() {
     if (app) setNameValue(app.name)
@@ -35,33 +60,35 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
   }
 
   function saveName() {
-    if (!app) return
-    if (nameValue.trim() && nameValue.trim() !== app.name) {
-      updateApp(app.id, { name: nameValue.trim() })
-      toast.success('App name updated')
+    if (!app || !slug || !detail) return
+    const trimmed = nameValue.trim()
+    if (!trimmed || trimmed === app.name) {
+      setEditingName(false)
+      return
     }
-    setEditingName(false)
+    updateApp({
+      slug,
+      appId: app.id,
+      name: trimmed,
+      permissions: detail.permissions as components['schemas']['UpdatePlatformAppBody']['permissions'],
+    })
   }
 
   function handleDelete() {
-    if (!app) return
-    deleteApp(app.id)
-    toast.success(`Deleted "${app.name}"`)
-    setShowDeleteModal(false)
-    onClose()
-    onDeleted()
+    if (!app || !slug) return
+    deleteApp({ slug, appId: app.id })
   }
 
-  const orgPermissions = app
-    ? app.permissions
-        .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
+  const orgPermissions = detail
+    ? detail.permissions
+        .map((id) => PERMISSIONS.find((p) => p.id === id))
         .filter(Boolean)
         .filter((p) => p!.group === 'organization')
     : []
 
-  const projectPermissions = app
-    ? app.permissions
-        .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
+  const projectPermissions = detail
+    ? detail.permissions
+        .map((id) => PERMISSIONS.find((p) => p.id === id))
         .filter(Boolean)
         .filter((p) => p!.group === 'project')
     : []
@@ -115,7 +142,7 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                             }}
                             autoFocus
                           />
-                          <Button type="primary" size="tiny" onClick={saveName}>
+                          <Button type="primary" size="tiny" loading={isUpdating} onClick={saveName}>
                             Save
                           </Button>
                           <Button
@@ -146,12 +173,12 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                       )}
                     </div>
 
-                    {/* Client ID */}
+                    {/* App ID */}
                     <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">Client ID</span>
+                      <span className="text-sm text-foreground-light w-28 shrink-0">App ID</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-mono text-sm truncate">{app.clientId}</span>
-                        <CopyButton type="default" iconOnly text={app.clientId} className="px-1 shrink-0" />
+                        <span className="font-mono text-sm truncate">{app.id}</span>
+                        <CopyButton type="default" iconOnly text={app.id} className="px-1 shrink-0" />
                       </div>
                     </div>
 
@@ -159,7 +186,7 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                     <div className="flex items-center px-4 py-3 gap-4">
                       <span className="text-sm text-foreground-light w-28 shrink-0">Created</span>
                       <span className="text-sm">
-                        {formatDistanceToNow(app.createdAt, { addSuffix: true })}
+                        {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
                       </span>
                     </div>
                   </div>
@@ -168,59 +195,69 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                 {/* Permissions */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium">Permissions</h3>
-                  <div className="border border-border rounded-lg">
-                    {orgPermissions.length > 0 && (
-                      <>
-                        <div className="px-3 py-2 bg-surface-100 rounded-t-lg">
-                          <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                            Organization
-                          </p>
-                        </div>
-                        {orgPermissions.map((p, i) => (
-                          <div key={p!.id}>
-                            <div className="px-4 py-3 flex items-start gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                              <div>
-                                <p className="text-sm font-mono">{p!.label}</p>
-                                <p className="text-xs text-foreground-light">{p!.description}</p>
-                              </div>
-                            </div>
-                            {i < orgPermissions.length - 1 && (
-                              <div className="border-t border-border" />
-                            )}
+                  {isLoadingDetail ? (
+                    <div className="text-sm text-foreground-light py-4">Loading permissions...</div>
+                  ) : (
+                    <div className="border border-border rounded-lg">
+                      {orgPermissions.length > 0 && (
+                        <>
+                          <div className="px-3 py-2 bg-surface-100 rounded-t-lg">
+                            <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                              Organization
+                            </p>
                           </div>
-                        ))}
-                      </>
-                    )}
-
-                    {orgPermissions.length > 0 && projectPermissions.length > 0 && (
-                      <div className="border-t border-border" />
-                    )}
-
-                    {projectPermissions.length > 0 && (
-                      <>
-                        <div className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}>
-                          <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                            Project
-                          </p>
-                        </div>
-                        {projectPermissions.map((p, i) => (
-                          <div key={p!.id}>
-                            <div className="px-4 py-3 flex items-start gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                              <div>
-                                <p className="text-sm font-mono">{p!.label}</p>
-                                <p className="text-xs text-foreground-light">{p!.description}</p>
+                          {orgPermissions.map((p, i) => (
+                            <div key={p!.id}>
+                              <div className="px-4 py-3 flex items-start gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
+                                <div>
+                                  <p className="text-sm font-mono">{p!.label}</p>
+                                  <p className="text-xs text-foreground-light">{p!.description}</p>
+                                </div>
                               </div>
+                              {i < orgPermissions.length - 1 && (
+                                <div className="border-t border-border" />
+                              )}
                             </div>
-                            {i < projectPermissions.length - 1 && (
-                              <div className="border-t border-border" />
-                            )}
+                          ))}
+                        </>
+                      )}
+
+                      {orgPermissions.length > 0 && projectPermissions.length > 0 && (
+                        <div className="border-t border-border" />
+                      )}
+
+                      {projectPermissions.length > 0 && (
+                        <>
+                          <div className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}>
+                            <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                              Project
+                            </p>
                           </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
+                          {projectPermissions.map((p, i) => (
+                            <div key={p!.id}>
+                              <div className="px-4 py-3 flex items-start gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
+                                <div>
+                                  <p className="text-sm font-mono">{p!.label}</p>
+                                  <p className="text-xs text-foreground-light">{p!.description}</p>
+                                </div>
+                              </div>
+                              {i < projectPermissions.length - 1 && (
+                                <div className="border-t border-border" />
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {orgPermissions.length === 0 && projectPermissions.length === 0 && (
+                        <div className="px-4 py-6 text-center text-sm text-foreground-light">
+                          No permissions configured
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Danger zone */}
@@ -253,6 +290,7 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
       <DeleteAppModal
         app={app}
         visible={showDeleteModal}
+        isLoading={isDeleting}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
       />

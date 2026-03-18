@@ -13,7 +13,7 @@ import {
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import CopyButton from 'components/ui/CopyButton'
-import { MOCK_PERMISSIONS, MOCK_PROJECTS } from './PrivateApps.constants'
+import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
 import { EditScopeModal } from './EditScopeModal'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
@@ -24,23 +24,22 @@ interface ViewInstallationSheetProps {
 }
 
 export function ViewInstallationSheet({ installation, visible, onClose }: ViewInstallationSheetProps) {
-  const { apps, toggleInstallationStatus, deleteInstallation } = usePrivateApps()
+  const { slug, apps, toggleInstallationStatus, deleteInstallation } = usePrivateApps()
   const [showEditScope, setShowEditScope] = useState(false)
   const [showUninstallModal, setShowUninstallModal] = useState(false)
+
+  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
+  const allProjects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
   const app = apps.find((a) => a.id === installation?.appId)
 
   const scopeProjects =
     installation && installation.projectScope !== 'all'
-      ? MOCK_PROJECTS.filter((p) => (installation.projectScope as string[]).includes(p.id))
+      ? allProjects.filter((p) => (installation.projectScope as string[]).includes(p.ref))
       : []
 
-  const appPermissions = app
-    ? app.permissions.map((id) => MOCK_PERMISSIONS.find((p) => p.id === id)).filter(Boolean)
-    : []
-
-  const orgPermissions = appPermissions.filter((p) => p!.group === 'organization')
-  const projectPermissions = appPermissions.filter((p) => p!.group === 'project')
+  const orgPermissions: { id: string; label: string; description: string }[] = []
+  const projectPermissions: { id: string; label: string; description: string }[] = []
 
   function handleToggleStatus() {
     if (!installation) return
@@ -83,11 +82,11 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
                     <div className="flex items-center px-4 py-3 gap-4">
                       <span className="text-sm text-foreground-light w-28 shrink-0">Client ID</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-mono text-sm truncate">{installation.clientId}</span>
+                        <span className="font-mono text-sm truncate">{installation.appId}</span>
                         <CopyButton
                           type="default"
                           iconOnly
-                          text={installation.clientId}
+                          text={installation.appId}
                           className="px-1 shrink-0"
                         />
                       </div>
@@ -136,7 +135,7 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
                     ) : scopeProjects.length > 0 ? (
                       <div className="space-y-2">
                         {scopeProjects.map((p) => (
-                          <div key={p.id} className="flex items-center gap-2">
+                          <div key={p.ref} className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted" />
                             <span className="text-sm">{p.name}</span>
                           </div>
@@ -154,7 +153,7 @@ export function ViewInstallationSheet({ installation, visible, onClose }: ViewIn
                 <div className="px-5 sm:px-6 py-6 space-y-3">
                   <h3 className="text-sm font-medium">Granted Permissions</h3>
                   <div className="border border-default rounded-lg">
-                    {appPermissions.length === 0 ? (
+                    {orgPermissions.length === 0 && projectPermissions.length === 0 ? (
                       <div className="px-4 py-3">
                         <p className="text-sm text-foreground-muted italic">
                           No permissions information available

@@ -1,18 +1,16 @@
 import { formatDistanceToNow } from 'date-fns'
-import { ChevronDown, ChevronRight, Pencil, RotateCcw, Trash, X } from 'lucide-react'
+import { RotateCcw, Trash } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  Button,
-  Collapsible_Shadcn_,
-  CollapsibleContent_Shadcn_,
-  CollapsibleTrigger_Shadcn_,
-  Input_Shadcn_,
-} from 'ui'
+import { Button } from 'ui'
 import { ScaffoldContainer, ScaffoldSection } from 'components/layouts/Scaffold'
 import CopyButton from 'components/ui/CopyButton'
-import { MOCK_PERMISSIONS } from './PrivateApps.constants'
+import type { components } from 'api-types'
+import { usePlatformAppQuery } from 'data/platform-apps/platform-app-query'
+import { usePlatformAppUpdateMutation } from 'data/platform-apps/platform-app-update-mutation'
+import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
+import { PERMISSIONS } from './PrivateApps.constants'
 import { DeleteAppModal } from './DeleteAppModal'
 import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
 
@@ -22,47 +20,40 @@ interface AppDetailsProps {
 
 export function AppDetails({ app }: AppDetailsProps) {
   const router = useRouter()
-  const { slug } = router.query as { slug: string }
-  const { updateApp, deleteApp } = usePrivateApps()
-
-  const [editingName, setEditingName] = useState(false)
-  const [editingDescription, setEditingDescription] = useState(false)
-  const [nameValue, setNameValue] = useState(app.name)
-  const [descriptionValue, setDescriptionValue] = useState(app.description)
-  const [showPublicKey, setShowPublicKey] = useState(false)
+  const { slug } = usePrivateApps()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  function saveName() {
-    if (nameValue.trim() && nameValue.trim() !== app.name) {
-      updateApp(app.id, { name: nameValue.trim() })
-      toast.success('App name updated')
-    }
-    setEditingName(false)
-  }
+  const { data: detail, isLoading: isLoadingDetail } = usePlatformAppQuery({ slug, id: app.id })
 
-  function saveDescription() {
-    if (descriptionValue !== app.description) {
-      updateApp(app.id, { description: descriptionValue })
-      toast.success('Description updated')
-    }
-    setEditingDescription(false)
-  }
+  const { mutate: updateApp, isPending: isUpdating } = usePlatformAppUpdateMutation({
+    onSuccess: () => toast.success('App updated'),
+  })
+
+  const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
+    onSuccess: () => {
+      toast.success(`Deleted "${app.name}"`)
+      router.push(`/org/${slug}/private-apps`)
+    },
+  })
 
   function handleDelete() {
-    deleteApp(app.id)
-    toast.success(`Deleted "${app.name}"`)
-    router.push(`/org/${slug}/private-apps`)
+    if (!slug) return
+    deleteApp({ slug, appId: app.id })
   }
 
-  const orgPermissions = app.permissions
-    .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
-    .filter(Boolean)
-    .filter((p) => p!.group === 'organization')
+  const orgPermissions = detail
+    ? detail.permissions
+        .map((id) => PERMISSIONS.find((p) => p.id === id))
+        .filter(Boolean)
+        .filter((p) => p!.group === 'organization')
+    : []
 
-  const projectPermissions = app.permissions
-    .map((id) => MOCK_PERMISSIONS.find((p) => p.id === id))
-    .filter(Boolean)
-    .filter((p) => p!.group === 'project')
+  const projectPermissions = detail
+    ? detail.permissions
+        .map((id) => PERMISSIONS.find((p) => p.id === id))
+        .filter(Boolean)
+        .filter((p) => p!.group === 'project')
+    : []
 
   return (
     <>
@@ -75,56 +66,7 @@ export function AppDetails({ app }: AppDetailsProps) {
               {/* Name */}
               <div className="flex items-center justify-between px-4 py-3 gap-4">
                 <span className="text-sm text-foreground-light w-32 shrink-0">Name</span>
-                {editingName ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input_Shadcn_
-                      value={nameValue}
-                      onChange={(e) => setNameValue(e.target.value)}
-                      className="h-7 text-sm"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveName()
-                        if (e.key === 'Escape') {
-                          setNameValue(app.name)
-                          setEditingName(false)
-                        }
-                      }}
-                      autoFocus
-                    />
-                    <Button type="primary" size="tiny" onClick={saveName}>
-                      Save
-                    </Button>
-                    <Button
-                      type="default"
-                      size="tiny"
-                      icon={<X size={12} />}
-                      className="px-1"
-                      onClick={() => {
-                        setNameValue(app.name)
-                        setEditingName(false)
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className="text-sm font-medium flex-1">{app.name}</span>
-                    <Button
-                      type="text"
-                      size="tiny"
-                      icon={<Pencil size={12} />}
-                      className="px-1 opacity-0 group-hover:opacity-100"
-                      onClick={() => setEditingName(true)}
-                    />
-                  </div>
-                )}
-                {!editingName && (
-                  <Button
-                    type="text"
-                    size="tiny"
-                    icon={<Pencil size={12} />}
-                    className="px-1"
-                    onClick={() => setEditingName(true)}
-                  />
-                )}
+                <span className="text-sm font-medium flex-1">{app.name}</span>
               </div>
 
               {/* Description */}
@@ -132,55 +74,19 @@ export function AppDetails({ app }: AppDetailsProps) {
                 <span className="text-sm text-foreground-light w-32 shrink-0 pt-0.5">
                   Description
                 </span>
-                {editingDescription ? (
-                  <div className="flex flex-col gap-2 flex-1">
-                    <textarea
-                      value={descriptionValue}
-                      onChange={(e) => setDescriptionValue(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-md border border-control bg-transparent px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-foreground-muted"
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button type="primary" size="tiny" onClick={saveDescription}>
-                        Save
-                      </Button>
-                      <Button
-                        type="default"
-                        size="tiny"
-                        onClick={() => {
-                          setDescriptionValue(app.description)
-                          setEditingDescription(false)
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2 flex-1">
-                    <span className="text-sm flex-1 text-foreground-light">
-                      {app.description || (
-                        <span className="italic text-foreground-muted">No description</span>
-                      )}
-                    </span>
-                    <Button
-                      type="text"
-                      size="tiny"
-                      icon={<Pencil size={12} />}
-                      className="px-1"
-                      onClick={() => setEditingDescription(true)}
-                    />
-                  </div>
-                )}
+                <span className="text-sm flex-1 text-foreground-light">
+                  {app.description || (
+                    <span className="italic text-foreground-muted">No description</span>
+                  )}
+                </span>
               </div>
 
-              {/* Client ID */}
+              {/* App ID */}
               <div className="flex items-center px-4 py-3 gap-4">
-                <span className="text-sm text-foreground-light w-32 shrink-0">Client ID</span>
+                <span className="text-sm text-foreground-light w-32 shrink-0">App ID</span>
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="font-mono text-sm">{app.clientId}</span>
-                  <CopyButton type="default" iconOnly text={app.clientId} className="px-1" />
+                  <span className="font-mono text-sm">{app.id}</span>
+                  <CopyButton type="default" iconOnly text={app.id} className="px-1" />
                 </div>
               </div>
 
@@ -188,83 +94,62 @@ export function AppDetails({ app }: AppDetailsProps) {
               <div className="flex items-center px-4 py-3 gap-4">
                 <span className="text-sm text-foreground-light w-32 shrink-0">Created</span>
                 <span className="text-sm">
-                  {formatDistanceToNow(app.createdAt, { addSuffix: true })}
+                  {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
                 </span>
               </div>
-
-              {/* Public Key */}
-              <Collapsible_Shadcn_
-                open={showPublicKey}
-                onOpenChange={setShowPublicKey}
-              >
-                <CollapsibleTrigger_Shadcn_ asChild>
-                  <div className="flex items-center px-4 py-3 gap-4 cursor-pointer hover:bg-surface-100">
-                    <span className="text-sm text-foreground-light w-32 shrink-0">Public Key</span>
-                    <span className="text-sm text-foreground-light flex-1">
-                      {showPublicKey ? 'Hide' : 'Show public key'}
-                    </span>
-                    {showPublicKey ? (
-                      <ChevronDown size={14} className="text-foreground-muted" />
-                    ) : (
-                      <ChevronRight size={14} className="text-foreground-muted" />
-                    )}
-                  </div>
-                </CollapsibleTrigger_Shadcn_>
-                <CollapsibleContent_Shadcn_>
-                  <div className="px-4 pb-3">
-                    <textarea
-                      readOnly
-                      value={app.publicKey}
-                      rows={6}
-                      className="w-full rounded-md border border-control bg-surface-100 px-3 py-2 text-xs font-mono resize-none focus:outline-none"
-                    />
-                  </div>
-                </CollapsibleContent_Shadcn_>
-              </Collapsible_Shadcn_>
             </div>
           </div>
 
           {/* Permissions */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">Requested Permissions</h3>
-            <div className="border border-default rounded-lg divide-y divide-default">
-              {orgPermissions.length > 0 && (
-                <div className="px-4 py-3 space-y-2">
-                  <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                    Organization permissions
-                  </p>
-                  <div className="space-y-2">
-                    {orgPermissions.map((p) => (
-                      <div key={p!.id} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                        <div>
-                          <p className="text-sm font-mono">{p!.label}</p>
-                          <p className="text-xs text-foreground-light">{p!.description}</p>
+            {isLoadingDetail ? (
+              <div className="text-sm text-foreground-light py-4">Loading permissions...</div>
+            ) : (
+              <div className="border border-default rounded-lg divide-y divide-default">
+                {orgPermissions.length > 0 && (
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                      Organization permissions
+                    </p>
+                    <div className="space-y-2">
+                      {orgPermissions.map((p) => (
+                        <div key={p!.id} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
+                          <div>
+                            <p className="text-sm font-mono">{p!.label}</p>
+                            <p className="text-xs text-foreground-light">{p!.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              {projectPermissions.length > 0 && (
-                <div className="px-4 py-3 space-y-2">
-                  <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                    Project permissions
-                  </p>
-                  <div className="space-y-2">
-                    {projectPermissions.map((p) => (
-                      <div key={p!.id} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                        <div>
-                          <p className="text-sm font-mono">{p!.label}</p>
-                          <p className="text-xs text-foreground-light">{p!.description}</p>
+                )}
+                {projectPermissions.length > 0 && (
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                      Project permissions
+                    </p>
+                    <div className="space-y-2">
+                      {projectPermissions.map((p) => (
+                        <div key={p!.id} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
+                          <div>
+                            <p className="text-sm font-mono">{p!.label}</p>
+                            <p className="text-xs text-foreground-light">{p!.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+                {orgPermissions.length === 0 && projectPermissions.length === 0 && detail && (
+                  <div className="px-4 py-6 text-center text-sm text-foreground-light">
+                    No permissions configured
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Installations */}
@@ -319,6 +204,7 @@ export function AppDetails({ app }: AppDetailsProps) {
       <DeleteAppModal
         app={app}
         visible={showDeleteModal}
+        isLoading={isDeleting}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
       />
