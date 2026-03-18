@@ -28,7 +28,7 @@ export interface ComposedChartHandlerProps {
   customDateFormat?: string
   defaultChartStyle?: 'bar' | 'line' | 'stackedAreaLine'
   hideChartType?: boolean
-  data?: ChartData
+  data?: ChartData | DataPoint[]
   isLoading?: boolean
   format?: string
   highlightedValue?: string | number
