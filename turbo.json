@@ -6,6 +6,17 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**/*", "!.next/dev/**/*"]
     },
+    "ui#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "ui-vite-test#dev": {
+      "dependsOn": ["ui#build"],
+      "cache": false
+    },
+    "ui-vite-test#build": {
+      "dependsOn": ["ui#build"]
+    },
     "design-system#build": {
       "dependsOn": ["^build"],
       "env": [

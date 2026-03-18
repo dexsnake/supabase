@@ -3,10 +3,23 @@
   "version": "0.0.0",
   "main": "./index.tsx",
   "types": "./index.tsx",
+  "exports": {
+    ".": {
+      "types": "./index.tsx",
+      "default": "./index.tsx"
+    },
+    "./base": {
+      "types": "./base.tsx",
+      "import": "./dist/base.js"
+    },
+    "./base.css": "./dist/base.css",
+    "./src/*": "./src/*"
+  },
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
+    "build": "vite build --config vite.lib.config.ts && tailwindcss -c tailwind.lib.config.js -i src/base-styles.css -o dist/base-tw.css && node scripts/build-merge-css.js",
     "typecheck": "tsc --noEmit",
     "generate-demo-tailwind-classes": "node internals/tokens/generate-demo-tailwind-classes.js",
     "cleanse-css-for-tailwind": "node internals/tokens/cleanse-css-for-tailwind.js",
@@ -80,7 +93,13 @@
     "tailwindcss": "catalog:",
     "vaul": "^0.9.9"
   },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
     "@ctrl/tinycolor": "^3.4.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",

@@ -1,0 +1,28 @@
+{
+  "name": "ui-vite-test",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^0.436.0",
+    "next-themes": "^0.3.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sonner": "^1.5.0",
+    "ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
