@@ -172,11 +172,7 @@ export const generateOrganizationSettingsSections = ({
       heading: 'Connections',
       links: connectionsLinks.map((item) => ({
         ...item,
-<<<<<<< HEAD
-        isActive: currentPath === item.href || currentPath.startsWith(item.href + '/'),
-=======
         isActive: isLinkActive(item.key, item.href),
->>>>>>> origin/master
       })),
     },
     {
