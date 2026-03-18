@@ -32,8 +32,6 @@ import { Button, Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from 'u
 import { useSetCommandMenuOpen } from 'ui-patterns'
 
 import { OrgSelector } from '../Navigation/NavigationBar/OrgSelector'
-// import { OrgSelector } from './OrgSelector'
-// import { ProjectBranchSelector } from './ProjectBranchSelector'
 import { ProjectBranchSelector } from '../Navigation/NavigationBar/ProjectBranchSelector'
 import { useGenerateSettingsMenu } from '../ProjectSettingsLayout/SettingsMenu.utils'
 import { NavGroup } from './NavGroup'
@@ -287,7 +285,7 @@ export function AppSidebarV2({ scope }: AppSidebarV2Props = {}) {
         collapsible="none"
         className="hidden md:flex h-full w-full border-r border-default group"
       >
-        <SidebarHeader className="gap-2 pt-4">
+        <SidebarHeader className="gap-2 pt-2">
           <div className="space-y-2">
             {isProjectScope ? <ProjectBranchSelector /> : IS_PLATFORM ? <OrgSelector /> : null}
             {isProjectScope && (

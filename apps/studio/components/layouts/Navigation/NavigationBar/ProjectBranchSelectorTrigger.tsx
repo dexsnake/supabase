@@ -1,6 +1,7 @@
 import { useIsNavigationV2Enabled } from 'components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { ChevronsUpDown, GitBranch } from 'lucide-react'
-import { cn, SidebarMenuButton } from 'ui'
+import * as React from 'react'
+import { cn, SidebarMenuButton as SidebarMenuButtonComponent } from 'ui'
 
 export interface ProjectBranchSelectorTriggerProps {
   displayProjectName: string
@@ -9,23 +10,24 @@ export interface ProjectBranchSelectorTriggerProps {
   isProductionBranch: boolean
   branchDisplayName: string
   onGoToOrganization: () => void
-  onClick?: () => void
 }
 
-export function ProjectBranchSelectorTrigger({
-  displayProjectName,
-  selectedOrgInitial,
-  isBranch,
-  branchDisplayName,
-  onClick,
-}: ProjectBranchSelectorTriggerProps) {
+export const ProjectBranchSelectorTrigger = React.forwardRef<
+  React.ElementRef<typeof SidebarMenuButtonComponent>,
+  ProjectBranchSelectorTriggerProps &
+    Omit<
+      React.ComponentPropsWithoutRef<typeof SidebarMenuButtonComponent>,
+      keyof ProjectBranchSelectorTriggerProps
+    >
+>(({ displayProjectName, selectedOrgInitial, isBranch, branchDisplayName, ...buttonProps }, ref) => {
   const isNavigationV2 = useIsNavigationV2Enabled()
 
   return (
-    <SidebarMenuButton
+    <SidebarMenuButtonComponent
+      ref={ref}
       size="lg"
       className="group py-1 gap-1.5 w-full flex h-auto text-left data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground touch-manipulation"
-      // onClick={onClick}
+      {...buttonProps}
     >
       <div className="relative flex h-8 aspect-square shrink-0 items-center bg-background-muted group-hover:border-stronger justify-center rounded border border-strong text-xs">
         {selectedOrgInitial}
@@ -54,6 +56,7 @@ export function ProjectBranchSelectorTrigger({
         strokeWidth={1.5}
         className="ml-auto text-foreground-lighter !w-4 !h-4 md:hidden md:group-hover:flex"
       />
-    </SidebarMenuButton>
+    </SidebarMenuButtonComponent>
   )
-}
+})
+ProjectBranchSelectorTrigger.displayName = 'ProjectBranchSelectorTrigger'
