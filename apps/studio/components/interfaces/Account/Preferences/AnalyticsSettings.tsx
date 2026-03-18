@@ -38,7 +38,8 @@ export const PrivacyUpdateBanner = () => {
           We’ve clarified how we use analytics, cookies, and advertising tools in our{' '}
           <InlineLink href="https://supabase.com/privacy">privacy policy</InlineLink>, effective
           March 16, 2026. By continuing to use Supabase, you agree to the updated terms.{' '}
-          <InlineLink href="mailto:privacy@supabase.com">Contact us</InlineLink> with any questions.{' '}
+          <InlineLink href="mailto:privacy@supabase.com">Contact us</InlineLink> with any
+          questions.{' '}
         </>
       }
       className="mb-10 relative"
