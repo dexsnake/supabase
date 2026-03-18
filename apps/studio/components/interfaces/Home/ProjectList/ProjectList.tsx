@@ -8,7 +8,10 @@ import { NoSearchResults } from 'components/ui/NoSearchResults'
 import { useGitHubConnectionsQuery } from 'data/integrations/github-connections-query'
 import { useOrgIntegrationsQuery } from 'data/integrations/integrations-query-org-only'
 import { usePermissionsQuery } from 'data/permissions/permissions-query'
-import { getComputeSize, useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
+import {
+  getComputeSize,
+  useOrgProjectsInfiniteQuery,
+} from 'data/projects/org-projects-infinite-query'
 import { useOrgSubscriptionQuery } from 'data/subscriptions/org-subscription-query'
 import { useResourceWarningsQuery } from 'data/usage/resource-warnings-query'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
@@ -120,7 +123,14 @@ export const ProjectList = ({ organization: organization_, rewriteHref }: Projec
     })
 
     return () => dismissBanner('micro-upgrade-banner')
-  }, [addBanner, dismissBanner, isEligibleForMicroUpgrade, isMicroUpgradeBannerDismissed, isFreePlan, slug])
+  }, [
+    addBanner,
+    dismissBanner,
+    isEligibleForMicroUpgrade,
+    isMicroUpgradeBannerDismissed,
+    isFreePlan,
+    slug,
+  ])
 
   // Move all hooks to the top to comply with Rules of Hooks
   const { data: integrations } = useOrgIntegrationsQuery({ orgSlug: organization?.slug })
