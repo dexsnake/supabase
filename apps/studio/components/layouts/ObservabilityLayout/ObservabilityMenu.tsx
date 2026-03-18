@@ -164,46 +164,50 @@ const ObservabilityMenu = () => {
           : []),
       ],
     },
-    {
-      title: 'PRODUCT',
-      key: 'product-section',
-      items: [
-        {
-          name: 'Database',
-          key: 'database',
-          url: `/project/${ref}/observability/database${preservedQueryParams}`,
-        },
-        {
-          name: 'Data API',
-          key: 'postgrest',
-          url: `/project/${ref}/observability/postgrest${preservedQueryParams}`,
-        },
-        {
-          name: 'Auth',
-          key: 'auth',
-          url: `/project/${ref}/observability/auth${preservedQueryParams}`,
-        },
-        {
-          name: 'Edge Functions',
-          key: 'edge-functions',
-          url: `/project/${ref}/observability/edge-functions${preservedQueryParams}`,
-        },
-        ...(storageSupported
-          ? [
+    ...(IS_PLATFORM
+      ? [
+          {
+            title: 'PRODUCT',
+            key: 'product-section',
+            items: [
               {
-                name: 'Storage',
-                key: 'storage',
-                url: `/project/${ref}/observability/storage${preservedQueryParams}`,
+                name: 'Database',
+                key: 'database',
+                url: `/project/${ref}/observability/database${preservedQueryParams}`,
               },
-            ]
-          : []),
-        {
-          name: 'Realtime',
-          key: 'realtime',
-          url: `/project/${ref}/observability/realtime${preservedQueryParams}`,
-        },
-      ],
-    },
+              {
+                name: 'Data API',
+                key: 'postgrest',
+                url: `/project/${ref}/observability/postgrest${preservedQueryParams}`,
+              },
+              {
+                name: 'Auth',
+                key: 'auth',
+                url: `/project/${ref}/observability/auth${preservedQueryParams}`,
+              },
+              {
+                name: 'Edge Functions',
+                key: 'edge-functions',
+                url: `/project/${ref}/observability/edge-functions${preservedQueryParams}`,
+              },
+              ...(storageSupported
+                ? [
+                    {
+                      name: 'Storage',
+                      key: 'storage',
+                      url: `/project/${ref}/observability/storage${preservedQueryParams}`,
+                    },
+                  ]
+                : []),
+              {
+                name: 'Realtime',
+                key: 'realtime',
+                url: `/project/${ref}/observability/realtime${preservedQueryParams}`,
+              },
+            ],
+          },
+        ]
+      : []),
   ]
 
   return (
