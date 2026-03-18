@@ -405,7 +405,7 @@ export function CustomReportSection() {
               strategy={rectSortingStrategy}
             >
               <Row
-                maxRows={4}
+                maxColumns={4}
                 minWidth={280}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
