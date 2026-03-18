@@ -49,7 +49,7 @@ export const DownloadResultsButton = ({
   const { ref } = useParams()
   const pathname = usePathname()
   const isLogs = pathname?.includes?.('/logs') ?? false
-  const formattedResults = formatResults(results)
+  const formattedResults = useMemo(() => formatResults(results), [results])
 
   const [copyMarkdownEnabled] = useLocalStorageQuery(LOCAL_STORAGE_KEYS.HOTKEY_COPY_MARKDOWN, true)
   const [copyJsonEnabled] = useLocalStorageQuery(LOCAL_STORAGE_KEYS.HOTKEY_COPY_JSON, true)
