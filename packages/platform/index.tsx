@@ -15,12 +15,10 @@ export { SqlJsDatabaseAdapter, SqlJsQueryBuilder } from './src/adapters/sqljs'
 // Context
 export { AdapterProvider, useAdapter } from './src/context/AdapterContext'
 
-// Table editor components
-export { TableList } from './src/components/TableList'
-export { TableDataGrid } from './src/components/TableDataGrid'
-export { CreateTableDialog } from './src/components/CreateTableDialog'
+// Grid (core shared component)
+export { PlatformGrid } from './src/components/grid'
+export type { PlatformGridContext } from './src/components/grid/PlatformGrid'
 
-// SQL editor components
+// SQL editor (core shared component)
 export { SqlEditor, MonacoThemeProvider, createSqlEditorState, useSqlEditorSnapshot } from './src/components/SqlEditor'
 export type { SqlEditorState, Snippet } from './src/components/SqlEditor'
-export { SnippetSidebar } from './src/components/SnippetSidebar'

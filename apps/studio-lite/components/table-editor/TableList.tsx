@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus, Table2 } from 'lucide-react'
 import { Button, cn } from 'ui'
 
-import { useAdapter } from '../../context/AdapterContext'
+import { useAdapter } from 'platform'
 
 export interface TableListProps {
   selectedTable?: string | null

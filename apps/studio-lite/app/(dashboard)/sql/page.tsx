@@ -4,11 +4,11 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import {
   MonacoThemeProvider,
   SqlEditor,
-  SnippetSidebar,
   createSqlEditorState,
 } from 'platform'
 import { AdapterLoader } from '@/lib/AdapterLoader'
 import { queryClient } from '@/lib/query-client'
+import { SnippetSidebar } from '@/components/sql-editor/SnippetSidebar'
 
 const sqlState = createSqlEditorState([
   {

@@ -2,9 +2,12 @@
 
 import { useState, useCallback } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { TableList, TableDataGrid, CreateTableDialog } from 'platform'
+import { PlatformGrid } from 'platform'
 import { AdapterLoader } from '@/lib/AdapterLoader'
 import { queryClient } from '@/lib/query-client'
+import { TableList } from '@/components/table-editor/TableList'
+import { CreateTableDialog } from '@/components/table-editor/CreateTableDialog'
+import { GridToolbar } from '@/components/table-editor/GridToolbar'
 
 export default function TablesPage() {
   const [selectedTable, setSelectedTable] = useState<string | null>('todos')
@@ -25,7 +28,11 @@ export default function TablesPage() {
           />
           <div className="flex-1 overflow-hidden">
             {selectedTable ? (
-              <TableDataGrid tableName={selectedTable} pageSize={25} />
+              <PlatformGrid
+                tableName={selectedTable}
+                pageSize={25}
+                toolbar={(ctx) => <GridToolbar {...ctx} />}
+              />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-sm text-foreground-light">Select a table to browse its data</p>

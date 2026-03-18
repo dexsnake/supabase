@@ -47,10 +47,12 @@ body {
 }
 
 .rdg-cell {
+  @apply flex items-center;
   @apply text-foreground border-default border-r border-b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 0 8px;
 }
 
 .rdg-cell[aria-selected='true'] {
@@ -59,4 +61,117 @@ body {
 
 .rdg-cell.rdg-editor-container > * {
   background-color: inherit;
+}
+
+/* Studio grid component classes — extracted from apps/studio/styles/grid.scss */
+
+.sb-grid {
+  @apply flex h-full flex-col;
+}
+
+/* rdg-cell flex + align-items defined above */
+
+.rdg-cell > div[draggable='true'] {
+  @apply h-full;
+}
+
+.rdg-row {
+  @apply transition-colors;
+}
+
+.rdg-row:hover {
+  @apply bg-surface-200;
+}
+
+.rdg-row[aria-selected='true'] {
+  @apply bg-surface-200;
+}
+
+.rdg-row.rdg-row--added {
+  background-color: hsl(var(--brand-200) / 0.3);
+}
+
+.rdg-row.rdg-row--deleted {
+  background-color: hsl(var(--destructive-300) / 0.3);
+}
+
+.rdg-row.rdg-row--deleted .rdg-cell {
+  text-decoration: line-through;
+  text-decoration-color: hsl(var(--destructive-default));
+  color: hsl(var(--destructive-default));
+}
+
+.sb-grid-header {
+  @apply bg-surface-100 flex h-10 justify-between;
+}
+
+.sb-grid-footer {
+  @apply bg-surface-100 flex h-10 items-center justify-between px-2;
+}
+
+.sb-grid-column-header {
+  @apply flex h-full w-full items-center justify-between;
+}
+
+.sb-grid-column-header--cursor {
+  @apply cursor-default;
+}
+
+.sb-grid-column-header__inner {
+  @apply flex items-center gap-2 overflow-hidden overflow-ellipsis;
+}
+
+.sb-grid-column-header__inner__name {
+  @apply text-foreground overflow-hidden overflow-ellipsis text-xs select-text;
+}
+
+.sb-grid-column-header__inner__format {
+  @apply text-xs;
+  @apply overflow-hidden overflow-ellipsis font-normal;
+  @apply text-foreground-light;
+}
+
+.sb-grid-column-header__inner__primary-key {
+  @apply flex rotate-45 transform items-center;
+}
+
+.sb-grid-column-header__inner svg {
+  @apply border-brand text-brand;
+}
+
+.sb-grid-select-cell__formatter {
+  @apply flex h-full w-full items-center justify-between;
+}
+
+.sb-grid-select-cell__header {
+  @apply flex h-full w-full items-center justify-between;
+}
+
+.sb-grid [type='checkbox'] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  display: inline-block;
+  vertical-align: middle;
+  background-origin: border-box;
+  user-select: none;
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+  @apply cursor-pointer rounded border border-solid;
+  @apply text-foreground border-strong transition-all;
+  @apply hover:border-foreground focus:ring-0 focus:outline-none;
+  @apply bg-control;
+  margin-top: 2px;
+}
+
+.sb-grid [type='checkbox']:checked {
+  @apply bg-foreground;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='hsl(0, 0%, 100%)'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") !important;
+}
+
+[data-theme='dark'] .sb-grid [type='checkbox']:checked,
+.dark .sb-grid [type='checkbox']:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='hsl(0, 0%, 0%)'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") !important;
 }
