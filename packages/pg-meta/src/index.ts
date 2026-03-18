@@ -17,8 +17,57 @@ import types from './pg-meta-types'
 import version from './pg-meta-version'
 import views from './pg-meta-views'
 import * as query from './query/index'
-import { getIndexStatusesSQL, USER_SEARCH_INDEXES } from './sql/studio/get-index-statuses'
-import { getIndexWorkerStatusSQL } from './sql/studio/get-index-worker-status'
+
+// Studio SQL queries
+export {
+  getUserSQL,
+  getIndexStatusesSQL,
+  getUsersCountSQL,
+  getPaginatedUsersSQL,
+  getIndexWorkerStatusSQL,
+  USER_SEARCH_INDEXES,
+  type OptimizedSearchColumns,
+  type UsersCursor,
+} from './sql/studio/auth'
+export {
+  getLargestSizeLimitBucketsSqlUnoptimized,
+  LARGEST_SIZE_LIMIT_BUCKETS_COUNT,
+} from './sql/studio/storage'
+export {
+  getExposedTablesSql,
+  getExposedTableCountsSql,
+  getExposedFunctionsSql,
+  getExposedFunctionCountsSql,
+  buildTablePrivilegesSql,
+  buildFunctionPrivilegesSql,
+  buildDefaultPrivilegesSql,
+  getDefaultPrivilegesStateSql,
+} from './sql/studio/privileges'
+export {
+  getIndexesSQL,
+  getDatabaseExtensionDefaultSchemaSQL,
+  getCronJobsMinimalSql,
+  getCronJobsSql,
+  getJobRunDetailsPageCountSql,
+  getDeleteOldCronJobRunDetailsByCtidSql,
+  getScheduleDeleteCronJobRunDetailsSql,
+  getTableRowsCountSql,
+} from './sql/studio/database'
+export {
+  type ForeignKey,
+  FOREIGN_KEY_CASCADE_ACTION,
+  getAddPrimaryKeySQL,
+  getDropConstraintSQL,
+  getAddForeignKeySQL,
+  getRemoveForeignKeySQL,
+  getUpdateIdentitySequenceSQL,
+  getDuplicateIdentitySequenceSQL,
+  getDuplicateTableSQL,
+  getDuplicateRowsSQL,
+  getEnableRLSSQL,
+} from './sql/studio/table-editor'
+
+export { getLiveTupleEstimate } from './sql/studio/get-live-tuple-estimate'
 
 export default {
   roles,
@@ -40,7 +89,4 @@ export default {
   indexes,
   columnPrivileges,
   query,
-  getIndexWorkerStatusSQL,
-  getIndexStatusesSQL,
-  USER_SEARCH_INDEXES,
 }
