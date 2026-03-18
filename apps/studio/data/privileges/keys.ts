@@ -1,3 +1,7 @@
+import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
+
+export const IGNORED_SCHEMAS = [...INTERNAL_SCHEMAS, 'pg_catalog']
+
 export const privilegeKeys = {
   tablePrivilegesList: (projectRef: string | undefined) =>
     ['projects', projectRef, 'database', 'table-privileges'] as const,

@@ -3,10 +3,7 @@ import { infiniteQueryOptions } from '@tanstack/react-query'
 import { executeSql } from 'data/sql/execute-sql-query'
 import type { ResponseError } from 'types'
 
-import { privilegeKeys } from './keys'
-import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
-
-export const IGNORED_SCHEMAS = [...INTERNAL_SCHEMAS, 'pg_catalog']
+import { IGNORED_SCHEMAS, privilegeKeys } from './keys'
 export const EXPOSED_FUNCTIONS_PAGE_LIMIT = 50
 
 export type ExposedFunctionsVariables = {

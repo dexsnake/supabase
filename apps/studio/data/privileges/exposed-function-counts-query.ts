@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { executeSql } from 'data/sql/execute-sql-query'
 import type { ResponseError } from 'types'
 
-import { privilegeKeys } from './keys'
+import { IGNORED_SCHEMAS, privilegeKeys } from './keys'
 
 export type ExposedFunctionCountsVariables = {
   projectRef?: string
@@ -23,7 +23,7 @@ export async function getExposedFunctionCounts(
   if (!projectRef) throw new Error('projectRef is required')
   if (!selectedSchemas) throw new Error('selectedSchemas is required')
 
-  const sql = getExposedFunctionCountsSql({ selectedSchemas })
+  const sql = getExposedFunctionCountsSql({ selectedSchemas, ignoredSchemas: IGNORED_SCHEMAS })
 
   const { result } = await executeSql(
     {
