@@ -3,7 +3,9 @@ import Papa from 'papaparse'
 
 type ResultRow = Record<string, unknown>
 
-export function formatResults(results: ResultRow[]): Record<string, string | number | boolean>[] {
+export function formatResults(
+  results: ResultRow[]
+): Record<string, string | number | boolean | null | undefined>[] {
   return results.map((row) => {
     const formatted: Record<string, string | number | boolean> = {}
     for (const key of Object.keys(row)) {
