@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns'
+import dayjs from 'dayjs'
 import { Copy, Download, MoreVertical, Plus, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -19,6 +19,7 @@ import {
   TableRow,
 } from 'ui'
 import { Admonition } from 'ui-patterns'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import CopyButton from 'components/ui/CopyButton'
 import type { components } from 'api-types'
 import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
@@ -221,8 +222,12 @@ export function AppsList() {
                         <CopyButton type="default" iconOnly text={app.id} className="px-1" />
                       </div>
                     </TableCell>
-                    <TableCell className="text-foreground-light">
-                      {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
+                    <TableCell>
+                      <TimestampInfo
+                        utcTimestamp={app.created_at}
+                        label={dayjs(app.created_at).fromNow()}
+                        className="text-sm text-foreground-light"
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

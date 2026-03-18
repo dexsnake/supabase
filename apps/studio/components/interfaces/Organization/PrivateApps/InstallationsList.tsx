@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns'
+import dayjs from 'dayjs'
 import { MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -19,6 +19,7 @@ import {
   TableRow,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { CreateInstallationModal } from './CreateInstallationModal'
 import { ViewInstallationSheet } from './ViewInstallationSheet'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
@@ -115,8 +116,12 @@ export function InstallationsList() {
                         {getScopeLabel(inst.projectScope)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-foreground-light">
-                      {formatDistanceToNow(inst.installedAt, { addSuffix: true })}
+                    <TableCell>
+                      <TimestampInfo
+                        utcTimestamp={inst.installedAt.toISOString()}
+                        label={dayjs(inst.installedAt).fromNow()}
+                        className="text-sm text-foreground-light"
+                      />
                     </TableCell>
                     <TableCell>
                       <span
