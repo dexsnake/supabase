@@ -175,20 +175,19 @@ const HeaderBreadcrumbs = ({
             {idx !== 0 && (
               <ChevronRight size={14} strokeWidth={2} className="text-foreground-muted mx-1" />
             )}
-            <p
-              className={cn(
-                'truncate text-sm transition-colors',
-                isEllipsis && 'text-foreground-light',
-                !isEllipsis && isActive && 'text-foreground',
-                !isEllipsis &&
-                  !isActive &&
-                  'cursor-pointer text-foreground-lighter hover:text-foreground'
-              )}
-              style={{ maxWidth: '6rem' }}
-              onClick={() => (!isEllipsis && !isActive ? selectBreadcrumb(crumb.index) : {})}
-            >
-              {crumb.name}
-            </p>
+            {isEllipsis ? (
+              <span className="max-w-24 truncate text-sm text-foreground-light">{crumb.name}</span>
+            ) : isActive ? (
+              <span className="max-w-24 truncate text-sm text-foreground">{crumb.name}</span>
+            ) : (
+              <button
+                type="button"
+                className="max-w-24 truncate border-0 bg-transparent p-0 text-left text-sm text-foreground-lighter transition-colors hover:text-foreground focus-visible:text-foreground"
+                onClick={() => selectBreadcrumb(crumb.index)}
+              >
+                {crumb.name}
+              </button>
+            )}
           </div>
         )
       })}
@@ -274,14 +273,19 @@ export const FileExplorerHeader = ({
     setPathString(event.target.value)
   }
 
-  const navigateByPathString = (event?: SyntheticEvent) => {
+  const navigateByPathString = async (event?: SyntheticEvent) => {
     if (event) {
       event.preventDefault()
       event.stopPropagation()
     }
-    track('storage_explorer_navigate_submitted')
+
+    const paths = compact(pathString.split('/'))
     setIsPathDialogOpen(false)
-    onSetPathByString(compact(pathString.split('/')))
+    await onSetPathByString(paths)
+
+    if (paths.length > 0) {
+      track('storage_explorer_navigate_submitted')
+    }
   }
 
   const onSetPathByString = async (paths: string[]) => {
