@@ -107,14 +107,14 @@ export const HotkeySettings = () => {
             <HotkeyToggle
               form={form}
               name="copyJsonEnabled"
-              keys={['Meta', 'o']}
+              keys={['Meta', 'j']}
               label="Copy results as JSON"
               onToggle={setCopyJsonEnabled}
             />
             <HotkeyToggle
               form={form}
               name="downloadCsvEnabled"
-              keys={['Meta', 'l']}
+              keys={['Meta', 'd']}
               label="Download results as CSV"
               onToggle={setDownloadCsvEnabled}
               isLast

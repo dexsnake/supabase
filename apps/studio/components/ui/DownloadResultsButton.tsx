@@ -64,6 +64,11 @@ export const DownloadResultsButton = ({
   }, [results])
 
   const downloadAsCSV = () => {
+    if (results.length === 0) {
+      toast('Results are empty')
+      return
+    }
+
     const csv = Papa.unparse(formattedResults, { columns: headers })
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     saveAs(blob, `${fileName}.csv`)
@@ -155,14 +160,14 @@ export const DownloadResultsButton = ({
           <Copy size={14} />
           <p>Copy as JSON</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'o']} />
+            <KeyboardShortcut keys={['Meta', 'j']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem className="gap-x-2" onClick={() => downloadAsCSV()}>
           <Download size={14} />
           <p>Download CSV</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'l']} />
+            <KeyboardShortcut keys={['Meta', 'd']} />
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
