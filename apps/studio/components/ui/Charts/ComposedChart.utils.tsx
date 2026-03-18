@@ -32,7 +32,6 @@ export interface ReportAttributes {
     width?: number
     tickFormatter?: (value: any) => string
     domain?: [number | string, number | string]
-    allowDataOverflow?: boolean
   }
   hideHighlightedValue?: boolean
 }
