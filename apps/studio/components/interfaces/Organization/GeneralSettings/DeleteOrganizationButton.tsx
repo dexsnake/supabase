@@ -37,12 +37,26 @@ export const DeleteOrganizationButton = () => {
     refetchOnMount: 'always',
   })
 
-  const projects = projectsData?.pages.flatMap((page) => page.projects ?? []) ?? []
+  // When an organization slug is present but the projects query has not yet
+  // produced any data (and hasn't errored), treat this as a "pending" state
+  // rather than as "no projects". This avoids interpreting lack of data as
+  // an empty list, which could allow deletion to proceed without any project
+  // acknowledgement.
+  const isProjectsDataPending =
+    orgSlug !== undefined && projectsData === undefined && !isError
+
+  const projects =
+    !isProjectsDataPending && projectsData !== undefined
+      ? projectsData.pages.flatMap((page) => page.projects ?? [])
+      : undefined
 
   const shouldRenderChecklist =
-    projects.length > 0 && projects.length <= MAX_PROJECT_ACKNOWLEDGEMENTS
+    projects !== undefined &&
+    projects.length > 0 &&
+    projects.length <= MAX_PROJECT_ACKNOWLEDGEMENTS
 
-  const exceedsLimit = projects.length > MAX_PROJECT_ACKNOWLEDGEMENTS
+  const exceedsLimit =
+    projects !== undefined && projects.length > MAX_PROJECT_ACKNOWLEDGEMENTS
 
   useEffect(() => {
     if (isOpen) {
