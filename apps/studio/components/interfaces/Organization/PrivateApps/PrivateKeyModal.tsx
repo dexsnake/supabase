@@ -89,12 +89,7 @@ export function PrivateKeyModal({ app, privateKey, visible, onDone }: PrivateKey
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Private key</p>
               <div className="flex items-center gap-2">
-                <Button
-                  type="default"
-                  size="tiny"
-                  icon={<Copy size={12} />}
-                  onClick={handleCopy}
-                >
+                <Button type="default" size="tiny" icon={<Copy size={12} />} onClick={handleCopy}>
                   Copy
                 </Button>
                 <Button

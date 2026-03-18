@@ -107,42 +107,42 @@ export function InstallationsList() {
                         ? '1 project'
                         : `${scope.length} projects`
                   return (
-                  <TableRow key={inst.id}>
-                    <TableCell className="font-medium">{getAppName(inst.app_id)}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs">
-                        {scopeLabel}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <TimestampInfo
-                        utcTimestamp={inst.created_at}
-                        label={dayjs(inst.created_at).fromNow()}
-                        className="text-sm text-foreground-light"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="default"
-                            icon={<MoreVertical size={14} />}
-                            className="px-1"
-                          />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" side="bottom" className="w-40">
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="!text-destructive gap-x-2"
-                            onClick={() => setInstallationToDelete(inst)}
-                          >
-                            <Trash size={14} />
-                            Uninstall
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                    <TableRow key={inst.id}>
+                      <TableCell className="font-medium">{getAppName(inst.app_id)}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs">
+                          {scopeLabel}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <TimestampInfo
+                          utcTimestamp={inst.created_at}
+                          label={dayjs(inst.created_at).fromNow()}
+                          className="text-sm text-foreground-light"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="default"
+                              icon={<MoreVertical size={14} />}
+                              className="px-1"
+                            />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" side="bottom" className="w-40">
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="!text-destructive gap-x-2"
+                              onClick={() => setInstallationToDelete(inst)}
+                            >
+                              <Trash size={14} />
+                              Uninstall
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
               </TableBody>
@@ -151,10 +151,7 @@ export function InstallationsList() {
         )}
       </div>
 
-      <CreateInstallationModal
-        visible={showCreate}
-        onClose={() => setShowCreate(false)}
-      />
+      <CreateInstallationModal visible={showCreate} onClose={() => setShowCreate(false)} />
 
       <ConfirmationModal
         variant="destructive"

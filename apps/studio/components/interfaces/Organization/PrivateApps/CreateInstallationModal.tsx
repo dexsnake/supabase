@@ -32,18 +32,16 @@ export function CreateInstallationModal({ visible, onClose }: CreateInstallation
   const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug })
   const projects = projectsData?.pages.flatMap((p) => p.projects) ?? []
 
-  const { mutate: installApp, isPending: isInstalling } =
-    usePlatformAppInstallationCreateMutation({
-      onSuccess: (data) => {
-        if (data) {
-          const scope: 'all' | string[] =
-            scopeType === 'all' ? 'all' : Array.from(selectedProjects)
-          addInstallation(data, scope)
-        }
-        reset()
-        onClose()
-      },
-    })
+  const { mutate: installApp, isPending: isInstalling } = usePlatformAppInstallationCreateMutation({
+    onSuccess: (data) => {
+      if (data) {
+        const scope: 'all' | string[] = scopeType === 'all' ? 'all' : Array.from(selectedProjects)
+        addInstallation(data, scope)
+      }
+      reset()
+      onClose()
+    },
+  })
 
   const [selectedAppId, setSelectedAppId] = useState('')
   const [scopeType, setScopeType] = useState<'all' | 'selected'>('all')
@@ -74,8 +72,7 @@ export function CreateInstallationModal({ visible, onClose }: CreateInstallation
     })
   }
 
-  const canInstall =
-    selectedAppId !== '' && (scopeType === 'all' || selectedProjects.size > 0)
+  const canInstall = selectedAppId !== '' && (scopeType === 'all' || selectedProjects.size > 0)
 
   return (
     <Dialog open={visible} onOpenChange={(open) => !open && handleClose()}>

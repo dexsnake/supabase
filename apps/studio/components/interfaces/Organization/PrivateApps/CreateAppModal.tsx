@@ -60,7 +60,9 @@ export function CreateAppModal({ visible, onClose, onCreated }: CreateAppModalPr
       slug,
       name: name.trim(),
       description: description.trim() || undefined,
-      permissions: Array.from(selectedPermissions) as components['schemas']['CreatePlatformAppBody']['permissions'],
+      permissions: Array.from(
+        selectedPermissions
+      ) as components['schemas']['CreatePlatformAppBody']['permissions'],
     })
   }
 
@@ -165,10 +167,7 @@ export function CreateAppModal({ visible, onClose, onCreated }: CreateAppModalPr
                   </p>
                   <div className="space-y-2">
                     {orgPerms.map((perm) => (
-                      <label
-                        key={perm.id}
-                        className="flex items-start gap-3 cursor-pointer group"
-                      >
+                      <label key={perm.id} className="flex items-start gap-3 cursor-pointer group">
                         <Checkbox_Shadcn_
                           id={perm.id}
                           checked={selectedPermissions.has(perm.id)}
@@ -192,10 +191,7 @@ export function CreateAppModal({ visible, onClose, onCreated }: CreateAppModalPr
                   </p>
                   <div className="space-y-2">
                     {projectPerms.map((perm) => (
-                      <label
-                        key={perm.id}
-                        className="flex items-start gap-3 cursor-pointer group"
-                      >
+                      <label key={perm.id} className="flex items-start gap-3 cursor-pointer group">
                         <Checkbox_Shadcn_
                           id={perm.id}
                           checked={selectedPermissions.has(perm.id)}

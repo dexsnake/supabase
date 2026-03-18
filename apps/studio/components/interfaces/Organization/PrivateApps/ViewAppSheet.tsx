@@ -2,15 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Pencil, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  Button,
-  Input_Shadcn_,
-  ScrollArea,
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  cn,
-} from 'ui'
+import { Button, Input_Shadcn_, ScrollArea, Sheet, SheetContent, SheetHeader, cn } from 'ui'
 import type { components } from 'api-types'
 import CopyButton from 'components/ui/CopyButton'
 import { usePlatformAppQuery } from 'data/platform-apps/platform-app-query'
@@ -71,7 +63,8 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
       slug,
       appId: app.id,
       name: trimmed,
-      permissions: detail.permissions as components['schemas']['UpdatePlatformAppBody']['permissions'],
+      permissions:
+        detail.permissions as components['schemas']['UpdatePlatformAppBody']['permissions'],
     })
   }
 
@@ -108,14 +101,11 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
           size="default"
           className="!min-w-[600px] flex flex-col h-full gap-0"
         >
-          <SheetHeader className={cn('flex flex-row justify-between gap-x-4 items-center border-b')}>
+          <SheetHeader
+            className={cn('flex flex-row justify-between gap-x-4 items-center border-b')}
+          >
             <p className="truncate font-medium">{app?.name}</p>
-            <Button
-              type="text"
-              icon={<X size={16} />}
-              className="px-1"
-              onClick={onClose}
-            />
+            <Button type="text" icon={<X size={16} />} className="px-1" onClick={onClose} />
           </SheetHeader>
 
           <ScrollArea className="flex-1 max-h-[calc(100vh-60px)]">
@@ -143,7 +133,12 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                             }}
                             autoFocus
                           />
-                          <Button type="primary" size="tiny" loading={isUpdating} onClick={saveName}>
+                          <Button
+                            type="primary"
+                            size="tiny"
+                            loading={isUpdating}
+                            onClick={saveName}
+                          >
                             Save
                           </Button>
                           <Button
@@ -179,7 +174,12 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
                       <span className="text-sm text-foreground-light w-28 shrink-0">App ID</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <span className="font-mono text-sm truncate">{app.id}</span>
-                        <CopyButton type="default" iconOnly text={app.id} className="px-1 shrink-0" />
+                        <CopyButton
+                          type="default"
+                          iconOnly
+                          text={app.id}
+                          className="px-1 shrink-0"
+                        />
                       </div>
                     </div>
 
@@ -230,7 +230,9 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
 
                       {projectPermissions.length > 0 && (
                         <>
-                          <div className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}>
+                          <div
+                            className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}
+                          >
                             <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
                               Project
                             </p>

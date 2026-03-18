@@ -14,12 +14,9 @@ export async function createPlatformAppSigningKey({
   slug,
   appId,
 }: PlatformAppSigningKeyCreateVariables) {
-  const { data, error } = await post(
-    '/platform/organizations/{slug}/apps/{app_id}/signing-keys',
-    {
-      params: { path: { slug, app_id: appId } },
-    }
-  )
+  const { data, error } = await post('/platform/organizations/{slug}/apps/{app_id}/signing-keys', {
+    params: { path: { slug, app_id: appId } },
+  })
 
   if (error) handleError(error)
   return data

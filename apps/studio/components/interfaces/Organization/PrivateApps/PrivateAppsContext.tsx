@@ -15,7 +15,10 @@ interface PrivateAppsContextValue {
   apps: PrivateApp[]
   isLoading: boolean
   installations: Installation[]
-  addInstallation: (data: components['schemas']['InstallPlatformAppResponse'], projectScope: 'all' | string[]) => void
+  addInstallation: (
+    data: components['schemas']['InstallPlatformAppResponse'],
+    projectScope: 'all' | string[]
+  ) => void
   removeInstallation: (id: string) => void
   setProjectScope: (installationId: string, scope: 'all' | string[]) => void
 }

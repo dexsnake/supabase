@@ -54,7 +54,12 @@ export function ViewInstallationSheet({
 
   return (
     <>
-      <Sheet open={visible} onOpenChange={(open) => { if (!open) onClose() }}>
+      <Sheet
+        open={visible}
+        onOpenChange={(open) => {
+          if (!open) onClose()
+        }}
+      >
         <SheetContent
           showClose={false}
           size="default"

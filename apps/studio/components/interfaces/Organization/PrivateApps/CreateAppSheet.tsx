@@ -69,7 +69,8 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
       slug,
       name: name.trim(),
       description: description.trim() || undefined,
-      permissions: selectedPermissions as components['schemas']['CreatePlatformAppBody']['permissions'],
+      permissions:
+        selectedPermissions as components['schemas']['CreatePlatformAppBody']['permissions'],
     })
   }
 

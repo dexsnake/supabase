@@ -9,7 +9,13 @@ interface DeleteAppModalProps {
   onConfirm: () => void
 }
 
-export function DeleteAppModal({ app, visible, isLoading, onClose, onConfirm }: DeleteAppModalProps) {
+export function DeleteAppModal({
+  app,
+  visible,
+  isLoading,
+  onClose,
+  onConfirm,
+}: DeleteAppModalProps) {
   return (
     <ConfirmationModal
       variant="destructive"

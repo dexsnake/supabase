@@ -23,9 +23,7 @@ export async function getPlatformAppInstallations(
   return data
 }
 
-export type PlatformAppInstallationsData = Awaited<
-  ReturnType<typeof getPlatformAppInstallations>
->
+export type PlatformAppInstallationsData = Awaited<ReturnType<typeof getPlatformAppInstallations>>
 export type PlatformAppInstallationsError = ResponseError
 
 export const usePlatformAppInstallationsQuery = <TData = PlatformAppInstallationsData>(
@@ -33,11 +31,7 @@ export const usePlatformAppInstallationsQuery = <TData = PlatformAppInstallation
   {
     enabled = true,
     ...options
-  }: UseCustomQueryOptions<
-    PlatformAppInstallationsData,
-    PlatformAppInstallationsError,
-    TData
-  > = {}
+  }: UseCustomQueryOptions<PlatformAppInstallationsData, PlatformAppInstallationsError, TData> = {}
 ) =>
   useQuery<PlatformAppInstallationsData, PlatformAppInstallationsError, TData>({
     queryKey: platformAppKeys.installations(slug),
