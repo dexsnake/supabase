@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
   Input_Shadcn_,
 } from 'ui'
+
 import type { SqlEditorState } from '../SqlEditor/state'
 import { useSqlEditorSnapshot } from '../SqlEditor/state'
 
@@ -42,13 +43,10 @@ export function SnippetSidebar({ state }: SnippetSidebarProps) {
     [state]
   )
 
-  const startRename = useCallback(
-    (id: string, currentName: string) => {
-      setRenamingId(id)
-      setRenameValue(currentName)
-    },
-    []
-  )
+  const startRename = useCallback((id: string, currentName: string) => {
+    setRenamingId(id)
+    setRenameValue(currentName)
+  }, [])
 
   const commitRename = useCallback(() => {
     if (renamingId && renameValue.trim()) {
@@ -60,7 +58,7 @@ export function SnippetSidebar({ state }: SnippetSidebarProps) {
 
   return (
     <div className="w-64 border-r flex flex-col bg-dash-sidebar flex-shrink-0">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
         <span className="text-xs font-medium text-foreground-light uppercase tracking-wider">
           SQL Snippets
         </span>

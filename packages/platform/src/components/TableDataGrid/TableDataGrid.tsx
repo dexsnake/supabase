@@ -1,20 +1,25 @@
 'use client'
 
-import { Plus, Trash2 } from 'lucide-react'
+import { ArrowUpDown, Plus, Search, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import DataGrid, { type Column, type RenderCellProps, type RenderEditCellProps } from 'react-data-grid'
-import { Button, cn } from 'ui'
+import DataGrid, {
+  type Column,
+  type RenderCellProps,
+  type RenderEditCellProps,
+} from 'react-data-grid'
+import { Button, cn, Input_Shadcn_ } from 'ui'
+
 import type { ColumnInfo } from '../../adapters/types'
 import { useAdapter } from '../../context/AdapterContext'
-import { createGridState, useGridSnapshot } from './state'
 import {
-  useTableColumns,
-  useTableRows,
-  useTableRowCount,
-  useUpdateRow,
-  useInsertRow,
   useDeleteRow,
+  useInsertRow,
+  useTableColumns,
+  useTableRowCount,
+  useTableRows,
+  useUpdateRow,
 } from './hooks'
+import { createGridState, useGridSnapshot } from './state'
 import { TablePagination } from './TablePagination'
 
 export interface TableDataGridProps {
@@ -179,15 +184,29 @@ export function TableDataGrid({ tableName, pageSize = 25 }: TableDataGridProps) 
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b">
+      <div className="flex items-center gap-2 px-3 py-1.5">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            strokeWidth={1.5}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-lighter"
+          />
+          <Input_Shadcn_
+            className="h-[30px] pl-8 text-sm bg-transparent border-none shadow-none"
+            placeholder="Filter by id, content... or ask AI"
+          />
+        </div>
+        <Button type="text" size="tiny" icon={<ArrowUpDown size={14} strokeWidth={1.5} />}>
+          Sort
+        </Button>
         <Button
-          type="text"
+          type="primary"
           size="tiny"
           icon={<Plus size={14} strokeWidth={1.5} />}
           onClick={handleAddRow}
           disabled={!pkColumn}
         >
-          Add row
+          Insert
         </Button>
       </div>
 

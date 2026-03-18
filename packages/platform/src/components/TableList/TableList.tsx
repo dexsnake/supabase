@@ -1,8 +1,9 @@
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-import { Badge, Button, cn } from 'ui'
+import { useQuery } from '@tanstack/react-query'
+import { Plus, Table2 } from 'lucide-react'
+import { Button, cn } from 'ui'
+
 import { useAdapter } from '../../context/AdapterContext'
 
 export interface TableListProps {
@@ -21,7 +22,7 @@ export function TableList({ selectedTable, onSelectTable, onCreateTable }: Table
 
   return (
     <div className="w-64 border-r flex flex-col bg-dash-sidebar flex-shrink-0">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
         <span className="text-xs font-medium text-foreground-light uppercase tracking-wider">
           Tables
         </span>
@@ -46,16 +47,14 @@ export function TableList({ selectedTable, onSelectTable, onCreateTable }: Table
                 key={table.name}
                 onClick={() => onSelectTable(table.name)}
                 className={cn(
-                  'flex items-center justify-between px-4 py-2 text-sm text-left transition-colors',
+                  'flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors',
                   selectedTable === table.name
                     ? 'bg-selection text-foreground'
                     : 'text-foreground-light hover:bg-surface-200 hover:text-foreground'
                 )}
               >
+                <Table2 size={14} strokeWidth={1.5} className="flex-shrink-0 translate-y-px" />
                 <span className="truncate">{table.name}</span>
-                <Badge variant="default" className="ml-2 text-xs tabular-nums">
-                  {table.rowCount}
-                </Badge>
               </button>
             ))}
           </nav>

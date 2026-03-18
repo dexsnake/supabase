@@ -23,6 +23,7 @@ interface NavItem {
   label: string
   key: string
   icon: ReactNode
+  disabled?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -39,16 +40,18 @@ const NAV_ITEMS: NavItem[] = [
     icon: <TableEditor size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
   },
   {
-    href: '/data',
-    label: 'Data',
-    key: 'data',
+    href: '/auth',
+    label: 'Auth',
+    key: 'auth',
     icon: <Database size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+    disabled: true,
   },
   {
     href: '/storage',
     label: 'Storage',
     key: 'storage',
     icon: <Storage size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+    disabled: true,
   },
 ]
 
@@ -63,16 +66,24 @@ export function AppSidebar() {
             {NAV_ITEMS.map((item) => (
               <SidebarMenuItem key={item.key}>
                 <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
+                  asChild={!item.disabled}
+                  disabled={item.disabled}
+                  isActive={!item.disabled && pathname === item.href}
+                  tooltip={item.disabled ? `${item.label} (coming soon)` : item.label}
                   size="default"
                   className="text-sm"
                 >
-                  <Link href={item.href}>
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </Link>
+                  {item.disabled ? (
+                    <span className="opacity-50">
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </span>
+                  ) : (
+                    <Link href={item.href}>
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Link>
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
