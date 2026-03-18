@@ -1,6 +1,6 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { LOCAL_STORAGE_KEYS } from 'common'
@@ -19,12 +19,31 @@ import { Checkbox_Shadcn_ } from 'ui'
 
 export const DeleteOrganizationButton = () => {
   const router = useRouter()
+
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
   const { slug: orgSlug, name: orgName } = selectedOrganization ?? {}
 
-  const { data: projectsData } = useOrgProjectsInfiniteQuery({ slug: orgSlug })
+  const { data: projectsData, isLoading, isError } = useOrgProjectsInfiniteQuery({ slug: orgSlug })
+
   const projects = projectsData?.pages.flatMap((page) => page.projects ?? []) ?? []
+
+  const MAX_PROJECT_ACKNOWLEDGEMENTS = 10
+
+  const shouldRenderChecklist =
+    projects.length > 0 && projects.length <= MAX_PROJECT_ACKNOWLEDGEMENTS
+
+  const exceedsLimit = projects.length > MAX_PROJECT_ACKNOWLEDGEMENTS
+
   const [checkedProjects, setCheckedProjects] = useState<Record<string, boolean>>({})
+  const [acknowledgedAll, setAcknowledgedAll] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setCheckedProjects({})
+      setAcknowledgedAll(false)
+    }
+  }, [isOpen, orgSlug])
 
   const toggleProject = (ref: string) => {
     setCheckedProjects((prev) => ({
@@ -33,9 +52,10 @@ export const DeleteOrganizationButton = () => {
     }))
   }
 
-  const allChecked = projects.every((p) => checkedProjects[p.ref])
-
-  const [isOpen, setIsOpen] = useState(false)
+  const allChecked =
+    projects.length === 0 ||
+    (shouldRenderChecklist && projects.every((p) => checkedProjects[p.ref])) ||
+    (exceedsLimit && acknowledgedAll)
 
   const [_, setLastVisitedOrganization] = useLocalStorageQuery(
     LOCAL_STORAGE_KEYS.LAST_VISITED_ORGANIZATION,
@@ -63,6 +83,16 @@ export const DeleteOrganizationButton = () => {
 
     if (!orgSlug) {
       console.error('Org slug is required')
+      return
+    }
+
+    if (isLoading) {
+      toast.error('Projects are still loading, please wait')
+      return
+    }
+
+    if (isError) {
+      toast.error('Failed to load projects')
       return
     }
 
@@ -94,6 +124,7 @@ export const DeleteOrganizationButton = () => {
           Delete organization
         </ButtonTooltip>
       </div>
+
       <TextConfirmModal
         visible={isOpen}
         size="small"
@@ -106,7 +137,8 @@ export const DeleteOrganizationButton = () => {
         onConfirm={onConfirmDelete}
         onCancel={() => setIsOpen(false)}
       >
-        {projects.length > 0 && (
+        {/* Small org → checklist */}
+        {shouldRenderChecklist && (
           <>
             <p className="mb-2 text-sm text-foreground-lighter">
               Acknowledge each project that will be deleted:
@@ -137,6 +169,25 @@ export const DeleteOrganizationButton = () => {
             </div>
           </>
         )}
+
+        {/* Large org → single acknowledgement */}
+        {exceedsLimit && (
+          <div className="mt-4 rounded-md border border-warning bg-warning/5 px-3 py-3">
+            <p className="text-sm text-foreground">
+              This organization contains more than {MAX_PROJECT_ACKNOWLEDGEMENTS} projects.
+            </p>
+
+            <label className="mt-3 flex items-center gap-2 text-sm text-foreground">
+              <Checkbox_Shadcn_
+                checked={acknowledgedAll}
+                onCheckedChange={() => setAcknowledgedAll((prev) => !prev)}
+              />
+              I understand that all projects will be permanently deleted.
+            </label>
+          </div>
+        )}
+
+        {/* Final warning */}
         <p className={`text-sm text-foreground-lighter ${projects.length > 0 ? 'mt-4' : ''}`}>
           This action <span className="text-foreground">cannot</span> be undone. This will
           permanently delete the <span className="text-foreground">{orgName}</span> organization and
