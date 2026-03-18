@@ -4,15 +4,21 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   Button,
+  Card,
   Checkbox_Shadcn_,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   Label_Shadcn_,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from 'ui'
 import { Admonition } from 'ui-patterns'
-import Table from 'components/to-be-cleaned/Table'
 import CopyButton from 'components/ui/CopyButton'
 import type { components } from 'api-types'
 import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
@@ -188,56 +194,64 @@ export function AppsList() {
             </Button>
           </div>
         ) : (
-          <Table
-            head={[
-              <Table.th key="name">Name</Table.th>,
-              <Table.th key="app-id">App ID</Table.th>,
-              <Table.th key="created">Created</Table.th>,
-              <Table.th key="actions"></Table.th>,
-            ]}
-            body={apps.map((app) => (
-              <Table.tr key={app.id}>
-                <Table.td>
-                  <button
-                    className="font-medium hover:underline text-left"
-                    onClick={() => setViewApp(app)}
-                  >
-                    {app.name}
-                  </button>
-                </Table.td>
-                <Table.td>
-                  <div className="flex items-center gap-x-2">
-                    <span className="font-mono text-xs truncate max-w-[200px]">{app.id}</span>
-                    <CopyButton type="default" iconOnly text={app.id} className="px-1" />
-                  </div>
-                </Table.td>
-                <Table.td>
-                  <span className="text-sm text-foreground-light">
-                    {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
-                  </span>
-                </Table.td>
-                <Table.td align="right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button type="default" icon={<MoreVertical size={14} />} className="px-1" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" side="bottom" className="w-32">
-                      <DropdownMenuItem onClick={() => setViewApp(app)}>
-                        View details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="!text-destructive gap-x-2"
-                        onClick={() => setAppToDelete(app)}
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>App ID</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {apps.map((app) => (
+                  <TableRow key={app.id}>
+                    <TableCell>
+                      <button
+                        className="font-medium hover:underline text-left"
+                        onClick={() => setViewApp(app)}
                       >
-                        <Trash size={14} />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Table.td>
-              </Table.tr>
-            ))}
-          />
+                        {app.name}
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-x-2">
+                        <span className="font-mono text-xs truncate max-w-[200px]">{app.id}</span>
+                        <CopyButton type="default" iconOnly text={app.id} className="px-1" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-foreground-light">
+                      {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="default"
+                            icon={<MoreVertical size={14} />}
+                            className="px-1"
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" side="bottom" className="w-32">
+                          <DropdownMenuItem onClick={() => setViewApp(app)}>
+                            View details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="!text-destructive gap-x-2"
+                            onClick={() => setAppToDelete(app)}
+                          >
+                            <Trash size={14} />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
 
