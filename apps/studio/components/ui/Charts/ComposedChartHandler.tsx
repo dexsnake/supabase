@@ -132,7 +132,7 @@ const ComposedChartHandler = ({
     endDate,
     interval as AnalyticsInterval,
     databaseIdentifier,
-    data,
+    Array.isArray(data) ? undefined : data,
     isVisible
   )
 
