@@ -105,7 +105,7 @@ export const DownloadResultsButton = ({
       e.preventDefault()
       copyAsJSON()
     },
-    'o',
+    'j',
     { enabled: copyJsonEnabled ?? isEmpty }
   )
 
@@ -114,7 +114,7 @@ export const DownloadResultsButton = ({
       e.preventDefault()
       downloadAsCSV()
     },
-    'l',
+    'd',
     { enabled: downloadCsvEnabled ?? isEmpty }
   )
 
