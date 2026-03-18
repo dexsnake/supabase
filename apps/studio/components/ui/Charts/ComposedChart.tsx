@@ -460,7 +460,12 @@ export function ComposedChart({
             axisLine={{ stroke: CHART_COLORS.AXIS }}
             tickLine={{ stroke: CHART_COLORS.AXIS }}
             domain={stackedPercent ? ([0, 100] as [number, number]) : yAxisDomain}
-            tickFormatter={_YAxisProps.tickFormatter}
+            allowDataOverflow={stackedPercent ? true : undefined}
+            tickFormatter={
+              stackedPercent
+                ? (v: number) => `${Math.round(v)}%`
+                : _YAxisProps.tickFormatter
+            }
             key={yAxisKey}
           />
           <XAxis

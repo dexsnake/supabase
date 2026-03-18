@@ -78,7 +78,7 @@ export const getReportAttributesV2: (
       showMaxValue: false,
       showGrid: true,
       YAxisProps: {
-        width: 45,
+        width: 55,
       },
       hideChartType: false,
       defaultChartStyle: 'bar',
