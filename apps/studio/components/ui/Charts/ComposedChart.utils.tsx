@@ -31,9 +31,10 @@ export interface ReportAttributes {
   YAxisProps?: {
     width?: number
     tickFormatter?: (value: any) => string
+    domain?: [number, number]
+    allowDataOverflow?: boolean
   }
   hideHighlightedValue?: boolean
-  stackedPercent?: boolean
 }
 
 export type Provider = 'infra-monitoring' | 'daily-stats' | 'mock' | 'reference-line' | 'logs'

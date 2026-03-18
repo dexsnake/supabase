@@ -43,7 +43,6 @@ export interface ComposedChartHandlerProps {
   docsUrl?: string
   hide?: boolean
   syncId?: string
-  stackedPercent?: boolean
 }
 
 /**
@@ -115,7 +114,6 @@ const ComposedChartHandler = ({
   isVisible = true,
   id,
   syncId,
-  stackedPercent,
   ...otherProps
 }: PropsWithChildren<ComposedChartHandlerProps>) => {
   const router = useRouter()
@@ -303,7 +301,6 @@ const ComposedChartHandler = ({
           hideChartType={hideChartType}
           syncId={syncId}
           highlightActions={highlightActions}
-          stackedPercent={stackedPercent}
           {...otherProps}
         />
       </Panel.Content>
