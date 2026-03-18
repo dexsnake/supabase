@@ -1,11 +1,10 @@
 'use client'
 
-import { CalendarIcon, MapPinIcon } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { cn, Button, Badge } from 'ui'
 import { useEvents } from '~/app/events/context'
 import { formatHosts } from '~/lib/eventsUtils'
+import { CalendarIcon, MapPinIcon, MicIcon } from 'lucide-react'
+import Link from 'next/link'
+import { Badge, Button, cn } from 'ui'
 
 export function EventBanner() {
   const { isLoading, featuredEvent } = useEvents()
@@ -25,7 +24,14 @@ export function EventBanner() {
       <article className="flex flex-col md:justify-center gap-6 lg:py-2">
         <div className="flex justify-between items-start gap-4">
           <div className="flex flex-col gap-1.5">
-            <h2 className="text-2xl font-medium lg:line-clamp-2">{featuredEvent.title}</h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-medium lg:line-clamp-2">{featuredEvent.title}</h2>
+              {featuredEvent.isSpeaking && (
+                <Badge variant="success" className="flex items-center gap-1 shrink-0">
+                  Speaking
+                </Badge>
+              )}
+            </div>
             <p
               className="text-lg font-medium text-foreground-light"
               title={`Hosted by ${formatHosts(featuredEvent.hosts).fullList}`}
@@ -34,17 +40,26 @@ export function EventBanner() {
             </p>
           </div>
 
-          {featuredEvent.link && (
-            <Button className="hidden md:block mt-1" size="medium" asChild>
-              <Link
-                href={featuredEvent.link.href}
-                target={featuredEvent.link.target}
-                rel="noopener noreferrer"
-              >
-                Register
-              </Link>
-            </Button>
-          )}
+          <div className="hidden md:flex items-center gap-2 mt-1">
+            {featuredEvent.meetingLink && (
+              <Button type="secondary" size="medium" asChild>
+                <Link href={featuredEvent.meetingLink} target="_blank" rel="noopener noreferrer">
+                  Meet with us
+                </Link>
+              </Button>
+            )}
+            {featuredEvent.link && (
+              <Button size="medium" asChild>
+                <Link
+                  href={featuredEvent.link.href}
+                  target={featuredEvent.link.target}
+                  rel="noopener noreferrer"
+                >
+                  Register
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-y-4 gap-x-12 items-center">
@@ -58,17 +73,26 @@ export function EventBanner() {
           </p>
         </div>
 
-        {featuredEvent.link && (
-          <Button className="block md:hidden mt-1" size="medium" asChild>
-            <Link
-              href={featuredEvent.link.href}
-              target={featuredEvent.link.target}
-              rel="noopener noreferrer"
-            >
-              Register
-            </Link>
-          </Button>
-        )}
+        <div className="flex md:hidden flex-col gap-2 mt-1">
+          {featuredEvent.meetingLink && (
+            <Button type="secondary" size="medium" asChild>
+              <Link href={featuredEvent.meetingLink} target="_blank" rel="noopener noreferrer">
+                Meet with us
+              </Link>
+            </Button>
+          )}
+          {featuredEvent.link && (
+            <Button size="medium" asChild>
+              <Link
+                href={featuredEvent.link.href}
+                target={featuredEvent.link.target}
+                rel="noopener noreferrer"
+              >
+                Register
+              </Link>
+            </Button>
+          )}
+        </div>
       </article>
     </section>
   )
@@ -151,11 +175,8 @@ const CoverImage = ({ url }: { url?: string }) => {
     )
 
   return (
-    <div className="w-full bg-surface-100 hidden md:block aspect-square border rounded-lg overflow-hidden relative">
-      <img src={url} alt="Event Cover" className="object-cover object-center w-full" />
-      <Badge variant="success" className="absolute bottom-4 right-4">
-        Upcoming
-      </Badge>
+    <div className="w-full bg-surface-100 hidden md:block border rounded-lg overflow-hidden relative">
+      <img src={url} alt="Event Cover" className="w-full h-auto block" />
     </div>
   )
 }
