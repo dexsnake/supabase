@@ -10,12 +10,12 @@ import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { TextConfirmModal } from 'components/ui/TextConfirmModalWrapper'
-import {
-  useOrgProjectsInfiniteQuery,
-  getComputeSize,
-} from 'data/projects/org-projects-infinite-query'
+import { useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
 
-import { Checkbox_Shadcn_ } from 'ui'
+import { DeleteOrganizationButtonListAck } from './DeleteOrganizationButton.ListAck'
+import { DeleteOrganizationButtonSingleAck } from './DeleteOrganizationButton.SingleAck'
+
+const MAX_PROJECT_ACKNOWLEDGEMENTS = 10
 
 export const DeleteOrganizationButton = () => {
   const router = useRouter()
@@ -23,11 +23,15 @@ export const DeleteOrganizationButton = () => {
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
   const { slug: orgSlug, name: orgName } = selectedOrganization ?? {}
 
-  const { data: projectsData, isLoading, isError } = useOrgProjectsInfiniteQuery({ slug: orgSlug })
+  const {
+    data: projectsData,
+    isLoading,
+    isError,
+  } = useOrgProjectsInfiniteQuery({
+    slug: orgSlug,
+  })
 
   const projects = projectsData?.pages.flatMap((page) => page.projects ?? []) ?? []
-
-  const MAX_PROJECT_ACKNOWLEDGEMENTS = 10
 
   const shouldRenderChecklist =
     projects.length > 0 && projects.length <= MAX_PROJECT_ACKNOWLEDGEMENTS
@@ -38,6 +42,7 @@ export const DeleteOrganizationButton = () => {
   const [acknowledgedAll, setAcknowledgedAll] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
+  // Reset state when modal opens or org changes
   useEffect(() => {
     if (isOpen) {
       setCheckedProjects({})
@@ -52,10 +57,22 @@ export const DeleteOrganizationButton = () => {
     }))
   }
 
-  const allChecked =
-    projects.length === 0 ||
-    (shouldRenderChecklist && projects.every((p) => checkedProjects[p.ref])) ||
-    (exceedsLimit && acknowledgedAll)
+  // Clearer logic (per review)
+  const isDeletionConfirmed = () => {
+    if (projects.length === 0) return true
+
+    if (shouldRenderChecklist) {
+      return projects.every((p) => checkedProjects[p.ref])
+    }
+
+    if (exceedsLimit) {
+      return acknowledgedAll
+    }
+
+    return false
+  }
+
+  const allChecked = isDeletionConfirmed()
 
   const [_, setLastVisitedOrganization] = useLocalStorageQuery(
     LOCAL_STORAGE_KEYS.LAST_VISITED_ORGANIZATION,
@@ -137,54 +154,22 @@ export const DeleteOrganizationButton = () => {
         onConfirm={onConfirmDelete}
         onCancel={() => setIsOpen(false)}
       >
-        {/* Small org → checklist */}
+        {/* ≤ MAX → checklist */}
         {shouldRenderChecklist && (
-          <>
-            <p className="mb-2 text-sm text-foreground-lighter">
-              Acknowledge each project that will be deleted:
-            </p>
-
-            <div className="mt-4 overflow-hidden rounded-md border border-default">
-              {projects.map((project, i) => (
-                <label
-                  key={project.ref}
-                  className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-surface-200 ${
-                    i !== projects.length - 1 ? 'border-b border-default' : ''
-                  }`}
-                >
-                  <Checkbox_Shadcn_
-                    className="mt-[2px]"
-                    checked={!!checkedProjects[project.ref]}
-                    onCheckedChange={() => toggleProject(project.ref)}
-                  />
-
-                  <div className="flex flex-1 items-center justify-between">
-                    <span className="text-foreground">{project.name}</span>
-                    <span className="text-xs text-foreground-lighter">
-                      {getComputeSize(project) ?? 'Unknown'}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </>
+          <DeleteOrganizationButtonListAck
+            projects={projects}
+            checkedProjects={checkedProjects}
+            toggleProject={toggleProject}
+          />
         )}
 
-        {/* Large org → single acknowledgement */}
+        {/* > MAX → single confirmation */}
         {exceedsLimit && (
-          <div className="mt-4 rounded-md border border-warning bg-warning/5 px-3 py-3">
-            <p className="text-sm text-foreground">
-              This organization contains more than {MAX_PROJECT_ACKNOWLEDGEMENTS} projects.
-            </p>
-
-            <label className="mt-3 flex items-center gap-2 text-sm text-foreground">
-              <Checkbox_Shadcn_
-                checked={acknowledgedAll}
-                onCheckedChange={() => setAcknowledgedAll((prev) => !prev)}
-              />
-              I understand that all projects will be permanently deleted.
-            </label>
-          </div>
+          <DeleteOrganizationButtonSingleAck
+            acknowledgedAll={acknowledgedAll}
+            setAcknowledgedAll={setAcknowledgedAll}
+            max={MAX_PROJECT_ACKNOWLEDGEMENTS}
+          />
         )}
 
         {/* Final warning */}
