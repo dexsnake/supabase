@@ -66,12 +66,10 @@ export const usePreventNavigationOnUnsavedChanges = ({
   }, [confirmNavigate, hasChanges])
 
   const handleCancel = useStaticEffectEvent(() => {
-    console.log('CANCEL')
     setNavigateUrl(undefined)
   })
 
   const handleConfirm = useStaticEffectEvent(() => {
-    console.log('CONFIRM')
     setConfirmNavigate(true)
     let urlToNavigate = navigateUrl ?? '/'
     if (BASE_PATH && urlToNavigate.startsWith(BASE_PATH)) {
