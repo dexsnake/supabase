@@ -5,7 +5,7 @@ import type { OrgProject } from 'data/projects/org-projects-infinite-query'
 type Props = {
   projects: OrgProject[]
   checkedProjects: Record<string, boolean>
-  toggleProject: (ref: string) => void
+  toggleProject: (ref: string, checked: boolean | 'indeterminate') => void
 }
 
 export const DeleteOrganizationButtonListAck = ({
@@ -30,7 +30,7 @@ export const DeleteOrganizationButtonListAck = ({
             <Checkbox_Shadcn_
               className="mt-[2px]"
               checked={!!checkedProjects[project.ref]}
-              onCheckedChange={() => toggleProject(project.ref)}
+              onCheckedChange={(nextChecked) => toggleProject(project.ref, nextChecked)}
             />
 
             <div className="flex flex-1 items-center justify-between">

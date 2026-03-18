@@ -23,12 +23,18 @@ export const DeleteOrganizationButton = () => {
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
   const { slug: orgSlug, name: orgName } = selectedOrganization ?? {}
 
+  const [checkedProjects, setCheckedProjects] = useState<Record<string, boolean>>({})
+  const [acknowledgedAll, setAcknowledgedAll] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+
   const {
     data: projectsData,
     isLoading,
     isError,
   } = useOrgProjectsInfiniteQuery({
     slug: orgSlug,
+    enabled: isOpen,
+    refetchOnMount: 'always',
   })
 
   const projects = projectsData?.pages.flatMap((page) => page.projects ?? []) ?? []
@@ -37,10 +43,6 @@ export const DeleteOrganizationButton = () => {
     projects.length > 0 && projects.length <= MAX_PROJECT_ACKNOWLEDGEMENTS
 
   const exceedsLimit = projects.length > MAX_PROJECT_ACKNOWLEDGEMENTS
-
-  const [checkedProjects, setCheckedProjects] = useState<Record<string, boolean>>({})
-  const [acknowledgedAll, setAcknowledgedAll] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     if (isOpen) {

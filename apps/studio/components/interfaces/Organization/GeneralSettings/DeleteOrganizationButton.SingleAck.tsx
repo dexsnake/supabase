@@ -20,7 +20,7 @@ export const DeleteOrganizationButtonSingleAck = ({
       <label className="mt-3 flex items-center gap-2 text-sm text-foreground">
         <Checkbox_Shadcn_
           checked={acknowledgedAll}
-          onCheckedChange={() => setAcknowledgedAll(!acknowledgedAll)}
+          onCheckedChange={(checked) => setAcknowledgedAll(checked === true)}
         />
         I understand that all projects will be permanently deleted.
       </label>
