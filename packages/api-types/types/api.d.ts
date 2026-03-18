@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+  '/v1/app/installations/{installation_id}/access_tokens': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create new installation access token */
+    post: operations['v1-create-installation-access-token']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/branches/{branch_id_or_ref}': {
     parameters: {
       query?: never
@@ -2528,6 +2545,15 @@ export interface components {
       }
       with_data?: boolean
     }
+    CreateInstallationAccessTokenBody: {
+      project_ref: string
+    }
+    CreateInstallationAccessTokenResponse: {
+      /** Format: date-time */
+      expires_at: string
+      project_ref?: string
+      token: string
+    }
     CreateOrganizationV1: {
       name: string
     }
@@ -4911,6 +4937,31 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
+  'v1-create-installation-access-token': {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        installation_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateInstallationAccessTokenBody']
+      }
+    }
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CreateInstallationAccessTokenResponse']
+        }
+      }
+    }
+  }
   'v1-get-a-branch-config': {
     parameters: {
       query?: never
