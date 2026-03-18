@@ -79,6 +79,7 @@ export const getReportAttributesV2: (
       YAxisProps: {
         width: 55,
         domain: [0, 100] as [number, number],
+        allowDataOverflow: true,
         tickFormatter: (v: number) => `${Math.round(v)}%`,
       },
       hideChartType: false,
