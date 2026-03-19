@@ -51,13 +51,10 @@ const buttonVariants = cva(
           data-[state=open]:border-button-hover
           `,
         secondary: `
-          bg-foreground
+          bg-foreground/90 hover:bg-foreground
           text-background hover:text-border-stronger
           focus-visible:text-border-control
-          border-foreground-light hover:border-foreground-lighter
           focus-visible:outline-border-strong
-          data-[state=open]:border-foreground-lighter
-          data-[state=open]:outline-border-strong
         `,
         /** @deprecated use 'primary' instead */
         alternative: `
@@ -208,8 +205,7 @@ const loadingVariants = cva('', {
 export interface ButtonProps
   // omit `type` as we use it to change type of button
   // replaced with `htmlType`
-  extends
-    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'>,
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'>,
     // omit 'disabled' as it is included in HTMLButtonElement
     Omit<ButtonVariantProps, 'disabled'>,
     Omit<LoadingVariantProps, 'type'> {
