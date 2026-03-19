@@ -20,6 +20,7 @@ import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useHotKey } from 'hooks/ui/useHotKey'
 import { IS_PLATFORM } from 'lib/constants'
+import { ASSISTANT_MODELS } from 'lib/ai/model.utils'
 import { uuidv4 } from 'lib/helpers'
 import type { AssistantModel } from 'state/ai-assistant-state'
 import { useAiAssistantState, useAiAssistantStateSnapshot } from 'state/ai-assistant-state'
@@ -69,21 +70,24 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
   const { hasAccess: hasAccessToAdvanceModel, isLoading: isLoadingEntitlements } =
     useCheckEntitlements('assistant.advance_model')
 
+  const freeModel = ASSISTANT_MODELS.find((m) => m.tier === 'free')!.id
+  const proModel = ASSISTANT_MODELS.find((m) => m.tier === 'pro')!.id
+
   const selectedModel = useMemo<AssistantModel>(() => {
     // While entitlements are loading, use the stored model without enforcing access
     if (isLoadingEntitlements) {
-      return snap.model ?? 'gpt-5-mini'
+      return snap.model ?? freeModel
     }
 
-    const defaultModel: AssistantModel = hasAccessToAdvanceModel ? 'gpt-5' : 'gpt-5-mini'
+    const defaultModel: AssistantModel = hasAccessToAdvanceModel ? proModel : freeModel
     const model = snap.model ?? defaultModel
 
-    if (!hasAccessToAdvanceModel && model === 'gpt-5') {
-      return 'gpt-5-mini'
+    if (!hasAccessToAdvanceModel && model === proModel) {
+      return freeModel
     }
 
     return model
-  }, [isLoadingEntitlements, hasAccessToAdvanceModel, snap.model])
+  }, [isLoadingEntitlements, hasAccessToAdvanceModel, snap.model, freeModel, proModel])
 
   const [updatedOptInSinceMCP] = useLocalStorageQuery(
     LOCAL_STORAGE_KEYS.AI_ASSISTANT_MCP_OPT_IN,
