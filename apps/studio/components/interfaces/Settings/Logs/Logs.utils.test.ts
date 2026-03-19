@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'vitest'
 
 import type { LogData } from './Logs.types'
-import { buildLogsPrompt, extractEdgeFunctionName, formatLogsAsJson, formatLogsAsMarkdown } from './Logs.utils'
+import {
+  buildLogsPrompt,
+  extractEdgeFunctionName,
+  formatLogsAsJson,
+  formatLogsAsMarkdown,
+} from './Logs.utils'
 
 const createLog = (overrides: Partial<LogData> = {}): LogData => ({
   id: 'test-id',
