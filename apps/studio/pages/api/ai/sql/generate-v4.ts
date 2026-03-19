@@ -6,7 +6,7 @@ import { executeSql } from 'data/sql/execute-sql-query'
 import type { AiOptInLevel } from 'hooks/misc/useOrgOptedIntoAi'
 import { generateAssistantResponse } from 'lib/ai/generate-assistant-response'
 import { getModel } from 'lib/ai/model'
-import { ASSISTANT_MODELS } from 'lib/ai/model.utils'
+import { ASSISTANT_MODELS, type AssistantModelId } from 'lib/ai/model.utils'
 import { getOrgAIDetails } from 'lib/ai/org-ai-details'
 import { getTools } from 'lib/ai/tools'
 import apiWrapper from 'lib/api/apiWrapper'
@@ -136,7 +136,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
     promptProviderOptions,
   } = await getModel({
     provider: 'openai',
-    model: requestedModel ?? ASSISTANT_MODELS.find((m) => m.tier === 'free')!.id,
+    model: (requestedModel ?? ASSISTANT_MODELS.find((m) => m.tier === 'free')!.id) as AssistantModelId,
     routingKey: projectRef,
     isLimited,
     reasoningEffort: assistantConfig?.reasoningEffort,

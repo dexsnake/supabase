@@ -35,10 +35,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   const { prompt, filterProperties } = parseResult.data
 
   try {
-    const {
-      modelParams,
-      error: modelError,
-    } = await getModel({
+    const { modelParams, error: modelError } = await getModel({
       provider: 'openai',
       routingKey: 'sql',
       reasoningEffort: 'none',
