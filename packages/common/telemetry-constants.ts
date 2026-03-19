@@ -2025,7 +2025,7 @@ export interface HomeConnectActionClickedEvent {
     /**
      * The connect mode that was clicked
      */
-    mode: 'framework' | 'direct' | 'orm' | 'mcp'
+    mode: 'framework' | 'direct' | 'orm' | 'mcp' | 'api-keys'
   }
   groups: TelemetryGroups
 }
