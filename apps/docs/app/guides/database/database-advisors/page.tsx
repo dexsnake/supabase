@@ -165,7 +165,7 @@ const getLints = async () => {
 
   if (response.status >= 400) {
     throw new Error(
-      `Failed to fetch ${org}/${repo} docs from GitHub: ${response.status} ${response.statusText}`
+      `Failed to fetch ${org}/${repo}/contents/${docsDir} docs from GitHub: ${response.status}`
     )
   }
 
@@ -190,8 +190,10 @@ const getLints = async () => {
         )
       }
 
-      if (fileResponse.status >= 400) {
-        throw Error(`Could not get contents of file ${org}/${repo}/${path}`)
+      if (response.status >= 400) {
+        throw new Error(
+          `Failed to fetch ${org}/${repo}/${branch}/${path} docs from GitHub: ${response.status}`
+        )
       }
 
       const content = await fileResponse.text()
