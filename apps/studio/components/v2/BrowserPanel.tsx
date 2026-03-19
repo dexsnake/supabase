@@ -184,7 +184,7 @@ export function BrowserPanel() {
   const groups = isData ? DATA_GROUPS : isObs ? OBS_GROUPS : isSettings ? SETTINGS_GROUPS : []
 
   return (
-    <div className="w-full h-full flex flex-col border-r border-border bg-background">
+    <div className="w-full h-full flex flex-col border-r border-border bg-dash-sidebar">
       <div className="px-3 py-2 border-b border-border text-sm font-medium text-foreground">
         {title}
       </div>
@@ -234,7 +234,7 @@ export function BrowserPanel() {
                     >
                       <span className="truncate">{item.label}</span>
                       {'countKey' in item && (
-                        <span className="text-xs text-muted-foreground shrink-0">
+                        <span className="text-xs text-foreground-muted shrink-0">
                           {getCount(counts, String(item.countKey))}
                         </span>
                       )}
@@ -246,7 +246,7 @@ export function BrowserPanel() {
         })}
         {isData && (
           <div className="px-3 py-2 mt-2">
-            <Link href="#" className="text-xs text-muted-foreground hover:text-foreground">
+            <Link href="#" className="text-xs text-foreground-muted hover:text-foreground">
               + Add module
             </Link>
           </div>

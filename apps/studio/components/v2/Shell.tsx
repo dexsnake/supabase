@@ -30,7 +30,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <SidebarProvider defaultOpen={false}>
         <MobileSheetProvider>
           <V2LayoutSidebarProvider>
-            <div className="flex flex-col h-screen w-screen bg-background text-foreground">
+            <div className="flex flex-col h-screen w-screen bg-dash-sidebar text-foreground">
               <TopBar />
               <div className="flex flex-1 min-h-0">
                 <LeftActivityBar />

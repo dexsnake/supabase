@@ -1,7 +1,7 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { useCallback } from 'react'
+import { useRouter } from 'next/compat/router'
 
 import { useParams } from 'common'
 import { SupabaseGrid } from 'components/grid/SupabaseGrid'
@@ -30,11 +30,13 @@ import { TableDefinition } from './TableDefinition'
 export interface TableGridEditorProps {
   isLoadingSelectedTable?: boolean
   selectedTable?: Entity
+  variant?: 'pages' | 'v2'
 }
 
 export const TableGridEditor = ({
   isLoadingSelectedTable = false,
   selectedTable,
+  variant = 'pages',
 }: TableGridEditorProps) => {
   const router = useRouter()
   const { ref: projectRef, id } = useParams()
@@ -63,26 +65,48 @@ export const TableGridEditor = ({
 
   const onTableCreated = useCallback(
     (table: { id: number }) => {
+      if (variant === 'v2') {
+        const base = projectRef ? `/dashboard/v2/project/${projectRef}` : ''
+        router.push(
+          `${base}/data/tables/${table.id}/data${
+            !!selectedSchema ? `?schema=${selectedSchema}` : ''
+          }`
+        )
+        return
+      }
+
       router.push(
-        `/project/${projectRef}/editor/${table.id}${!!selectedSchema ? `?schema=${selectedSchema}` : ''}`
+        `/project/${projectRef}/editor/${table.id}${
+          !!selectedSchema ? `?schema=${selectedSchema}` : ''
+        }`
       )
     },
-    [projectRef, router]
+    [projectRef, router, selectedSchema, variant]
   )
 
   const onTableDeleted = useCallback(async () => {
-    // For simplicity for now, we just open the first table within the same schema
-    if (selectedTable) {
-      // Close tab
-      const tabId = createTabId(selectedTable.entity_type, { id: selectedTable.id })
-      tabs.handleTabClose({
-        id: tabId,
-        router,
-        editor: 'table',
-        onClearDashboardHistory: () => setLastVisitedTable(undefined),
-      })
+    if (!selectedTable) return
+
+    // For now, just close the deleted table tab.
+    // v2 uses v2 URLs, pages uses the legacy tab-close router logic.
+    const tabId = createTabId(selectedTable.entity_type, { id: selectedTable.id })
+
+    if (variant === 'v2') {
+      tabs.removeTab(tabId)
+      setLastVisitedTable(undefined)
+
+      const base = projectRef ? `/dashboard/v2/project/${projectRef}` : ''
+      router.push(`${base}/data/tables`)
+      return
     }
-  }, [router, selectedTable, tabs])
+
+    tabs.handleTabClose({
+      id: tabId,
+      router,
+      editor: 'table',
+      onClearDashboardHistory: () => setLastVisitedTable(undefined),
+    })
+  }, [projectRef, router, selectedTable, tabs, setLastVisitedTable, variant])
 
   const { isSchemaLocked } = useIsProtectedSchema({ schema: selectedTable?.schema ?? '' })
 
@@ -126,7 +150,44 @@ export const TableGridEditor = ({
               title={`Unable to find your table with ID ${id}`}
               description="This table doesn't exist in your database"
             >
-              {!!tabId ? (
+              {variant === 'v2' ? (
+                !!tabId ? (
+                  <Button
+                    type="default"
+                    className="mt-2"
+                    onClick={() => {
+                      tabs.removeTab(tabId)
+                      setLastVisitedTable(undefined)
+                      const base = projectRef ? `/dashboard/v2/project/${projectRef}` : ''
+                      router.push(`${base}/data/tables`)
+                    }}
+                  >
+                    Close tab
+                  </Button>
+                ) : openTabs.length > 0 ? (
+                  <Button
+                    asChild
+                    type="default"
+                    className="mt-2"
+                    onClick={() => setLastVisitedTable(undefined)}
+                  >
+                    <Link
+                      href={`/dashboard/v2/project/${projectRef}/data/tables/${openTabs[0].split('-')[1]}/data`}
+                    >
+                      Close tab
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    type="default"
+                    className="mt-2"
+                    onClick={() => setLastVisitedTable(undefined)}
+                  >
+                    <Link href={`/dashboard/v2/project/${projectRef}/data/tables`}>Head back</Link>
+                  </Button>
+                )
+              ) : !!tabId ? (
                 <Button
                   type="default"
                   className="mt-2"

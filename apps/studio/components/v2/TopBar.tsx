@@ -2,12 +2,12 @@
 
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import { useProjectDetailQuery } from 'data/projects/project-detail-query'
-import { useV2Params } from '@/app/v2/V2ParamsContext'
 import { Button, cn } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { V2BranchSelector } from './V2BranchSelector'
 import { V2OrgProjectSelector } from './V2OrgProjectSelector'
+import { useV2Params } from '@/app/v2/V2ParamsContext'
 
 export function TopBar() {
   const { orgSlug, projectRef } = useV2Params()
@@ -23,7 +23,7 @@ export function TopBar() {
   return (
     <header
       className={cn(
-        'h-[38px] flex items-center justify-between px-2 border-b border-border bg-background shrink-0'
+        'h-11 md:h-12 flex items-center justify-between px-2 border-b border-border bg-dash-sidebar shrink-0'
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">

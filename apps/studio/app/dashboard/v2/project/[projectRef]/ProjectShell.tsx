@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 
 import { V2ParamsProvider } from '@/app/v2/V2ParamsContext'
 import { Shell } from '@/components/v2/Shell'
+import { ProjectContextProvider } from '@/components/layouts/ProjectLayout/ProjectContext'
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import { useProjectDetailQuery } from 'data/projects/project-detail-query'
 
@@ -26,7 +27,9 @@ export function ProjectShell({ children }: { children: React.ReactNode }) {
 
   return (
     <V2ParamsProvider projectRef={projectRef} orgSlug={orgSlug}>
-      <Shell>{children}</Shell>
+      <ProjectContextProvider projectRef={projectRef}>
+        <Shell>{children}</Shell>
+      </ProjectContextProvider>
     </V2ParamsProvider>
   )
 }

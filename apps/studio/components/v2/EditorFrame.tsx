@@ -39,7 +39,12 @@ export function EditorFrame({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col flex-1 min-w-0 bg-background">
       {isDataCategory ? null : isHome ? null : <StaticTitle />}
       {isDataCategory && <TabBar />}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 flex-col',
+          isDataCategory ? 'overflow-hidden' : 'overflow-auto'
+        )}
+      >
         {children}
       </div>
       <V2EditorFooter />

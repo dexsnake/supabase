@@ -1,7 +1,7 @@
 'use client'
 
 import { useProjectLintsQuery } from 'data/lint/lint-query'
-import { Database, Home, LayoutDashboard, Settings } from 'lucide-react'
+import { ChartArea, Database, Home, Settings, Table } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
@@ -38,7 +38,7 @@ export function ActivityBar({
   return (
     <aside
       className={cn(
-        'w-11 flex flex-col shrink-0 border-border bg-background',
+        'w-11 flex flex-col shrink-0 border-border bg-dash-sidebar',
         side === 'left' && 'border-r',
         side === 'right' && 'border-l'
       )}
@@ -53,7 +53,7 @@ export function ActivityBar({
                   <Link
                     href={item.href}
                     className={cn(
-                      'relative flex items-center justify-center w-full aspect-square rounded-lg shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
+                      'relative flex items-center justify-center w-full aspect-square rounded-lg shrink-0 text-foreground-lighter hover:text-foreground hover:bg-sidebar-accent',
                       isActive && 'bg-sidebar-accent text-foreground',
                       side === 'left' && isActive && 'border-1 border-foreground',
                       side === 'right' && isActive && 'border-1 border-foreground'
@@ -71,7 +71,7 @@ export function ActivityBar({
                     type="button"
                     onClick={() => onSelect?.(item.id)}
                     className={cn(
-                      'relative flex items-center justify-center w-full aspect-square rounded-lg shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
+                      'relative flex items-center justify-center w-full aspect-square rounded-lg shrink-0 text-foreground-lighter hover:text-foreground hover:bg-sidebar-accent',
                       isActive && 'bg-sidebar-accent text-foreground',
                       side === 'left' && isActive && 'border-l-2 border-l-foreground',
                       side === 'right' && isActive && 'border-r-2 border-r-foreground'
@@ -80,7 +80,7 @@ export function ActivityBar({
                     <span className="relative">
                       {item.icon}
                       {item.badge && (
-                        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500" />
                       )}
                     </span>
                   </button>
@@ -145,13 +145,13 @@ export function LeftActivityBar() {
         },
         {
           id: 'data',
-          icon: <Database className="h-4 w-4" strokeWidth={1.5} />,
+          icon: <Table className="h-4 w-4" strokeWidth={1.5} />,
           label: 'Data',
           href: `${base}/data/tables`,
         },
         {
           id: 'obs',
-          icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.5} />,
+          icon: <ChartArea className="h-4 w-4" strokeWidth={1.5} />,
           label: 'Observability',
           badge: hasAdvisorWarnings,
           href: `${base}/obs/logs`,

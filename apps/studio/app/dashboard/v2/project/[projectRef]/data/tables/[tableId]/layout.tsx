@@ -5,6 +5,7 @@ import { useParams, usePathname } from 'next/navigation'
 import { cn } from 'ui'
 
 import { useV2Params } from '@/app/v2/V2ParamsContext'
+import { StudioDataWorkspace } from '@/components/v2/data/StudioDataWorkspace'
 
 const SUB_TABS = [
   { slug: 'data', label: 'Data' },
@@ -27,28 +28,30 @@ export default function TableDetailLayout({
   const base = projectRef ? `/dashboard/v2/project/${projectRef}/data/tables/${tableId}` : ''
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-border shrink-0">
-        {SUB_TABS.map((tab) => {
-          const href = `${base}/${tab.slug}`
-          const isActive = pathname === href || pathname?.startsWith(href + '/')
-          return (
-            <Link
-              key={tab.slug}
-              href={href}
-              className={cn(
-                'px-3 py-1.5 text-xs rounded',
-                isActive
-                  ? 'bg-sidebar-accent text-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {tab.label}
-            </Link>
-          )
-        })}
+    <StudioDataWorkspace projectRef={projectRef} id={tableId}>
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-1 px-4 py-2 border-b border-border shrink-0">
+          {SUB_TABS.map((tab) => {
+            const href = `${base}/${tab.slug}`
+            const isActive = pathname === href || pathname?.startsWith(href + '/')
+            return (
+              <Link
+                key={tab.slug}
+                href={href}
+                className={cn(
+                  'px-3 py-1.5 text-xs rounded',
+                  isActive
+                    ? 'bg-sidebar-accent text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </Link>
+            )
+          })}
+        </div>
+        <div className="flex-1 min-h-0 overflow-auto">{children}</div>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto">{children}</div>
-    </div>
+    </StudioDataWorkspace>
   )
 }

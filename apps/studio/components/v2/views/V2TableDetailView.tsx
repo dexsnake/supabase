@@ -3,6 +3,8 @@
 import { useParams } from 'next/navigation'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
+import { TableGridEditor } from 'components/interfaces/TableGridEditor/TableGridEditor'
+
 import { useV2Params } from '@/app/v2/V2ParamsContext'
 import { useProjectDetailQuery } from 'data/projects/project-detail-query'
 import { useTableEditorQuery } from 'data/table-editor/table-editor-query'
@@ -33,6 +35,14 @@ export function V2TableDetailView({ subTab }: { subTab: string }) {
   }
   if (isPending || !table) {
     return <ShimmeringLoader className="m-4 h-8 rounded" />
+  }
+
+  if (subTab === 'data') {
+    return (
+      <div className="h-full min-h-0">
+        <TableGridEditor isLoadingSelectedTable={isPending} selectedTable={table} variant="v2" />
+      </div>
+    )
   }
 
   return (
