@@ -22,8 +22,10 @@ export function generateQueryPerformanceSql({
   page = 1,
   pageSize = 20,
 }: QueryPerformanceSQLParams) {
-  const safePage = Math.max(1, page)
-  const safePageSize = Math.min(Math.max(1, pageSize), 100)
+  const safePage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1
+  const safePageSize = Number.isFinite(pageSize)
+    ? Math.min(Math.max(1, Math.floor(pageSize)), 100)
+    : 20
 
   const queryPerfQueries = PRESET_CONFIG[Presets.QUERY_PERFORMANCE]
   const baseSQL = queryPerfQueries.queries[preset]

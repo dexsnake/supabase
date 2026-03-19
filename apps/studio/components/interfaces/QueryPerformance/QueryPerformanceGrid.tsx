@@ -3,7 +3,7 @@ import { NumericFilter } from 'components/interfaces/Reports/v2/ReportsNumericFi
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, TextSearch } from 'lucide-react'
 import { parseAsArrayOf, parseAsJson, parseAsString, useQueryStates } from 'nuqs'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DataGrid, { Column, DataGridHandle, Row } from 'react-data-grid'
 import {
   Button,
@@ -48,7 +48,7 @@ interface QueryPerformanceGridProps {
   currentSelectedQuery?: string | null
   onCurrentSelectQuery?: (query: string) => void
   onRetry?: () => void
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 const calculateTimeConsumedWidth = (data: QueryPerformanceRow[]) => {
