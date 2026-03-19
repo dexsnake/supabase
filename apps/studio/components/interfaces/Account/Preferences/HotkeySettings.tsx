@@ -100,21 +100,21 @@ export const HotkeySettings = () => {
             <HotkeyToggle
               form={form}
               name="copyMarkdownEnabled"
-              keys={['Meta', 'm']}
+              keys={['Shift', 'Meta', 'm']}
               label="Copy results as Markdown"
               onToggle={setCopyMarkdownEnabled}
             />
             <HotkeyToggle
               form={form}
               name="copyJsonEnabled"
-              keys={['Meta', 'j']}
+              keys={['Shift', 'Meta', 'j']}
               label="Copy results as JSON"
               onToggle={setCopyJsonEnabled}
             />
             <HotkeyToggle
               form={form}
               name="downloadCsvEnabled"
-              keys={['Meta', 'd']}
+              keys={['Shift', 'Meta', 'd']}
               label="Download results as CSV"
               onToggle={setDownloadCsvEnabled}
               isLast

@@ -97,7 +97,7 @@ export const DownloadResultsButton = ({
       copyAsMarkdown()
     },
     'm',
-    { enabled: copyMarkdownEnabled ?? isEmpty }
+    { enabled: copyMarkdownEnabled ?? isEmpty, shift: true }
   )
 
   useHotKey(
@@ -106,7 +106,7 @@ export const DownloadResultsButton = ({
       copyAsJSON()
     },
     'j',
-    { enabled: copyJsonEnabled ?? isEmpty }
+    { enabled: copyJsonEnabled ?? isEmpty, shift: true }
   )
 
   useHotKey(
@@ -115,7 +115,7 @@ export const DownloadResultsButton = ({
       downloadAsCSV()
     },
     'd',
-    { enabled: downloadCsvEnabled ?? isEmpty }
+    { enabled: downloadCsvEnabled ?? isEmpty, shift: true }
   )
 
   return (
@@ -131,7 +131,7 @@ export const DownloadResultsButton = ({
           {!iconOnly && text}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="w-56">
+      <DropdownMenuContent align={align} className="w-60">
         {isLogs && IS_PLATFORM && (
           <DropdownMenuItem asChild className="gap-x-2">
             <Link href={`/project/${ref}/settings/log-drains`}>
@@ -144,21 +144,21 @@ export const DownloadResultsButton = ({
           <Copy size={14} />
           <p>Copy as markdown</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'm']} />
+            <KeyboardShortcut keys={['Shift', 'Meta', 'm']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyAsJSON} className="gap-x-2">
           <Copy size={14} />
           <p>Copy as JSON</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'j']} />
+            <KeyboardShortcut keys={['Shift', 'Meta', 'j']} />
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem className="gap-x-2" onClick={() => downloadAsCSV()}>
           <Download size={14} />
           <p>Download CSV</p>
           <span className="ml-auto">
-            <KeyboardShortcut keys={['Meta', 'd']} />
+            <KeyboardShortcut keys={['Shift', 'Meta', 'd']} />
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
