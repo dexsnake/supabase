@@ -238,7 +238,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
           rating,
           category: result.category,
           ...(reason && { reason }),
-          sessionId: state.activeChatId,
+          chatId: state.activeChatId,
         })
       } catch (error) {
         console.error('Failed to rate message:', error)
@@ -327,9 +327,9 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
     setValue('')
 
     if (finalContent.includes('Help me to debug')) {
-      track('assistant_debug_submitted', { sessionId: snap.activeChatId })
+      track('assistant_debug_submitted', { chatId: snap.activeChatId })
     } else {
-      track('assistant_prompt_submitted', { sessionId: snap.activeChatId })
+      track('assistant_prompt_submitted', { chatId: snap.activeChatId })
     }
   }
 
