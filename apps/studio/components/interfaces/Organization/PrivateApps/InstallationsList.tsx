@@ -1,8 +1,8 @@
+import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import dayjs from 'dayjs'
 import { LayoutGrid, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
 import {
   Button,
   Card,
@@ -20,7 +20,7 @@ import {
 import { EmptyStatePresentational } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
-import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
+
 import { CreateInstallationModal } from './CreateInstallationModal'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
@@ -50,7 +50,6 @@ export function InstallationsList() {
   return (
     <>
       <div className="flex flex-col gap-y-4">
-
         {isLoadingInstallations ? (
           <Card>
             <Table>
@@ -64,8 +63,12 @@ export function InstallationsList() {
               <TableBody>
                 {Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><div className="h-4 w-32 bg-surface-300 rounded animate-pulse" /></TableCell>
-                    <TableCell><div className="h-4 w-24 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell>
+                      <div className="h-4 w-32 bg-surface-300 rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-24 bg-surface-300 rounded animate-pulse" />
+                    </TableCell>
                     <TableCell />
                   </TableRow>
                 ))}
@@ -87,8 +90,8 @@ export function InstallationsList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>App name</TableHead>
-                  <TableHead>Installed</TableHead>
+                  <TableHead className="max-w-xs">Installed App</TableHead>
+                  <TableHead className="w-48">Installed</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -96,7 +99,9 @@ export function InstallationsList() {
                 {installations.map((inst) => {
                   return (
                     <TableRow key={inst.id}>
-                      <TableCell className="font-medium">{getAppName(inst.app_id)}</TableCell>
+                      <TableCell className="max-w-xs">
+                        <span className="font-medium block truncate">{getAppName(inst.app_id)}</span>
+                      </TableCell>
                       <TableCell>
                         <TimestampInfo
                           utcTimestamp={inst.created_at}
