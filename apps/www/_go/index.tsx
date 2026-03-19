@@ -23,6 +23,7 @@ import aiEngineerEuropeContest from './events/ai-engineer-europe-2026/contest'
 import aiEngineerEuropeContestThankYou from './events/ai-engineer-europe-2026/contest-thank-you'
 import startupGrindContest from './events/startup-grind-2026/contest'
 import exampleLeadGen from './lead-gen/example-lead-gen'
+import supabaseStripeProjects from './stripe-projects/supabase-stripe-projects'
 
 const pages: GoPageInput[] = [
   exampleLeadGen,
@@ -48,6 +49,7 @@ const pages: GoPageInput[] = [
   aiEngineerEuropeContest,
   aiEngineerEuropeContestThankYou,
   startupGrindContest, // remove after May 31, 2026
+  supabaseStripeProjects,
 ]
 
 export default pages
