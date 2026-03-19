@@ -83,7 +83,7 @@ export const TableNode = memo(function TableNode({
     if (over) {
       const overIndex = columns.findIndex((column) => column.id === over.id)
       const activeIndex = columns.findIndex((column) => column.id === active.id)
-      if (activeIndex !== overIndex) {
+      if (activeIndex >= 0 && overIndex >= 0 && activeIndex !== overIndex) {
         const newColumns = arrayMove(columns, activeIndex, overIndex)
         persistColumns(newColumns)
       }
