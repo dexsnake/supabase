@@ -26,13 +26,10 @@ export function useInfiniteScroll({
       const isScrollingHorizontally = xScroll.current !== event.currentTarget.scrollLeft
       xScroll.current = event.currentTarget.scrollLeft
 
-      if (
-        isLoading ||
-        isFetchingNextPage ||
-        isScrollingHorizontally ||
-        !isAtBottom(event) ||
-        !hasNextPage
-      ) {
+      const shouldFetchNextPage =
+        !isLoading && !isFetchingNextPage && !isScrollingHorizontally && isAtBottom(event) && hasNextPage
+
+      if (!shouldFetchNextPage) {
         return
       }
 

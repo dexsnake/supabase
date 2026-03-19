@@ -157,4 +157,16 @@ describe('generateQueryPerformanceSql', () => {
     const result = generateQueryPerformanceSql({ preset: 'unified', page: 2, pageSize: 20 })
     expect(result.sql).toContain('limit 20 offset 20')
   })
+
+  it('does not produce NaN in SQL when page is NaN', () => {
+    const result = generateQueryPerformanceSql({ preset: 'unified', page: NaN, pageSize: 20 })
+    expect(result.sql).not.toContain('NaN')
+    expect(result.sql).toContain('offset 0')
+  })
+
+  it('does not produce NaN in SQL when pageSize is NaN', () => {
+    const result = generateQueryPerformanceSql({ preset: 'unified', page: 1, pageSize: NaN })
+    expect(result.sql).not.toContain('NaN')
+    expect(result.sql).toContain('limit 20')
+  })
 })

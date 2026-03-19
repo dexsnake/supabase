@@ -118,14 +118,14 @@ export const useQueryPerformanceInfiniteQuery = (
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) => {
       const { sql } = generateQueryPerformanceSql({ ...props, page: pageParam, pageSize })
-      return executeSql(
+      return executeSql<QueryPerformanceRow[]>(
         {
           projectRef: project?.ref,
           connectionString: connectionString || project?.connectionString,
           sql,
         },
         signal
-      ).then((res) => res.result as QueryPerformanceRow[])
+      ).then((res) => res.result)
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length < pageSize ? undefined : allPages.length + 1
