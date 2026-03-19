@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { ExternalLink, MoreVertical, Plus, Trash } from 'lucide-react'
+import { MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Table,
   TableBody,
@@ -22,7 +21,6 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import { CreateInstallationModal } from './CreateInstallationModal'
-import { ViewInstallationSheet } from './ViewInstallationSheet'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
@@ -37,7 +35,6 @@ export function InstallationsList() {
     })
 
   const [showCreate, setShowCreate] = useState(false)
-  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null)
   const [installationToDelete, setInstallationToDelete] = useState<Installation | null>(null)
 
   function getAppName(appId: string) {
@@ -113,14 +110,6 @@ export function InstallationsList() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" side="bottom" className="w-40">
                             <DropdownMenuItem
-                              className="gap-x-2"
-                              onClick={() => setSelectedInstallation(inst)}
-                            >
-                              <ExternalLink size={14} />
-                              View details
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
                               className="!text-destructive gap-x-2"
                               onClick={() => setInstallationToDelete(inst)}
                             >
@@ -140,12 +129,6 @@ export function InstallationsList() {
       </div>
 
       <CreateInstallationModal visible={showCreate} onClose={() => setShowCreate(false)} />
-
-      <ViewInstallationSheet
-        installation={selectedInstallation}
-        visible={selectedInstallation !== null}
-        onClose={() => setSelectedInstallation(null)}
-      />
 
       <ConfirmationModal
         variant="destructive"

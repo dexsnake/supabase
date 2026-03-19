@@ -46,6 +46,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
   const [step, setStep] = useState<'details' | 'signing-key'>('details')
   const [createdApp, setCreatedApp] = useState<CreatePlatformAppResponse | null>(null)
   const [generatedKey, setGeneratedKey] = useState<CreatePlatformAppSigningKeyResponse | null>(null)
+  const [keyCopied, setKeyCopied] = useState(false)
 
   const { mutate: createApp, isPending: isCreatingApp } = usePlatformAppCreateMutation({
     onSuccess: (data) => {
@@ -75,6 +76,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
     setStep('details')
     setCreatedApp(null)
     setGeneratedKey(null)
+    setKeyCopied(false)
   }
 
   function handleClose() {
@@ -337,9 +339,16 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                       rows={8}
                       className="w-full rounded-md border border-control bg-surface-200 px-3 py-2 text-xs font-mono resize-none focus:outline-none"
                     />
-                    <p className="text-xs text-foreground-lighter">
-                      Store this key securely — you won't be able to view it again.
-                    </p>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <Checkbox_Shadcn_
+                        id="key-copied"
+                        checked={keyCopied}
+                        onCheckedChange={(v) => setKeyCopied(Boolean(v))}
+                      />
+                      <span className="text-sm text-foreground-light cursor-pointer select-none">
+                        I have copied the key and stored it securely
+                      </span>
+                    </label>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -358,6 +367,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                 {generatedKey ? (
                   <Button
                     type="primary"
+                    disabled={!keyCopied}
                     onClick={() => {
                       onCreated(createdApp!)
                       handleClose()
