@@ -32,7 +32,6 @@ export const useTableOrderedColumns = ({
 
     const orderedColumns = getOrderedColumns(table.columns, columns)
 
-
     return [orderedColumns, persistColumns]
   }, [columns, nodeId, updateNodeInternals, setColumns, table.columns])
 }

@@ -60,7 +60,7 @@ describe('getOrderedColumns', () => {
       idColumn,
       column2,
       column1,
-      column3
+      column3,
     ])
   })
 
@@ -75,7 +75,7 @@ describe('getOrderedColumns', () => {
     expect(getOrderedColumns([idColumn, column1, column3], ['id', 'column2', 'column1'])).toEqual([
       idColumn,
       column1,
-      column3
+      column3,
     ])
   })
 })

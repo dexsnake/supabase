@@ -1,6 +1,9 @@
-import { TableNodeColumnData } from "./SchemaTableNode.types"
+import { TableNodeColumnData } from './SchemaTableNode.types'
 
-export const getOrderedColumns = (tableColumns: Array<TableNodeColumnData>, persistedColumnIdsOrder: Array<string> | undefined) => {
+export const getOrderedColumns = (
+  tableColumns: Array<TableNodeColumnData>,
+  persistedColumnIdsOrder: Array<string> | undefined
+) => {
   if (!persistedColumnIdsOrder) {
     return tableColumns
   }
