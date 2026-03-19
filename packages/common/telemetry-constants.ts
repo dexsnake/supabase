@@ -1176,6 +1176,30 @@ export interface MetricsAPIBannerDismissButtonClickedEvent {
 }
 
 /**
+ * User clicks on Grafana banner CTA button in studio Observability pages.
+ *
+ * @group Events
+ * @source studio
+ * @page /observability/*
+ */
+export interface GrafanaBannerCtaButtonClickedEvent {
+  action: 'grafana_banner_cta_button_clicked'
+  groups: TelemetryGroups
+}
+
+/**
+ * User clicked the dismiss button on the Grafana banner in studio Observability pages.
+ *
+ * @group Events
+ * @source studio
+ * @page /observability/*
+ */
+export interface GrafanaBannerDismissButtonClickedEvent {
+  action: 'grafana_banner_dismiss_button_clicked'
+  groups: TelemetryGroups
+}
+
+/**
  * Index Advisor banner enable button clicked event.
  *
  * @group Events
@@ -3090,6 +3114,8 @@ export type TelemetryEvent =
   | ReportsDatabaseGrafanaBannerClickedEvent
   | MetricsAPIBannerCtaButtonClickedEvent
   | MetricsAPIBannerDismissButtonClickedEvent
+  | GrafanaBannerCtaButtonClickedEvent
+  | GrafanaBannerDismissButtonClickedEvent
   | IndexAdvisorBannerEnableButtonClickedEvent
   | IndexAdvisorBannerDismissButtonClickedEvent
   | IndexAdvisorDialogEnableButtonClickedEvent

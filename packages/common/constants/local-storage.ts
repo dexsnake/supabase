@@ -106,6 +106,9 @@ export const LOCAL_STORAGE_KEYS = {
   // Observability banner dismissed
   OBSERVABILITY_BANNER_DISMISSED: (ref: string) => `observability-banner-dismissed-${ref}`,
 
+  // Grafana banner dismissed
+  GRAFANA_BANNER_DISMISSED: (ref: string) => `grafana-banner-dismissed-${ref}`,
+
   // Tax ID banner dismissed
   TAX_ID_BANNER_DISMISSED: (slug: string) => `tax-id-banner-dismissed-${slug}`,
 
