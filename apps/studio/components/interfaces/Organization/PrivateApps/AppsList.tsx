@@ -1,3 +1,4 @@
+import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
 import dayjs from 'dayjs'
 import { AppWindow, Key, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -17,6 +18,12 @@ import {
   TableHeadSort,
   TableRow,
 } from 'ui'
+import { EmptyStatePresentational } from 'ui-patterns'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
+
+import { DeleteAppModal } from './DeleteAppModal'
+import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
+import { ViewAppSheet } from './ViewAppSheet'
 
 type AppsSort = 'created_at:asc' | 'created_at:desc'
 
@@ -32,12 +39,6 @@ const handleSortChange = (
     setSort(`${column}:asc` as AppsSort)
   }
 }
-import { EmptyStatePresentational } from 'ui-patterns'
-import { TimestampInfo } from 'ui-patterns/TimestampInfo'
-import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
-import { DeleteAppModal } from './DeleteAppModal'
-import { ViewAppSheet } from './ViewAppSheet'
-import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
 
 interface AppsListProps {
   onCreateApp: () => void
@@ -80,14 +81,17 @@ export function AppsList({ onCreateApp }: AppsListProps) {
                 <TableHead className="max-w-xs">Name</TableHead>
                 <TableHead className="w-48">Created</TableHead>
                 <TableHead />
-
               </TableRow>
             </TableHeader>
             <TableBody>
               {Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><div className="h-4 w-32 bg-surface-300 rounded animate-pulse" /></TableCell>
-                  <TableCell><div className="h-4 w-24 bg-surface-300 rounded animate-pulse" /></TableCell>
+                  <TableCell>
+                    <div className="h-4 w-32 bg-surface-300 rounded animate-pulse" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-24 bg-surface-300 rounded animate-pulse" />
+                  </TableCell>
                   <TableCell />
                 </TableRow>
               ))}
@@ -122,12 +126,7 @@ export function AppsList({ onCreateApp }: AppsListProps) {
               {sortedApps.map((app) => (
                 <TableRow key={app.id}>
                   <TableCell>
-                    <button
-                      className="font-medium hover:underline text-left max-w-[48ch] truncate block"
-                      onClick={() => setViewApp(app)}
-                    >
-                      {app.name}
-                    </button>
+                    <p className="text-left max-w-[48ch] truncate block">{app.name}</p>
                   </TableCell>
                   <TableCell>
                     <TimestampInfo
@@ -139,11 +138,7 @@ export function AppsList({ onCreateApp }: AppsListProps) {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          type="default"
-                          icon={<MoreVertical size={14} />}
-                          className="w-7"
-                        />
+                        <Button type="default" icon={<MoreVertical size={14} />} className="w-7" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" side="bottom" className="w-44">
                         <DropdownMenuItem className="gap-x-2" onClick={() => setViewApp(app)}>

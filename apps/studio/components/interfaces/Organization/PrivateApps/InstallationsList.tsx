@@ -18,6 +18,12 @@ import {
   TableHeadSort,
   TableRow,
 } from 'ui'
+import { EmptyStatePresentational } from 'ui-patterns'
+import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
+
+import { CreateInstallationModal } from './CreateInstallationModal'
+import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 type InstallationsSort = 'created_at:asc' | 'created_at:desc'
 
@@ -33,12 +39,6 @@ const handleSortChange = (
     setSort(`${column}:asc` as InstallationsSort)
   }
 }
-import { EmptyStatePresentational } from 'ui-patterns'
-import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
-import { TimestampInfo } from 'ui-patterns/TimestampInfo'
-
-import { CreateInstallationModal } from './CreateInstallationModal'
-import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
   const { installations, apps, slug, isLoadingInstallations, removeInstallation } = usePrivateApps()
@@ -118,7 +118,11 @@ export function InstallationsList() {
                 <TableRow>
                   <TableHead>Installed App</TableHead>
                   <TableHead className="w-48">
-                    <TableHeadSort column="created_at" currentSort={sort} onSortChange={onSortChange}>
+                    <TableHeadSort
+                      column="created_at"
+                      currentSort={sort}
+                      onSortChange={onSortChange}
+                    >
                       Installed
                     </TableHeadSort>
                   </TableHead>
@@ -130,7 +134,7 @@ export function InstallationsList() {
                   return (
                     <TableRow key={inst.id}>
                       <TableCell>
-                        <span className="font-medium block max-w-[48ch] truncate">{getAppName(inst.app_id)}</span>
+                        <p className="block max-w-[48ch] truncate">{getAppName(inst.app_id)}</p>
                       </TableCell>
                       <TableCell>
                         <TimestampInfo

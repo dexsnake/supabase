@@ -320,18 +320,25 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
         ) : (
           <>
             <ScrollArea className="flex-1 max-h-[calc(100vh-116px)]">
-              <div className="px-5 sm:px-6 py-6 space-y-6">
-                <div className="border border-border rounded-lg divide-y divide-border">
-                  <div className="flex items-center px-4 py-3 gap-4">
-                    <span className="text-sm text-foreground-light w-24 shrink-0">App name</span>
-                    <span className="text-sm font-medium">{createdApp?.name}</span>
-                  </div>
-                  <div className="flex items-center px-4 py-3 gap-4">
-                    <span className="text-sm text-foreground-light w-24 shrink-0">App ID</span>
-                    <span className="font-mono text-xs truncate">{createdApp?.id}</span>
+              <div className="flex flex-col gap-0">
+                {/* App info */}
+                <div className="px-5 sm:px-6 py-6">
+                  <div className="border border-border rounded-lg divide-y divide-border">
+                    <div className="flex items-center px-4 py-3 gap-4">
+                      <span className="text-sm text-foreground-light w-24 shrink-0">App name</span>
+                      <span className="text-sm font-medium">{createdApp?.name}</span>
+                    </div>
+                    <div className="flex items-center px-4 py-3 gap-4">
+                      <span className="text-sm text-foreground-light w-24 shrink-0">App ID</span>
+                      <span className="font-mono text-xs truncate">{createdApp?.id}</span>
+                    </div>
                   </div>
                 </div>
 
+                <Separator />
+
+                {/* Signing key */}
+                <div className="px-5 sm:px-6 py-6">
                 {generatedKey ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -394,6 +401,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                     </p>
                   </div>
                 )}
+                </div>
               </div>
             </ScrollArea>
 
