@@ -29,12 +29,12 @@ describe('getModel', () => {
     vi.mocked(bedrockModule.checkAwsCredentials).mockResolvedValue(true)
     vi.stubEnv('IS_THROTTLED', 'false')
 
-    const { model, error, promptProviderOptions } = await getModel({
+    const { modelParams, error, promptProviderOptions } = await getModel({
       routingKey: 'test',
       isLimited: false,
     })
 
-    expect(model).toEqual('bedrock-model')
+    expect(modelParams?.model).toEqual('bedrock-model')
     // Default bedrock model supportsCaching=false in registry, but if caller
     // specifies high-tier, provider options would be present
     expect(promptProviderOptions === undefined || typeof promptProviderOptions === 'object').toBe(
@@ -47,12 +47,12 @@ describe('getModel', () => {
     vi.mocked(bedrockModule.checkAwsCredentials).mockResolvedValue(true)
     vi.stubEnv('IS_THROTTLED', 'true')
 
-    const { model, error, promptProviderOptions } = await getModel({
+    const { modelParams, error, promptProviderOptions } = await getModel({
       routingKey: 'test',
       isLimited: true,
     })
 
-    expect(model).toEqual('bedrock-model')
+    expect(modelParams?.model).toEqual('bedrock-model')
     expect(promptProviderOptions).toBeUndefined()
     expect(error).toBeUndefined()
   })
@@ -61,12 +61,12 @@ describe('getModel', () => {
     vi.mocked(bedrockModule.checkAwsCredentials).mockResolvedValue(false)
     process.env.OPENAI_API_KEY = 'test-key'
 
-    const { model, promptProviderOptions } = await getModel({
+    const { modelParams, promptProviderOptions } = await getModel({
       routingKey: 'test',
       isLimited: false,
     })
 
-    expect(model).toEqual('openai-model')
+    expect(modelParams?.model).toEqual('openai-model')
     // Default openai model in registry is gpt-5-mini
     expect(openai).toHaveBeenCalledWith('gpt-5-mini')
     expect(promptProviderOptions).toBeUndefined()
@@ -85,7 +85,7 @@ describe('getModel', () => {
     process.env.OPENAI_API_KEY = 'test-key'
     process.env.IS_THROTTLED = 'false'
 
-    const { model, error } = await getModel({
+    const { modelParams, error } = await getModel({
       provider: 'openai',
       model: 'gpt-5',
       routingKey: 'rk',
@@ -93,7 +93,7 @@ describe('getModel', () => {
     })
 
     expect(error).toBeUndefined()
-    expect(model).toEqual('openai-model')
+    expect(modelParams?.model).toEqual('openai-model')
     expect(openai).toHaveBeenCalledWith('gpt-5')
   })
 })

@@ -8,6 +8,7 @@ import {
   PROVIDERS,
   ProviderModelConfig,
   ProviderName,
+  ReasoningEffort,
   getDefaultModelForProvider,
 } from './model.utils'
 
@@ -15,16 +16,15 @@ type PromptProviderOptions = Record<string, any>
 type ProviderOptions = Record<string, any>
 
 type ModelSuccess = {
-  model: LanguageModel
+  /** Spread directly into AI SDK calls: `streamText({ ...modelParams, ... })` */
+  modelParams: { model: LanguageModel; providerOptions?: ProviderOptions }
   promptProviderOptions?: PromptProviderOptions
-  providerOptions?: ProviderOptions
   error?: never
 }
 
 export type ModelError = {
-  model?: never
+  modelParams?: never
   promptProviderOptions?: never
-  providerOptions?: never
   error: Error
 }
 
@@ -37,6 +37,8 @@ export type GetModelParams = {
   model?: Model
   routingKey: string
   isLimited?: boolean
+  /** Reasoning effort for OpenAI models. If omitted, OpenAI uses its model default. */
+  reasoningEffort?: ReasoningEffort
 }
 
 /**
@@ -50,6 +52,7 @@ export async function getModel({
   model,
   routingKey,
   isLimited = true,
+  reasoningEffort,
 }: GetModelParams): Promise<ModelResponse> {
   const envThrottled = process.env.IS_THROTTLED !== 'false'
 
@@ -92,17 +95,23 @@ export async function getModel({
     const promptProviderOptions = (
       providerRegistry.models as Record<BedrockModel, ProviderModelConfig>
     )[chosenModelId as BedrockModel]?.promptProviderOptions
-    return { model, promptProviderOptions }
+    return { modelParams: { model }, promptProviderOptions }
   }
 
   if (preferredProvider === 'openai') {
     if (!hasOpenAIKey) {
       return { error: new Error('OPENAI_API_KEY not available') }
     }
+    const baseProviderOptions = providerRegistry.providerOptions?.openai ?? {}
+    const openaiProviderOptions = reasoningEffort
+      ? { ...baseProviderOptions, reasoningEffort }
+      : baseProviderOptions
     return {
-      model: openai(chosenModelId as OpenAIModel),
+      modelParams: {
+        model: openai(chosenModelId as OpenAIModel),
+        providerOptions: { openai: openaiProviderOptions },
+      },
       promptProviderOptions: models[chosenModelId as OpenAIModel]?.promptProviderOptions,
-      providerOptions: providerRegistry.providerOptions,
     }
   }
 

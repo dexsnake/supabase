@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getDefaultModelForProvider, PROVIDERS } from './model.utils'
+import { ASSISTANT_MODELS, getDefaultModelForProvider, PROVIDERS } from './model.utils'
 import type { ProviderName } from './model.utils'
 
 describe('model.utils', () => {
@@ -82,7 +82,19 @@ describe('model.utils', () => {
     it('should have openai provider with providerOptions', () => {
       expect(PROVIDERS.openai.providerOptions).toBeDefined()
       expect(PROVIDERS.openai.providerOptions?.openai).toBeDefined()
-      expect(PROVIDERS.openai.providerOptions?.openai?.reasoningEffort).toBe('minimal')
+      expect(PROVIDERS.openai.providerOptions?.openai?.reasoningEffort).toBeUndefined()
+    })
+  })
+
+  describe('ASSISTANT_MODELS', () => {
+    it('should be a non-empty list', () => {
+      expect(ASSISTANT_MODELS.length).toBeGreaterThan(0)
+    })
+
+    it('should have all models present in the openai provider registry', () => {
+      ASSISTANT_MODELS.forEach((entry) => {
+        expect(Object.keys(PROVIDERS.openai.models)).toContain(entry.id)
+      })
     })
   })
 })

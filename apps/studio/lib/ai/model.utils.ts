@@ -6,6 +6,42 @@ export type OpenAIModel = 'gpt-5' | 'gpt-5-mini'
 
 export type AnthropicModel = 'claude-sonnet-4-20250514' | 'claude-3-5-haiku-20241022'
 
+// Reasoning effort levels supported by OpenAI models.
+// Source: https://developers.openai.com/api/docs/guides/reasoning + per-model pages
+// Community matrix: https://community.openai.com/t/request-for-compatibility-matrix-reasoning-effort-sampling-parameters-across-gpt-5-series/1371738/2
+// When adding a new model, check its individual docs page and update ModelReasoningSupport below.
+export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
+
+// Maps each known OpenAI model to the effort levels it supports.
+// Used to enforce valid combinations at compile time via assistantModel().
+type ModelReasoningSupport = {
+  'gpt-5': 'minimal' | 'low' | 'medium' | 'high'
+  'gpt-5-mini': 'minimal' | 'low' | 'medium' | 'high'
+  'gpt-5.4-nano': 'none' | 'low' | 'medium' | 'high' | 'xhigh'
+  'gpt-5.3-codex': 'low' | 'medium' | 'high' | 'xhigh'
+}
+
+// Helper that enforces a valid reasoningEffort for the given model ID at compile time.
+function assistantModel<ModelId extends OpenAIModel>(config: {
+  id: ModelId
+  /** Which user tier this model is available to */
+  tier: 'free' | 'pro'
+  reasoningEffort?: ModelId extends keyof ModelReasoningSupport
+    ? ModelReasoningSupport[ModelId]
+    : ReasoningEffort
+}) {
+  return config
+}
+
+// Single source of truth for Assistant chat model variants and their reasoning levels.
+// Add entries here when introducing new assistant models.
+export const ASSISTANT_MODELS = [
+  assistantModel({ id: 'gpt-5-mini', tier: 'free', reasoningEffort: 'minimal' }),
+  assistantModel({ id: 'gpt-5', tier: 'pro', reasoningEffort: 'minimal' }),
+] as const
+
+export type AssistantModelId = (typeof ASSISTANT_MODELS)[number]['id']
+
 export type Model = BedrockModel | OpenAIModel | AnthropicModel
 
 export type ProviderModelConfig = {
@@ -54,7 +90,6 @@ export const PROVIDERS: ProviderRegistry = {
     },
     providerOptions: {
       openai: {
-        reasoningEffort: 'minimal',
         store: false,
       },
     },
