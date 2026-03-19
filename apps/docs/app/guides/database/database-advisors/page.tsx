@@ -146,18 +146,27 @@ const urlTransform: (lints: Array<{ path: string }>) => UrlTransformFunction = (
 const getLints = async () => {
   const octokit = new Octokit({ request: { fetch: fetchRevalidatePerDay } })
 
-  const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-    owner: org,
-    repo: repo,
-    path: docsDir,
-    ref: branch,
-    headers: {
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-  })
+  let response: Awaited<ReturnType<typeof octokit.request>>
+  try {
+    response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+      owner: org,
+      repo: repo,
+      path: docsDir,
+      ref: branch,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    })
+  } catch (err) {
+    throw new Error(
+      `Failed to fetch database advisors lint list from GitHub (network error): ${err}`
+    )
+  }
 
   if (response.status >= 400) {
-    throw Error(`Could not get contents of repo ${org}/${repo}`)
+    throw new Error(
+      `Failed to fetch ${org}/${repo} docs from GitHub: ${response.status} ${response.statusText}`
+    )
   }
 
   if (!Array.isArray(response.data)) {
@@ -170,9 +179,16 @@ const getLints = async () => {
 
   const lints = await Promise.all(
     lintsList.map(async ({ path }) => {
-      const fileResponse = await fetchRevalidatePerDay(
-        `https://raw.githubusercontent.com/${org}/${repo}/${branch}/${path}`
-      )
+      let fileResponse: Response
+      try {
+        fileResponse = await fetchRevalidatePerDay(
+          `https://raw.githubusercontent.com/${org}/${repo}/${branch}/${path}`
+        )
+      } catch (err) {
+        throw new Error(
+          `Failed to fetch database advisors lint file ${path} from GitHub (network error): ${err}`
+        )
+      }
 
       if (fileResponse.status >= 400) {
         throw Error(`Could not get contents of file ${org}/${repo}/${path}`)
