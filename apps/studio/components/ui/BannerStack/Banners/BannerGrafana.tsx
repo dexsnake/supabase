@@ -66,7 +66,7 @@ export const BannerGrafana = () => {
             size="tiny"
             loading={isPending}
             onClick={handleConnect}
-            className="bg-[#F46800] border-[#F46800] text-white hover:bg-[#E05F00] hover:border-[#E05F00]"
+            className="bg-[#ff671d] border-[#ff671d] text-white hover:bg-[#E05F00] hover:border-[#E05F00]"
           >
             Connect to Grafana Cloud
           </Button>
