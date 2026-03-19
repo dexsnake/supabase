@@ -2,7 +2,19 @@ import { formatDistanceToNow } from 'date-fns'
 import { Pencil, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Button, Input_Shadcn_, ScrollArea, Sheet, SheetContent, SheetHeader, cn } from 'ui'
+import {
+  AlertDescription_Shadcn_,
+  AlertTitle_Shadcn_,
+  Alert_Shadcn_,
+  Button,
+  CriticalIcon,
+  Input_Shadcn_,
+  ScrollArea,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  cn,
+} from 'ui'
 import type { components } from 'api-types'
 import CopyButton from 'components/ui/CopyButton'
 import { usePlatformAppQuery } from 'data/platform-apps/platform-app-query'
@@ -265,24 +277,23 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
 
                 {/* Danger zone */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-destructive">Danger Zone</h3>
-                  <div className="border border-destructive/30 rounded-lg">
-                    <div className="flex items-center justify-between px-4 py-3 gap-4">
-                      <div>
-                        <p className="text-sm font-medium">Delete app</p>
-                        <p className="text-xs text-foreground-light">
-                          Permanently delete this app and all its installations
-                        </p>
-                      </div>
-                      <Button
-                        type="danger"
-                        icon={<Trash size={14} />}
-                        onClick={() => setShowDeleteModal(true)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                  <h3 className="text-sm font-medium">Danger Zone</h3>
+                <Alert_Shadcn_ variant="destructive">
+                  <CriticalIcon />
+                  <AlertTitle_Shadcn_>Delete app</AlertTitle_Shadcn_>
+                  <AlertDescription_Shadcn_>
+                    Permanently delete this app and all its installations.
+                  </AlertDescription_Shadcn_>
+                  <div className="mt-2">
+                    <Button
+                      type="danger"
+                      icon={<Trash size={14} />}
+                      onClick={() => setShowDeleteModal(true)}
+                    >
+                      Delete app
+                    </Button>
                   </div>
+                </Alert_Shadcn_>
                 </div>
               </div>
             )}
