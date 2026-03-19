@@ -557,9 +557,13 @@ select
         ) => {
           const offset = (page - 1) * pageSize
           // When filterIndexAdvisor is active we don't know how many rows will survive the
-          // filter before pagination, so we fetch all rows and paginate the filtered result.
-          // Otherwise limit the base CTE to exactly what we need.
-          const baseCteLimit = filterIndexAdvisor && runIndexAdvisor ? null : offset + pageSize
+          // filter, so we need more rows than just the requested page. Cap at a reasonable
+          // upper bound to avoid running index_advisor() across the entire dataset.
+          const INDEX_ADVISOR_SCAN_CAP = 500
+          const baseCteLimit =
+            filterIndexAdvisor && runIndexAdvisor
+              ? Math.min(offset + pageSize * 10, INDEX_ADVISOR_SCAN_CAP)
+              : offset + pageSize
           const baseQuery = `
         -- reports-query-performance-unified
         set search_path to public, extensions;
