@@ -1,31 +1,21 @@
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
 import { PresetHookResult } from 'components/interfaces/Reports/Reports.utils'
-import Pagination from 'components/interfaces/TableGridEditor/SidePanelEditor/RowEditor/ForeignRowSelector/Pagination'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { DownloadResultsButton } from 'components/ui/DownloadResultsButton'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { formatDatabaseID } from 'data/read-replicas/replicas.utils'
 import { executeSql } from 'data/sql/execute-sql-query'
-import { DbQueryHook } from 'hooks/analytics/useDbQuery'
+import { useInfiniteScroll } from 'hooks/misc/useInfiniteScroll'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM } from 'lib/constants'
 import { getErrorMessage } from 'lib/get-error-message'
 import { RefreshCw, RotateCcw, X } from 'lucide-react'
-import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
+import { parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseSelectorStateSnapshot } from 'state/database-selector'
-import {
-  Button,
-  cn,
-  LoadingLine,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
-} from 'ui'
+import { Button, cn, LoadingLine } from 'ui'
 import { Admonition } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 
@@ -34,13 +24,12 @@ import { captureQueryPerformanceError } from '../QueryPerformance.utils'
 import { QueryPerformanceFilterBar } from '../QueryPerformanceFilterBar'
 import { QueryPerformanceGrid } from '../QueryPerformanceGrid'
 import { QueryPerformanceMetrics } from '../QueryPerformanceMetrics'
+import { QueryPerformanceInfiniteHook } from '../useQueryPerformanceQuery'
 import { transformStatementDataToRows } from './WithStatements.utils'
-
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
 
 interface WithStatementsProps {
   queryHitRate: PresetHookResult
-  queryPerformanceQuery: DbQueryHook<any>
+  queryPerformanceQuery: QueryPerformanceInfiniteHook
   queryMetrics: PresetHookResult
 }
 
@@ -52,7 +41,16 @@ export const WithStatements = ({
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
   const state = useDatabaseSelectorStateSnapshot()
-  const { data, isLoading, isRefetching, error: queryError } = queryPerformanceQuery
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    error: queryError,
+    fetchNextPage,
+    refetch: runQuery,
+  } = queryPerformanceQuery
   const isPrimaryDatabase = state.selectedDatabaseId === ref
   const formattedDatabaseId = formatDatabaseID(state.selectedDatabaseId ?? '')
 
@@ -71,14 +69,8 @@ export const WithStatements = ({
     indexAdvisor: parseAsString.withDefault('false'),
   })
 
-  const [{ page, pageSize: rawPageSize }, setPaginationState] = useQueryStates({
-    page: parseAsInteger.withDefault(1),
-    pageSize: parseAsInteger.withDefault(20),
-  })
-  const pageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize) ? rawPageSize : 20
-
   const handleRefresh = () => {
-    queryPerformanceQuery.runQuery()
+    runQuery()
     queryHitRate.runQuery()
     queryMetrics.runQuery()
   }
@@ -88,6 +80,13 @@ export const WithStatements = ({
   }, [data, indexAdvisor])
 
   const { data: databases } = useReadReplicasQuery({ projectRef: ref })
+
+  const handleScroll = useInfiniteScroll({
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  })
 
   useEffect(() => {
     state.setSelectedDatabaseId(ref)
@@ -201,7 +200,7 @@ export const WithStatements = ({
           </>
         }
       />
-      <LoadingLine loading={isLoading || isRefetching} />
+      <LoadingLine loading={isLoading || isRefetching || isFetchingNextPage} />
       <QueryPerformanceGrid
         aggregatedData={processedData}
         isLoading={isLoading}
@@ -211,37 +210,8 @@ export const WithStatements = ({
             : null
         }
         onRetry={handleRefresh}
+        onScroll={handleScroll}
       />
-      <div className="flex items-center justify-between px-6 py-2 border-t">
-        <div className="flex items-center gap-x-2">
-          <span className="text-xs text-foreground-light">Rows per page</span>
-          <Select_Shadcn_
-            value={String(pageSize)}
-            onValueChange={(val) => setPaginationState({ page: 1, pageSize: Number(val) })}
-          >
-            <SelectTrigger_Shadcn_ className="h-7 w-[70px] text-xs">
-              <SelectValue_Shadcn_ />
-            </SelectTrigger_Shadcn_>
-            <SelectContent_Shadcn_>
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <SelectItem_Shadcn_ key={size} value={String(size)} className="text-xs">
-                  {size}
-                </SelectItem_Shadcn_>
-              ))}
-            </SelectContent_Shadcn_>
-          </Select_Shadcn_>
-        </div>
-        <div className="flex items-center gap-x-3">
-          <span className="text-xs text-foreground-light">Page {page}</span>
-          <Pagination
-            page={page}
-            setPage={(setter) => setPaginationState({ page: setter(page) })}
-            rowsPerPage={pageSize}
-            currentPageRowsCount={processedData.length}
-            isLoading={isLoading || isRefetching}
-          />
-        </div>
-      </div>
       <div
         className={cn('px-6 py-6 flex gap-x-4 border-t relative', {
           hidden: showBottomSection === false,

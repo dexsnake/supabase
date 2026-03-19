@@ -3,7 +3,7 @@ import { useIndexAdvisorStatus } from 'components/interfaces/QueryPerformance/ho
 import { useQueryPerformanceSort } from 'components/interfaces/QueryPerformance/hooks/useQueryPerformanceSort'
 import { QueryPerformance } from 'components/interfaces/QueryPerformance/QueryPerformance'
 import { type QuerySource } from 'components/interfaces/QueryPerformance/QueryPerformance.types'
-import { useQueryPerformanceQuery } from 'components/interfaces/QueryPerformance/useQueryPerformanceQuery'
+import { useQueryPerformanceInfiniteQuery } from 'components/interfaces/QueryPerformance/useQueryPerformanceQuery'
 import { PRESET_CONFIG } from 'components/interfaces/Reports/Reports.constants'
 import { Presets } from 'components/interfaces/Reports/Reports.types'
 import { queriesFactory } from 'components/interfaces/Reports/Reports.utils'
@@ -15,7 +15,6 @@ import { DocsButton } from 'components/ui/DocsButton'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL } from 'lib/constants'
 import { parseAsArrayOf, parseAsInteger, parseAsJson, parseAsString, useQueryStates } from 'nuqs'
-import { useEffect, useMemo, useRef } from 'react'
 import type { NextPageWithLayout } from 'types'
 import { Admonition } from 'ui-patterns'
 
@@ -33,10 +32,7 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
       minCalls,
       totalTimeFilter: totalTimeFilterRaw,
       indexAdvisor,
-      page,
-      pageSize,
     },
-    setQueryStates,
   ] = useQueryStates({
     sort: parseAsString,
     order: parseAsString,
@@ -48,8 +44,6 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
       value === null || value === undefined ? null : (value as NumericFilter)
     ),
     indexAdvisor: parseAsString.withDefault('false'),
-    page: parseAsInteger.withDefault(1),
-    pageSize: parseAsInteger.withDefault(20),
   })
 
   const totalTimeFilter = totalTimeFilterRaw ?? null
@@ -66,7 +60,7 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
         ? totalTimeFilter.value
         : undefined
 
-  const queryPerformanceQuery = useQueryPerformanceQuery({
+  const queryPerformanceQuery = useQueryPerformanceInfiniteQuery({
     searchQuery,
     orderBy: sortConfig || undefined,
     preset: 'unified',
@@ -76,33 +70,7 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
     minCalls: minCalls ?? undefined,
     minTotalTime,
     filterIndexAdvisor: indexAdvisor === 'true',
-    page: page ?? 1,
-    pageSize: pageSize ?? 20,
   })
-
-  const rolesKey = useMemo(() => JSON.stringify(roles), [roles])
-  const sourcesKey = useMemo(() => JSON.stringify(sources), [sources])
-  const totalTimeKey = useMemo(() => JSON.stringify(totalTimeFilterRaw), [totalTimeFilterRaw])
-  const sortKey = useMemo(() => JSON.stringify(sortConfig), [sortConfig])
-
-  // Reset to page 1 when filters or sort change
-  const isInitialMount = useRef(true)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-    setQueryStates({ page: 1 })
-  }, [
-    searchQuery,
-    rolesKey,
-    sourcesKey,
-    minCalls,
-    totalTimeKey,
-    indexAdvisor,
-    sortKey,
-    setQueryStates,
-  ])
 
   if (!isLoadingProject && !project) {
     return (

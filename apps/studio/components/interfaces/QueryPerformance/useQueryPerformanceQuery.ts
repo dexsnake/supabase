@@ -1,8 +1,13 @@
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
+import { executeSql } from 'data/sql/execute-sql-query'
 import useDbQuery from 'hooks/analytics/useDbQuery'
+import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { useDatabaseSelectorStateSnapshot } from 'state/database-selector'
 
 import { PRESET_CONFIG } from '../Reports/Reports.constants'
 import { Presets } from '../Reports/Reports.types'
-import { QueryPerformanceSQLParams } from './QueryPerformance.types'
+import { QueryPerformanceRow, QueryPerformanceSQLParams } from './QueryPerformance.types'
 
 export function generateQueryPerformanceSql({
   preset,
@@ -65,4 +70,78 @@ export function generateQueryPerformanceSql({
 export const useQueryPerformanceQuery = (props: QueryPerformanceSQLParams) => {
   const { sql, whereSql, orderBySql } = generateQueryPerformanceSql(props)
   return useDbQuery({ sql, params: undefined, where: whereSql, orderBy: orderBySql })
+}
+
+export interface QueryPerformanceInfiniteHook {
+  data: QueryPerformanceRow[] | undefined
+  isLoading: boolean
+  isRefetching: boolean
+  isFetchingNextPage: boolean
+  hasNextPage: boolean
+  error: unknown
+  fetchNextPage: () => void
+  refetch: () => void
+  resolvedSql: string
+}
+
+export const useQueryPerformanceInfiniteQuery = (
+  props: Omit<QueryPerformanceSQLParams, 'page'>
+): QueryPerformanceInfiniteHook => {
+  const { data: project } = useSelectedProjectQuery()
+  const state = useDatabaseSelectorStateSnapshot()
+  const { data: databases } = useReadReplicasQuery({ projectRef: project?.ref })
+  const connectionString = (databases || []).find(
+    (db) => db.identifier === state.selectedDatabaseId
+  )?.connectionString
+
+  const pageSize = props.pageSize ?? 20
+  const { sql: page1Sql } = generateQueryPerformanceSql({ ...props, page: 1, pageSize })
+
+  const {
+    data,
+    isPending,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    error,
+    fetchNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: [
+      'projects',
+      project?.ref,
+      'query-performance-infinite',
+      { ...props, pageSize, identifier: state.selectedDatabaseId },
+    ],
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) => {
+      const { sql } = generateQueryPerformanceSql({ ...props, page: pageParam, pageSize })
+      return executeSql(
+        {
+          projectRef: project?.ref,
+          connectionString: connectionString || project?.connectionString,
+          sql,
+        },
+        signal
+      ).then((res) => res.result as QueryPerformanceRow[])
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length < pageSize ? undefined : allPages.length + 1
+    },
+    enabled: Boolean(project?.ref),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+
+  return {
+    data: data?.pages.flatMap((page) => page) ?? undefined,
+    isLoading: isPending,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage: hasNextPage ?? false,
+    error,
+    fetchNextPage,
+    refetch,
+    resolvedSql: page1Sql,
+  }
 }
