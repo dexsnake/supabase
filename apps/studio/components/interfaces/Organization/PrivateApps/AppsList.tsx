@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { MoreVertical, Plus, Trash } from 'lucide-react'
+import { AppWindow, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from 'ui'
+import { EmptyStatePresentational } from 'ui-patterns'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import CopyButton from 'components/ui/CopyButton'
 import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
@@ -82,32 +83,15 @@ export function AppsList() {
             </Table>
           </Card>
         ) : apps.length === 0 ? (
-          <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-surface-300 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-foreground-muted"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                />
-              </svg>
-            </div>
-            <div className="text-center">
-              <p className="font-medium">No private apps yet</p>
-              <p className="text-sm text-foreground-light mt-1 max-w-sm">
-                Create a private app to generate scoped access tokens for your organization
-              </p>
-            </div>
+          <EmptyStatePresentational
+            icon={AppWindow}
+            title="No private apps yet"
+            description="Create a private app to generate scoped access tokens for your organization."
+          >
             <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
-              Create your first app
+              Create app
             </Button>
-          </div>
+          </EmptyStatePresentational>
         ) : (
           <Card>
             <Table>

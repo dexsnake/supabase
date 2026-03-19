@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { MoreVertical, Plus, Trash } from 'lucide-react'
+import { LayoutGrid, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from 'ui'
+import { EmptyStatePresentational } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
@@ -72,32 +73,15 @@ export function InstallationsList() {
             </Table>
           </Card>
         ) : installations.length === 0 ? (
-          <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-surface-300 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-foreground-muted"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div className="text-center">
-              <p className="font-medium">No app installations yet</p>
-              <p className="text-sm text-foreground-light mt-1 max-w-sm">
-                Install a private app to start generating scoped access tokens for your projects
-              </p>
-            </div>
+          <EmptyStatePresentational
+            icon={LayoutGrid}
+            title="No app installations yet"
+            description="Install a private app to start generating scoped access tokens for your projects."
+          >
             <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
-              Install your first app
+              Install app
             </Button>
-          </div>
+          </EmptyStatePresentational>
         ) : (
           <Card>
             <Table>
