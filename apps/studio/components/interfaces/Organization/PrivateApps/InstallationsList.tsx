@@ -1,7 +1,7 @@
 import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import dayjs from 'dayjs'
 import { LayoutGrid, MoreVertical, Plus, Trash } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Button,
@@ -15,8 +15,24 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableHeadSort,
   TableRow,
 } from 'ui'
+
+type InstallationsSort = 'created_at:asc' | 'created_at:desc'
+
+const handleSortChange = (
+  currentSort: InstallationsSort,
+  column: string,
+  setSort: (s: InstallationsSort) => void
+) => {
+  const [currentCol, currentOrder] = currentSort.split(':')
+  if (currentCol === column) {
+    setSort(`${column}:${currentOrder === 'asc' ? 'desc' : 'asc'}` as InstallationsSort)
+  } else {
+    setSort(`${column}:asc` as InstallationsSort)
+  }
+}
 import { EmptyStatePresentational } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
@@ -35,8 +51,18 @@ export function InstallationsList() {
       },
     })
 
+  const [sort, setSort] = useState<InstallationsSort>('created_at:desc')
+  const onSortChange = (column: string) => handleSortChange(sort, column, setSort)
   const [showCreate, setShowCreate] = useState(false)
   const [installationToDelete, setInstallationToDelete] = useState<Installation | null>(null)
+
+  const sortedInstallations = useMemo(() => {
+    const [, order] = sort.split(':')
+    return [...installations].sort((a, b) => {
+      const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return order === 'asc' ? diff : -diff
+    })
+  }, [installations, sort])
 
   function getAppName(appId: string) {
     return apps.find((a) => a.id === appId)?.name ?? appId
@@ -91,22 +117,26 @@ export function InstallationsList() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="max-w-xs">Installed App</TableHead>
-                  <TableHead className="w-48">Installed</TableHead>
+                  <TableHead className="w-48">
+                    <TableHeadSort column="created_at" currentSort={sort} onSortChange={onSortChange}>
+                      Installed
+                    </TableHeadSort>
+                  </TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {installations.map((inst) => {
+                {sortedInstallations.map((inst) => {
                   return (
                     <TableRow key={inst.id}>
                       <TableCell className="max-w-xs">
-                        <span className="font-medium block truncate">{getAppName(inst.app_id)}</span>
+                        <span className="font-medium block max-w-[48ch] truncate">{getAppName(inst.app_id)}</span>
                       </TableCell>
                       <TableCell>
                         <TimestampInfo
                           utcTimestamp={inst.created_at}
                           label={dayjs(inst.created_at).fromNow()}
-                          className="text-sm text-foreground-light"
+                          className="text-sm text-foreground-light whitespace-nowrap"
                         />
                       </TableCell>
                       <TableCell className="text-right">
