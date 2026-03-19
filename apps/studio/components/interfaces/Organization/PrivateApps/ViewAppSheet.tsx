@@ -1,24 +1,28 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Pencil, Trash, X } from 'lucide-react'
+import { Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
-  AlertDescription_Shadcn_,
-  AlertTitle_Shadcn_,
-  Alert_Shadcn_,
   Button,
+  Card,
+  CardContent,
   CriticalIcon,
-  Input_Shadcn_,
   ScrollArea,
   Sheet,
   SheetContent,
   SheetHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Alert_Shadcn_,
+  AlertTitle_Shadcn_,
+  AlertDescription_Shadcn_,
   cn,
 } from 'ui'
-import type { components } from 'api-types'
-import CopyButton from 'components/ui/CopyButton'
 import { usePlatformAppQuery } from 'data/platform-apps/platform-app-query'
-import { usePlatformAppUpdateMutation } from 'data/platform-apps/platform-app-update-mutation'
 import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
 import { PERMISSIONS } from './PrivateApps.constants'
 import { DeleteAppModal } from './DeleteAppModal'
@@ -33,22 +37,12 @@ interface ViewAppSheetProps {
 
 export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetProps) {
   const { slug } = usePrivateApps()
-  const [editingName, setEditingName] = useState(false)
-  const [nameValue, setNameValue] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  const {
-    data: detail,
-    isLoading: isLoadingDetail,
-    error: detailError,
-  } = usePlatformAppQuery({ slug, id: app?.id }, { enabled: visible && app !== null })
-
-  const { mutate: updateApp, isPending: isUpdating } = usePlatformAppUpdateMutation({
-    onSuccess: () => {
-      toast.success('App name updated')
-      setEditingName(false)
-    },
-  })
+  const { data: detail, isLoading: isLoadingDetail } = usePlatformAppQuery(
+    { slug, id: app?.id },
+    { enabled: visible && app !== null }
+  )
 
   const { mutate: deleteApp, isPending: isDeleting } = usePlatformAppDeleteMutation({
     onSuccess: () => {
@@ -59,44 +53,13 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
     },
   })
 
-  function handleOpen() {
-    if (app) setNameValue(app.name)
-    setEditingName(false)
-  }
-
-  function saveName() {
-    if (!app || !slug || !detail) return
-    const trimmed = nameValue.trim()
-    if (!trimmed || trimmed === app.name) {
-      setEditingName(false)
-      return
-    }
-    updateApp({
-      slug,
-      appId: app.id,
-      name: trimmed,
-      permissions:
-        detail.permissions as components['schemas']['UpdatePlatformAppBody']['permissions'],
-    })
-  }
-
   function handleDelete() {
     if (!app || !slug) return
     deleteApp({ slug, appId: app.id })
   }
 
-  const orgPermissions = detail
-    ? detail.permissions
-        .map((id) => PERMISSIONS.find((p) => p.id === id))
-        .filter(Boolean)
-        .filter((p) => p!.group === 'organization')
-    : []
-
-  const projectPermissions = detail
-    ? detail.permissions
-        .map((id) => PERMISSIONS.find((p) => p.id === id))
-        .filter(Boolean)
-        .filter((p) => p!.group === 'project')
+  const permissions = detail
+    ? detail.permissions.map((id) => PERMISSIONS.find((p) => p.id === id)).filter(Boolean)
     : []
 
   return (
@@ -105,7 +68,6 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
         open={visible}
         onOpenChange={(open) => {
           if (!open) onClose()
-          else handleOpen()
         }}
       >
         <SheetContent
@@ -122,178 +84,112 @@ export function ViewAppSheet({ app, visible, onClose, onDeleted }: ViewAppSheetP
 
           <ScrollArea className="flex-1 max-h-[calc(100vh-60px)]">
             {app && (
-              <div className="space-y-8 px-5 sm:px-6 py-6">
+              <div className="flex flex-col gap-0">
                 {/* App info */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">App Information</h3>
-                  <div className="border border-border rounded-lg divide-y divide-border">
-                    {/* Name */}
-                    <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">Name</span>
-                      {editingName ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <Input_Shadcn_
-                            value={nameValue}
-                            onChange={(e) => setNameValue(e.target.value)}
-                            className="h-7 text-sm"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') saveName()
-                              if (e.key === 'Escape') {
-                                setNameValue(app.name)
-                                setEditingName(false)
-                              }
-                            }}
-                            autoFocus
-                          />
-                          <Button
-                            type="primary"
-                            size="tiny"
-                            loading={isUpdating}
-                            onClick={saveName}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            type="default"
-                            size="tiny"
-                            icon={<X size={12} />}
-                            className="px-1"
-                            onClick={() => {
-                              setNameValue(app.name)
-                              setEditingName(false)
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-sm flex-1">{app.name}</span>
-                          <Button
-                            type="text"
-                            size="tiny"
-                            icon={<Pencil size={12} />}
-                            className="px-1"
-                            onClick={() => {
-                              setNameValue(app.name)
-                              setEditingName(true)
-                            }}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    {/* App ID */}
-                    <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">App ID</span>
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-mono text-sm truncate">{app.id}</span>
-                        <CopyButton
-                          type="default"
-                          iconOnly
-                          text={app.id}
-                          className="px-1 shrink-0"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Created */}
-                    <div className="flex items-center px-4 py-3 gap-4">
-                      <span className="text-sm text-foreground-light w-28 shrink-0">Created</span>
-                      <span className="text-sm">
-                        {formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                  </div>
+                <div className="px-5 sm:px-6 py-6 space-y-3">
+                  <h3 className="text-sm font-medium text-foreground">App Information</h3>
+                  <Card className="w-full overflow-hidden bg-surface-100">
+                    <CardContent className="p-0">
+                      <Table className="table-auto">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[40%]">
+                              Field
+                            </TableHead>
+                            <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2">
+                              Value
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>
+                              <p className="text-foreground-light">Name</p>
+                            </TableCell>
+                            <TableCell>
+                              <p className="font-medium">{app.name}</p>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>
+                              <p className="text-foreground-light">Created</p>
+                            </TableCell>
+                            <TableCell>
+                              <p>{formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}</p>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Permissions */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Permissions</h3>
+                <div className="px-5 sm:px-6 py-6 space-y-3">
+                  <h3 className="text-sm font-medium text-foreground">Permissions</h3>
                   {isLoadingDetail ? (
-                    <div className="text-sm text-foreground-light py-4">Loading permissions...</div>
+                    <p className="text-sm text-foreground-light py-4">Loading permissions...</p>
                   ) : (
-                    <div className="border border-border rounded-lg">
-                      {orgPermissions.length > 0 && (
-                        <>
-                          <div className="px-3 py-2 bg-surface-100 rounded-t-lg">
-                            <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                              Organization
-                            </p>
-                          </div>
-                          {orgPermissions.map((p, i) => (
-                            <div key={p!.id}>
-                              <div className="px-4 py-3 flex items-start gap-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                                <div>
-                                  <p className="text-sm font-mono">{p!.label}</p>
-                                  <p className="text-xs text-foreground-light">{p!.description}</p>
-                                </div>
-                              </div>
-                              {i < orgPermissions.length - 1 && (
-                                <div className="border-t border-border" />
-                              )}
-                            </div>
-                          ))}
-                        </>
-                      )}
-
-                      {orgPermissions.length > 0 && projectPermissions.length > 0 && (
-                        <div className="border-t border-border" />
-                      )}
-
-                      {projectPermissions.length > 0 && (
-                        <>
-                          <div
-                            className={`px-3 py-2 bg-surface-100 ${orgPermissions.length === 0 ? 'rounded-t-lg' : ''}`}
-                          >
-                            <p className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-                              Project
-                            </p>
-                          </div>
-                          {projectPermissions.map((p, i) => (
-                            <div key={p!.id}>
-                              <div className="px-4 py-3 flex items-start gap-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted mt-1.5 shrink-0" />
-                                <div>
-                                  <p className="text-sm font-mono">{p!.label}</p>
-                                  <p className="text-xs text-foreground-light">{p!.description}</p>
-                                </div>
-                              </div>
-                              {i < projectPermissions.length - 1 && (
-                                <div className="border-t border-border" />
-                              )}
-                            </div>
-                          ))}
-                        </>
-                      )}
-
-                      {orgPermissions.length === 0 && projectPermissions.length === 0 && (
-                        <div className="px-4 py-6 text-center text-sm text-foreground-light">
-                          No permissions configured
-                        </div>
-                      )}
-                    </div>
+                    <Card className="w-full overflow-hidden bg-surface-100">
+                      <CardContent className="p-0">
+                        <Table className="table-auto">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2 w-[50%]">
+                                Permission
+                              </TableHead>
+                              <TableHead className="text-left font-mono uppercase text-xs text-foreground-lighter h-auto py-2">
+                                Description
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {permissions.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={2}>
+                                  <p className="text-foreground-light text-center py-4">
+                                    No permissions configured
+                                  </p>
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              permissions.map((p) => (
+                                <TableRow key={p!.id}>
+                                  <TableCell>
+                                    <p className="font-mono text-sm">{p!.label}</p>
+                                  </TableCell>
+                                  <TableCell>
+                                    <p className="text-foreground-light text-sm">{p!.description}</p>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
 
                 {/* Danger zone */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Danger Zone</h3>
-                <Alert_Shadcn_ variant="destructive">
-                  <CriticalIcon />
-                  <AlertTitle_Shadcn_>Delete app</AlertTitle_Shadcn_>
-                  <AlertDescription_Shadcn_>
-                    Permanently delete this app and all its installations.
-                  </AlertDescription_Shadcn_>
-                  <div className="mt-2">
-                    <Button
-                      type="danger"
-                      icon={<Trash size={14} />}
-                      onClick={() => setShowDeleteModal(true)}
-                    >
-                      Delete app
-                    </Button>
-                  </div>
-                </Alert_Shadcn_>
+                <div className="px-5 sm:px-6 py-6 space-y-3">
+                  <h3 className="text-sm font-medium text-foreground">Danger Zone</h3>
+                  <Alert_Shadcn_ variant="destructive">
+                    <CriticalIcon />
+                    <AlertTitle_Shadcn_>Delete app</AlertTitle_Shadcn_>
+                    <AlertDescription_Shadcn_>
+                      Permanently delete this app and all its installations.
+                    </AlertDescription_Shadcn_>
+                    <div className="mt-2">
+                      <Button
+                        type="danger"
+                        icon={<Trash size={14} />}
+                        onClick={() => setShowDeleteModal(true)}
+                      >
+                        Delete app
+                      </Button>
+                    </div>
+                  </Alert_Shadcn_>
                 </div>
               </div>
             )}
