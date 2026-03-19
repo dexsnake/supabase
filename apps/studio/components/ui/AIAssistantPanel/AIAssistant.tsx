@@ -238,7 +238,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
           rating,
           category: result.category,
           ...(reason && { reason }),
-          sessionId: snap.activeChatId,
+          sessionId: state.activeChatId,
         })
       } catch (error) {
         console.error('Failed to rate message:', error)
@@ -249,7 +249,7 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
         })
       }
     },
-    [chatMessages, project?.ref, selectedOrganization?.slug, rateMessage, track, state, snap]
+    [chatMessages, project?.ref, selectedOrganization?.slug, rateMessage, track, state]
   )
 
   const isContextExceededError =
