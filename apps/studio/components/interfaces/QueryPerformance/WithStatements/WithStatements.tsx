@@ -172,7 +172,8 @@ export const WithStatements = ({
       )}
       <QueryPerformanceMetrics />
       <QueryPerformanceFilterBar
-        showRolesFilter={true}
+        showRolesFilter
+        showSourceFilter
         actions={
           <>
             <ButtonTooltip

@@ -76,9 +76,9 @@ export const useAvailableIntegrations = () => {
           case 'overview':
             return dynamic(
               () =>
-                import(
-                  'components/interfaces/Integrations/Integration/IntegrationOverviewTabV2/index'
-                ).then((mod) => mod.IntegrationOverviewTabV2),
+                import('components/interfaces/Integrations/Integration/IntegrationOverviewTabV2/index').then(
+                  (mod) => mod.IntegrationOverviewTabV2
+                ),
               {
                 loading: Loading,
               }
@@ -110,10 +110,6 @@ export const useAvailableIntegrations = () => {
       }
 
       if (integration.id === 'stripe_sync_engine' && isCLI) {
-        return false
-      }
-
-      if (integration.id === 'data_api' && !IS_PLATFORM) {
         return false
       }
 
