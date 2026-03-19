@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { MoreVertical, Plus, Trash } from 'lucide-react'
+import { ExternalLink, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -22,12 +22,11 @@ import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import { usePlatformAppInstallationDeleteMutation } from 'data/platform-apps/platform-app-installation-delete-mutation'
 import { CreateInstallationModal } from './CreateInstallationModal'
+import { ViewInstallationSheet } from './ViewInstallationSheet'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
   const { installations, apps, slug, removeInstallation } = usePrivateApps()
-  const allAppsInstalled =
-    apps.length > 0 && installations.length >= apps.length
   const { mutate: deleteInstallation, isPending: isDeleting } =
     usePlatformAppInstallationDeleteMutation({
       onSuccess: (_, vars) => {
@@ -38,6 +37,7 @@ export function InstallationsList() {
     })
 
   const [showCreate, setShowCreate] = useState(false)
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null)
   const [installationToDelete, setInstallationToDelete] = useState<Installation | null>(null)
 
   function getAppName(appId: string) {
@@ -52,19 +52,6 @@ export function InstallationsList() {
   return (
     <>
       <div className="flex flex-col gap-y-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-          <p className="text-sm text-foreground-light">
-            Manage where private apps are installed across your organization.
-          </p>
-          <Button
-            type="primary"
-            icon={<Plus size={14} />}
-            disabled={allAppsInstalled}
-            onClick={() => setShowCreate(true)}
-          >
-            Install app
-          </Button>
-        </div>
 
         {installations.length === 0 ? (
           <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
@@ -138,6 +125,13 @@ export function InstallationsList() {
                             />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" side="bottom" className="w-40">
+                            <DropdownMenuItem
+                              className="gap-x-2"
+                              onClick={() => setSelectedInstallation(inst)}
+                            >
+                              <ExternalLink size={14} />
+                              View details
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="!text-destructive gap-x-2"
@@ -159,6 +153,12 @@ export function InstallationsList() {
       </div>
 
       <CreateInstallationModal visible={showCreate} onClose={() => setShowCreate(false)} />
+
+      <ViewInstallationSheet
+        installation={selectedInstallation}
+        visible={selectedInstallation !== null}
+        onClose={() => setSelectedInstallation(null)}
+      />
 
       <ConfirmationModal
         variant="destructive"

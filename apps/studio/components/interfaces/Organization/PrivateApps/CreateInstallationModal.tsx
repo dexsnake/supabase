@@ -31,7 +31,11 @@ export function CreateInstallationModal({ visible, onClose }: CreateInstallation
 
   const { mutate: installApp, isPending: isInstalling } = usePlatformAppInstallationCreateMutation({
     onSuccess: (data) => {
-      if (data) addInstallation(data, 'all')
+      if (data) {
+        addInstallation(data, 'all')
+      } else {
+        console.warn('[CreateInstallationModal] POST succeeded but response body was empty')
+      }
       setSelectedAppId('')
       onClose()
     },

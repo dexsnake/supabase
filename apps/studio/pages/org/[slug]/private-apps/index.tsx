@@ -44,7 +44,7 @@ const PrivateAppsPage: NextPageWithLayout = () => {
             <div>
               <p className="font-medium">Installations</p>
               <p className="text-sm text-foreground-light">
-                Where apps are installed across your organization's projects
+                Install an app for your organization. You can only install one app at a time.
               </p>
             </div>
             <InstallationsList />
