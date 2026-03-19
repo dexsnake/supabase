@@ -35,6 +35,40 @@ type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppRespons
 type CreatePlatformAppSigningKeyResponse =
   components['schemas']['CreatePlatformAppSigningKeyResponse']
 
+const STEPS = [
+  { key: 'details', label: 'App details' },
+  { key: 'signing-key', label: 'Signing key' },
+] as const
+
+type Step = (typeof STEPS)[number]['key']
+
+function StepIndicator({ currentStep }: { currentStep: Step }) {
+  const currentIndex = STEPS.findIndex((s) => s.key === currentStep)
+  return (
+    <div className="flex items-center gap-2">
+      {STEPS.map((step, i) => {
+        const isActive = i === currentIndex
+        const isDone = i < currentIndex
+        return (
+          <div key={step.key} className="flex items-center gap-2">
+            {i > 0 && <div className="w-4 h-px bg-border-strong" />}
+            <div className="flex items-center gap-1.5">
+              <div
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${isActive || isDone ? 'bg-foreground' : 'bg-border-strong'}`}
+              />
+              <span
+                className={`text-xs transition-colors ${isActive ? 'text-foreground' : 'text-foreground-muted'}`}
+              >
+                {step.label}
+              </span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 interface CreateAppSheetProps {
   visible: boolean
   onClose: () => void
@@ -43,7 +77,7 @@ interface CreateAppSheetProps {
 
 export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetProps) {
   const { slug } = usePrivateApps()
-  const [step, setStep] = useState<'details' | 'signing-key'>('details')
+  const [step, setStep] = useState<Step>('details')
   const [createdApp, setCreatedApp] = useState<CreatePlatformAppResponse | null>(null)
   const [generatedKey, setGeneratedKey] = useState<CreatePlatformAppSigningKeyResponse | null>(null)
   const [keyCopied, setKeyCopied] = useState(false)
@@ -266,7 +300,8 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
               </div>
             </ScrollArea>
 
-            <SheetFooter className="!justify-end w-full mt-auto py-4 border-t">
+            <SheetFooter className="!flex-row !justify-between items-center w-full mt-auto py-4 border-t">
+              <StepIndicator currentStep="details" />
               <div className="flex gap-2">
                 <Button type="default" onClick={handleClose} disabled={isCreatingApp}>
                   Cancel
@@ -362,7 +397,8 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
               </div>
             </ScrollArea>
 
-            <SheetFooter className="!justify-end w-full mt-auto py-4 border-t">
+            <SheetFooter className="!flex-row !justify-between items-center w-full mt-auto py-4 border-t">
+              <StepIndicator currentStep="signing-key" />
               <div className="flex gap-2">
                 {generatedKey ? (
                   <Button

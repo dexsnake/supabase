@@ -116,20 +116,20 @@ export function InstallationsList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="max-w-xs">Installed App</TableHead>
+                  <TableHead>Installed App</TableHead>
                   <TableHead className="w-48">
                     <TableHeadSort column="created_at" currentSort={sort} onSortChange={onSortChange}>
                       Installed
                     </TableHeadSort>
                   </TableHead>
-                  <TableHead />
+                  <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedInstallations.map((inst) => {
                   return (
                     <TableRow key={inst.id}>
-                      <TableCell className="max-w-xs">
+                      <TableCell>
                         <span className="font-medium block max-w-[48ch] truncate">{getAppName(inst.app_id)}</span>
                       </TableCell>
                       <TableCell>

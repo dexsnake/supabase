@@ -109,13 +109,13 @@ export function AppsList({ onCreateApp }: AppsListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-xs">Name</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead className="w-48">
                   <TableHeadSort column="created_at" currentSort={sort} onSortChange={onSortChange}>
                     Created
                   </TableHeadSort>
                 </TableHead>
-                <TableHead />
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
