@@ -1,22 +1,23 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { Label } from '@ui/components/shadcn/ui/label'
 import { getConnectionStrings } from 'components/interfaces/Connect/DatabaseSettings.utils'
 import { getKeys, useAPIKeysQuery } from 'data/api-keys/api-keys-query'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { pluckObjectFields } from 'lib/helpers'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Database, KeyRound, Link2, Terminal } from 'lucide-react'
 import { parseAsBoolean, useQueryState } from 'nuqs'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Button,
-  PopoverContent_Shadcn_ as PopoverContent,
-  PopoverTrigger_Shadcn_ as PopoverTrigger,
-  Popover_Shadcn_ as Popover,
   cn,
+  copyToClipboard,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns'
-import { Input } from 'ui-patterns/DataInputs/Input'
 
 import { useProjectApiUrl } from '@/data/config/project-endpoint-query'
 
@@ -26,15 +27,6 @@ const EMPTY_CONNECTION_INFO = {
   db_host: '',
   db_port: '',
   db_name: '',
-}
-
-const DetailRow = ({ label, children }: { label: string; children: ReactNode }) => {
-  return (
-    <div className="flex flex-col gap-2">
-      <Label>{label}</Label>
-      {children}
-    </div>
-  )
 }
 
 interface ProjectConnectionPopoverProps {
@@ -80,89 +72,115 @@ export const ProjectConnectionPopover = ({ projectRef }: ProjectConnectionPopove
     }).direct.uri
   }, [primaryDatabase, projectRef])
 
+  const cliCommands = useMemo(
+    () =>
+      [
+        'supabase login',
+        'supabase init',
+        `supabase link --project-ref ${projectRef ?? 'PROJECT_REF_UNAVAILABLE'}`,
+      ].join('\n'),
+    [projectRef]
+  )
+
+  const menuItems = useMemo(
+    () => [
+      {
+        label: 'Project URL',
+        value: projectUrl ?? '',
+        disabled: isLoadingApiUrl || !projectUrl,
+        icon: Link2,
+      },
+      {
+        label: 'Publishable key',
+        value: publishableKey?.api_key ?? '',
+        disabled:
+          isLoadingPermissions || isLoadingKeys || !canReadAPIKeys || !publishableKey?.api_key,
+        icon: KeyRound,
+      },
+      {
+        label: 'Direct connection string',
+        value: directConnectionString,
+        disabled: isLoadingDatabases || !directConnectionString,
+        icon: Database,
+      },
+      {
+        label: 'CLI setup commands',
+        value: cliCommands,
+        disabled: !projectRef,
+        icon: Terminal,
+      },
+    ],
+    [
+      canReadAPIKeys,
+      cliCommands,
+      directConnectionString,
+      isLoadingApiUrl,
+      isLoadingDatabases,
+      isLoadingKeys,
+      isLoadingPermissions,
+      projectRef,
+      projectUrl,
+      publishableKey?.api_key,
+    ]
+  )
+
   return (
-    <div className="mt-3 inline-flex max-w-full items-center gap-2 min-w-0">
+    <div className="mt-3 inline-flex max-w-full items-center gap-3 min-w-0">
       {isLoadingApiUrl ? (
         <ShimmeringLoader className="w-32 shrink-0" />
       ) : (
-        <span className="min-w-0 max-w-[320px] truncate text-left text-sm text-foreground-light">
+        <span className="min-w-0 max-w-[320px] truncate text-left text-foreground-light">
           {projectUrl ?? 'Project URL unavailable'}
         </span>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
           <Button
             type="default"
             size="tiny"
-            className="shrink-0 gap-1 px-2.5"
+            className="shrink-0"
             iconRight={
-              <ChevronDown
-                size={14}
-                className={cn('transition-transform', open && 'rotate-180')}
-              />
+              <ChevronDown size={14} className={cn('transition-transform', open && 'rotate-180')} />
             }
           >
-            Connect
+            Copy
           </Button>
-        </PopoverTrigger>
-        <PopoverContent side="bottom" align="end" className="w-[420px] p-0">
-          <div className="p-4 border-b space-y-4">
-            <h3 className="heading-meta text-foreground-light">Data API</h3>
-            <DetailRow label="Project URL">
-              <Input
-                copy
-                readOnly
-                className="font-mono text-xs"
-                value={projectUrl ?? ''}
-                placeholder="Project URL unavailable"
-              />
-            </DetailRow>
-            <DetailRow label="Publishable Key">
-              {isLoadingPermissions || isLoadingKeys ? (
-                <div className="text-xs text-foreground-lighter">Loading publishable key...</div>
-              ) : canReadAPIKeys ? (
-                <Input
-                  copy
-                  readOnly
-                  className="font-mono text-xs"
-                  value={publishableKey?.api_key ?? ''}
-                  placeholder="Publishable key unavailable"
-                />
-              ) : (
-                <div className="text-xs text-foreground-lighter">
-                  You don't have permission to view API keys.
-                </div>
-              )}
-            </DetailRow>
-          </div>
-          <div className="p-4 space-y-4 border-b">
-            <h3 className="heading-meta text-foreground-light"> Database </h3>
-            <DetailRow label="Direct connection string">
-              {isLoadingDatabases ? (
-                <div className="text-xs text-foreground-lighter">Loading connection string...</div>
-              ) : (
-                <Input
-                  copy
-                  readOnly
-                  className="font-mono text-xs"
-                  value={directConnectionString}
-                  placeholder="Connection string unavailable"
-                />
-              )}
-            </DetailRow>
-          </div>
-          <div className="p-4">
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="end" className="w-64 p-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon
+
+            return (
+              <DropdownMenuItem
+                key={item.label}
+                className="gap-2"
+                disabled={item.disabled}
+                onClick={() => {
+                  copyToClipboard(item.value)
+                  setOpen(false)
+                }}
+              >
+                <Icon size={14} />
+                <span>{item.label}</span>
+              </DropdownMenuItem>
+            )
+          })}
+          <DropdownMenuSeparator />
+          <div className="p-1">
             <Button
               type="default"
-              size="medium"
+              size="tiny"
               className="w-full"
-              onClick={() => setShowConnect(true)}
+              onClick={() => {
+                setOpen(false)
+                setShowConnect(true)
+              }}
             >
-              Get connected
+              Connect
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

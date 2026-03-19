@@ -17,8 +17,8 @@ import { ProjectDropdown } from 'components/layouts/AppLayout/ProjectDropdown'
 import { HelpButton } from 'components/ui/HelpPanel/HelpButton'
 import { getResourcesExceededLimitsOrg } from 'components/ui/OveragesBanner/OveragesBanner.utils'
 import { useOrgUsageQuery } from 'data/usage/org-usage-query'
-import { DevToolbarTrigger } from 'dev-tools'
 import dayjs from 'dayjs'
+import { DevToolbarTrigger } from 'dev-tools'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
@@ -103,7 +103,7 @@ export const LayoutHeader = ({
     selectedProject?.inserted_at &&
     dayjs(selectedProject.inserted_at).isBefore(dayjs().subtract(5, 'day'))
       ? 'default'
-      : 'secondary'
+      : 'primary'
 
   // show org selection if we are on a project page or on a explicit org route
   const showOrgSelection = slug || (selectedOrganization && projectRef)
