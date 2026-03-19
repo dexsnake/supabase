@@ -50,14 +50,13 @@ export function AppsList() {
   return (
     <>
       <div className="flex flex-col gap-y-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-          <p className="text-sm text-foreground-light">
-            Generate scoped access tokens for your organization using private apps.
-          </p>
-          <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
-            Create app
-          </Button>
-        </div>
+        {!isLoading && apps.length > 0 && (
+          <div className="flex justify-end">
+            <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
+              Create app
+            </Button>
+          </div>
+        )}
 
         {isLoading ? (
           <Card>
