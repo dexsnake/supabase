@@ -15,6 +15,7 @@ interface PrivateAppsContextValue {
   slug: string | undefined
   apps: PrivateApp[]
   isLoading: boolean
+  isLoadingInstallations: boolean
   installations: Installation[]
   addInstallation: (
     data: components['schemas']['InstallPlatformAppResponse'],
@@ -31,7 +32,7 @@ export function PrivateAppsProvider({ children }: PropsWithChildren) {
   const slug = org?.slug
 
   const { data: appsData, isLoading } = usePlatformAppsQuery({ slug })
-  const { data: installationsData, isError: installationsError } = usePlatformAppInstallationsQuery(
+  const { data: installationsData, isLoading: isLoadingInstallations, isError: installationsError } = usePlatformAppInstallationsQuery(
     { slug },
     { retry: false }
   )
@@ -74,7 +75,8 @@ export function PrivateAppsProvider({ children }: PropsWithChildren) {
       value={{
         slug,
         apps: appsData?.apps ?? [],
-        isLoading,
+        isLoading: isLoading || !slug,
+        isLoadingInstallations: isLoadingInstallations || !slug,
         installations,
         addInstallation,
         removeInstallation,

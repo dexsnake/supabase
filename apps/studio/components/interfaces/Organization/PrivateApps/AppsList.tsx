@@ -59,9 +59,28 @@ export function AppsList() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-sm text-foreground-light">Loading apps...</div>
-          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>App ID</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><div className="h-4 w-32 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-48 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell />
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         ) : apps.length === 0 ? (
           <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-full bg-surface-300 flex items-center justify-center">

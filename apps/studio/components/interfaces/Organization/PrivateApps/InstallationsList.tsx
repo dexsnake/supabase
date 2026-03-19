@@ -24,7 +24,7 @@ import { CreateInstallationModal } from './CreateInstallationModal'
 import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
-  const { installations, apps, slug, removeInstallation } = usePrivateApps()
+  const { installations, apps, slug, isLoadingInstallations, removeInstallation } = usePrivateApps()
   const { mutate: deleteInstallation, isPending: isDeleting } =
     usePlatformAppInstallationDeleteMutation({
       onSuccess: (_, vars) => {
@@ -50,7 +50,28 @@ export function InstallationsList() {
     <>
       <div className="flex flex-col gap-y-4">
 
-        {installations.length === 0 ? (
+        {isLoadingInstallations ? (
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>App name</TableHead>
+                  <TableHead>Installed</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><div className="h-4 w-32 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-surface-300 rounded animate-pulse" /></TableCell>
+                    <TableCell />
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        ) : installations.length === 0 ? (
           <div className="bg-surface-100 border rounded-lg p-12 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-full bg-surface-300 flex items-center justify-center">
               <svg
