@@ -10,11 +10,9 @@ import {
 import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import {
   arrayMove,
-  defaultAnimateLayoutChanges,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-  type AnimateLayoutChanges,
 } from '@dnd-kit/sortable'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { buildTableEditorUrl } from 'components/grid/SupabaseGrid.utils'
@@ -32,6 +30,7 @@ import {
   Table2,
 } from 'lucide-react'
 import { useRouter } from 'next/router'
+import { memo } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow'
 import {
   Button,
@@ -62,12 +61,12 @@ const itemHeight = 'h-[22px]'
 // ref: https://github.com/wbkd/react-flow/discussions/2698
 const hiddenNodeConnector = '!h-px !w-px !min-w-0 !min-h-0 !cursor-grab !border-0 !opacity-0'
 
-export const TableNode = ({
+export const TableNode = memo(function TableNode({
   data,
   targetPosition,
   sourcePosition,
   placeholder,
-}: NodeProps<TableNodeData> & { placeholder?: boolean }) => {
+}: NodeProps<TableNodeData> & { placeholder?: boolean }) {
   const schemaGraphContext = useSchemaGraphContext()
   const { data: project } = useSelectedProjectQuery()
   const router = useRouter()
@@ -206,12 +205,9 @@ export const TableNode = ({
       )}
     </article>
   )
-}
+})
 
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-  defaultAnimateLayoutChanges({ ...args, wasDragging: true })
-
-const SchemaTableColumn = ({
+const SchemaTableColumn = memo(function SchemaTableColumn({
   column,
   table,
   targetPosition,
@@ -221,7 +217,7 @@ const SchemaTableColumn = ({
   table: TableNodeData
   targetPosition: Position | undefined
   sourcePosition: Position | undefined
-}) => {
+}) {
   const schemaGraphContext = useSchemaGraphContext()
   const reactFlowInstance = useReactFlow()
 
@@ -232,7 +228,6 @@ const SchemaTableColumn = ({
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
-    animateLayoutChanges,
   })
 
   // Ensure we handle the current react flow zoom as it would mess up the dragged element position otherwise
@@ -252,10 +247,10 @@ const SchemaTableColumn = ({
         'bg-surface-100',
         'border-t',
         'border-t-[0.5px]',
-        'hover:bg-scale-500 transition cursor-default',
+        'hover:bg-scale-500 cursor-default',
         'group',
         'pr-1',
-        'will-change-transform',
+        // 'will-change-transform',
         itemHeight,
         isDragging && 'opacity-70 z-10 shadow-md'
       )}
@@ -377,4 +372,4 @@ const SchemaTableColumn = ({
       </DropdownMenu>
     </div>
   )
-}
+})

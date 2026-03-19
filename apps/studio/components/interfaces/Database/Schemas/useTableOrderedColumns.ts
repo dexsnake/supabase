@@ -37,8 +37,13 @@ export const useTableOrderedColumns = ({
       {} as Record<string, TableNodeColumnData>
     )
 
-    const missingColumns = table.columns.filter(column => !columns.includes(column.id))
-    const orderedColumn = columns.map((columnId) => columnsById[columnId]).concat(missingColumns)
+    // The original table may have been modified (columns added or removed)
+    // Make sure to remove columns that don't exist anymore from the persisted ones
+    const cleanColumns = columns.filter(columnId => table.columns.some(column => column.id === columnId))
+
+    // Make sure we add the new columns at the end of the persisted ones if needed
+    const missingColumns = table.columns.filter(column => !cleanColumns.includes(column.id))
+    const orderedColumn = cleanColumns.map((columnId) => columnsById[columnId]).concat(missingColumns)
 
     return [orderedColumn, persistColumns]
   }, [columns, table.columns, setColumns])

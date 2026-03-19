@@ -38,6 +38,7 @@ import { SchemaGraphContextProvider, SchemaGraphContextType } from './SchemaGrap
 import { SchemaGraphLegend } from './SchemaGraphLegend'
 import { getGraphDataFromTables, getLayoutedElementsViaDagre } from './Schemas.utils'
 import { TableNode } from './SchemaTableNode'
+import { useStaticEffectEvent } from '@/hooks/useStaticEffectEvent'
 
 // [Joshen] Persisting logic: Only save positions to local storage WHEN a node is moved OR when explicitly clicked to reset layout
 
@@ -122,7 +123,7 @@ export const SchemaGraph = () => {
     saveNodePositions()
   }
 
-  const saveNodePositions = () => {
+  const saveNodePositions = useStaticEffectEvent(() => {
     if (schema === undefined) return console.error('Schema is required')
 
     const nodes = reactFlowInstance.getNodes()
@@ -132,7 +133,7 @@ export const SchemaGraph = () => {
       }, {})
       setStoredPositions(nodesPositionData)
     }
-  }
+  })
 
   const downloadImage = (format: 'png' | 'svg') => {
     const reactflowViewport = document.querySelector('.react-flow__viewport') as HTMLElement
@@ -381,7 +382,7 @@ export const SchemaGraph = () => {
                   minZoom={0.8}
                   maxZoom={1.8}
                   proOptions={{ hideAttribution: true }}
-                  onNodeDragStop={() => saveNodePositions()}
+                  onNodeDragStop={saveNodePositions}
                 >
                   <Background
                     gap={16}
