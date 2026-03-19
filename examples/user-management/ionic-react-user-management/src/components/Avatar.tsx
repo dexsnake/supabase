@@ -10,7 +10,7 @@ export function Avatar({
   onUpload,
 }: {
   url: string;
-  onUpload: (e: any, file: string) => Promise<void>;
+  onUpload: (file: string) => Promise<void>;
 }) {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
 
@@ -35,7 +35,7 @@ export function Avatar({
       if (uploadError) {
         throw uploadError;
       }
-      onUpload(null, fileName);
+    await onUpload(fileName);
     } catch (error) {
       console.log(error);
     }
