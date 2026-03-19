@@ -1,25 +1,9 @@
 'use client'
 
-import { useOrganizationsQuery } from 'data/organizations/organizations-query'
-import { useProjectDetailQuery } from 'data/projects/project-detail-query'
 import { Button, cn } from 'ui'
-import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
-
-import { V2BranchSelector } from './V2BranchSelector'
-import { V2OrgProjectSelector } from './V2OrgProjectSelector'
-import { useV2Params } from '@/app/v2/V2ParamsContext'
+import { V2ProjectBranchSelector } from './V2ProjectBranchSelector'
 
 export function TopBar() {
-  const { orgSlug, projectRef } = useV2Params()
-  const { data: org } = useOrganizationsQuery({
-    enabled: true,
-    select: (data) => data.find((o) => o.slug === orgSlug),
-  })
-  const { data: project, isPending: loadingProject } = useProjectDetailQuery(
-    { ref: projectRef },
-    { enabled: Boolean(projectRef) }
-  )
-
   return (
     <header
       className={cn(
@@ -27,12 +11,7 @@ export function TopBar() {
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <V2OrgProjectSelector />
-        {loadingProject || !project ? (
-          <ShimmeringLoader className="h-5 w-24" />
-        ) : (
-          <V2BranchSelector />
-        )}
+        <V2ProjectBranchSelector />
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Button

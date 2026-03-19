@@ -22,7 +22,7 @@ import { IS_PLATFORM } from 'lib/constants'
 
 export function V2BranchSelector() {
   const router = useRouter()
-  const { projectRef } = useV2Params()
+  const { orgSlug, projectRef } = useV2Params()
   const [open, setOpen] = useState(false)
 
   const { data: project } = useProjectDetailQuery(
@@ -64,7 +64,7 @@ export function V2BranchSelector() {
     <Popover_Shadcn_ open={open} onOpenChange={setOpen}>
       <PopoverTrigger_Shadcn_ asChild>
         <Button
-          variant="outline"
+          type="outline"
           size="tiny"
           className="h-6 gap-1 px-2 rounded-full border-border text-xs"
         >
