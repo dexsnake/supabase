@@ -48,9 +48,11 @@ const App: FC = () => {
               return claims ? <Redirect to="/account" /> : <LoginPage />;
             }}
           />
-          <Route exact path="/account">
-            <AccountPage />
-          </Route>
+          <Route
+            exact
+            path="/account"
+            render={() => (claims ? <AccountPage /> : <Redirect to="/" />)}
+          />
         </IonRouterOutlet>
       </IonReactRouter>
     </IonApp>
