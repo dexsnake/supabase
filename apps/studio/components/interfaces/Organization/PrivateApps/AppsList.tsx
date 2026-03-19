@@ -1,16 +1,14 @@
 import dayjs from 'dayjs'
-import { Copy, Download, MoreVertical, Plus, Trash, X } from 'lucide-react'
+import { MoreVertical, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   Button,
   Card,
-  Checkbox_Shadcn_,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Label_Shadcn_,
   Table,
   TableBody,
   TableCell,
@@ -18,22 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from 'ui'
-import { Admonition } from 'ui-patterns'
 import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 import CopyButton from 'components/ui/CopyButton'
-import type { components } from 'api-types'
 import { usePlatformAppDeleteMutation } from 'data/platform-apps/platform-app-delete-mutation'
 import { CreateAppSheet } from './CreateAppSheet'
 import { DeleteAppModal } from './DeleteAppModal'
 import { ViewAppSheet } from './ViewAppSheet'
 import { PrivateApp, usePrivateApps } from './PrivateAppsContext'
-
-type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppResponse']
-
-interface NewAppKey {
-  app: CreatePlatformAppResponse
-  confirmed: boolean
-}
 
 export function AppsList() {
   const { apps, isLoading, slug } = usePrivateApps()
@@ -45,30 +34,11 @@ export function AppsList() {
   })
 
   const [showCreate, setShowCreate] = useState(false)
-  const [newAppKey, setNewAppKey] = useState<NewAppKey | null>(null)
   const [viewApp, setViewApp] = useState<PrivateApp | null>(null)
   const [appToDelete, setAppToDelete] = useState<PrivateApp | null>(null)
 
-  function handleCreated(app: CreatePlatformAppResponse) {
+  function handleCreated() {
     setShowCreate(false)
-    setNewAppKey({ app, confirmed: false })
-  }
-
-  function handleCopyKey() {
-    if (!newAppKey) return
-    navigator.clipboard.writeText(newAppKey.app.signing_key.private_key)
-    toast.success('Private key copied to clipboard')
-  }
-
-  function handleDownloadKey() {
-    if (!newAppKey) return
-    const blob = new Blob([newAppKey.app.signing_key.private_key], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${newAppKey.app.name.toLowerCase().replace(/\s+/g, '-')}-private-key.pem`
-    a.click()
-    URL.revokeObjectURL(url)
   }
 
   function handleDelete() {
@@ -87,81 +57,6 @@ export function AppsList() {
             Create app
           </Button>
         </div>
-
-        {/* Private key banner — shown after creation, only dismissible once confirmed */}
-        {newAppKey && (
-          <Admonition
-            type="tip"
-            title="Save your private key now — you won't be able to see it again."
-            className="relative"
-            actions={
-              newAppKey.confirmed ? (
-                <Button
-                  type="text"
-                  icon={<X />}
-                  className="w-7 h-7 absolute top-2.5 right-2.5"
-                  onClick={() => setNewAppKey(null)}
-                />
-              ) : undefined
-            }
-          >
-            <div className="space-y-4">
-              <div className="text-sm space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-foreground-light">App</span>
-                  <span className="font-medium">{newAppKey.app.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-foreground-light">App ID</span>
-                  <span className="font-mono text-xs">{newAppKey.app.id}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground-light">Private key</span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="default"
-                      size="tiny"
-                      icon={<Copy size={12} />}
-                      onClick={handleCopyKey}
-                    >
-                      Copy
-                    </Button>
-                    <Button
-                      type="default"
-                      size="tiny"
-                      icon={<Download size={12} />}
-                      onClick={handleDownloadKey}
-                    >
-                      Download
-                    </Button>
-                  </div>
-                </div>
-                <textarea
-                  readOnly
-                  value={newAppKey.app.signing_key.private_key}
-                  rows={8}
-                  className="w-full rounded-md border border-control bg-surface-200 px-3 py-2 text-xs font-mono resize-none focus:outline-none"
-                />
-              </div>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <Checkbox_Shadcn_
-                  id="key-confirmed"
-                  checked={newAppKey.confirmed}
-                  onCheckedChange={(v) =>
-                    setNewAppKey((prev) => (prev ? { ...prev, confirmed: Boolean(v) } : null))
-                  }
-                />
-                <Label_Shadcn_ htmlFor="key-confirmed" className="cursor-pointer">
-                  I have saved this private key
-                </Label_Shadcn_>
-              </label>
-            </div>
-          </Admonition>
-        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">

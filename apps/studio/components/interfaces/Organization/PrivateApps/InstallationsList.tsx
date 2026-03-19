@@ -86,28 +86,15 @@ export function InstallationsList() {
               <TableHeader>
                 <TableRow>
                   <TableHead>App name</TableHead>
-                  <TableHead>Scope</TableHead>
                   <TableHead>Installed</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {installations.map((inst) => {
-                  const scope = inst.projectScope
-                  const scopeLabel =
-                    scope === 'all'
-                      ? 'All projects'
-                      : scope.length === 1
-                        ? '1 project'
-                        : `${scope.length} projects`
                   return (
                     <TableRow key={inst.id}>
                       <TableCell className="font-medium">{getAppName(inst.app_id)}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-surface-300 px-2 py-0.5 text-xs">
-                          {scopeLabel}
-                        </span>
-                      </TableCell>
                       <TableCell>
                         <TimestampInfo
                           utcTimestamp={inst.created_at}

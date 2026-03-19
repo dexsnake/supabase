@@ -1,5 +1,6 @@
-import { Key, Plus, RotateCcw, X } from 'lucide-react'
+import { Copy, Download, Key, Plus, RotateCcw, X } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   Button,
   Checkbox_Shadcn_,
@@ -26,10 +27,13 @@ import {
 import { FormLayout } from 'ui-patterns/form/Layout/FormLayout'
 import type { components } from 'api-types'
 import { usePlatformAppCreateMutation } from 'data/platform-apps/platform-app-create-mutation'
+import { usePlatformAppSigningKeyCreateMutation } from 'data/platform-apps/platform-app-signing-key-create-mutation'
 import { PERMISSIONS } from './PrivateApps.constants'
 import { usePrivateApps } from './PrivateAppsContext'
 
 type CreatePlatformAppResponse = components['schemas']['CreatePlatformAppResponse']
+type CreatePlatformAppSigningKeyResponse =
+  components['schemas']['CreatePlatformAppSigningKeyResponse']
 
 interface CreateAppSheetProps {
   visible: boolean
@@ -39,12 +43,24 @@ interface CreateAppSheetProps {
 
 export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetProps) {
   const { slug } = usePrivateApps()
-  const { mutate: createApp, isPending: isLoading } = usePlatformAppCreateMutation({
+  const [step, setStep] = useState<'details' | 'signing-key'>('details')
+  const [createdApp, setCreatedApp] = useState<CreatePlatformAppResponse | null>(null)
+  const [generatedKey, setGeneratedKey] = useState<CreatePlatformAppSigningKeyResponse | null>(null)
+
+  const { mutate: createApp, isPending: isCreatingApp } = usePlatformAppCreateMutation({
     onSuccess: (data) => {
-      reset()
-      onCreated(data)
+      toast.success(`App "${data.name}" created`)
+      setCreatedApp(data)
+      setStep('signing-key')
     },
   })
+
+  const { mutate: createSigningKey, isPending: isCreatingKey } =
+    usePlatformAppSigningKeyCreateMutation({
+      onSuccess: (keyData) => {
+        if (keyData) setGeneratedKey(keyData)
+      },
+    })
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -56,6 +72,9 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
     setDescription('')
     setSelectedPermissions([])
     setPermissionSearchOpen(false)
+    setStep('details')
+    setCreatedApp(null)
+    setGeneratedKey(null)
   }
 
   function handleClose() {
@@ -72,6 +91,11 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
       permissions:
         selectedPermissions as components['schemas']['CreatePlatformAppBody']['permissions'],
     })
+  }
+
+  function handleGenerateKey() {
+    if (!slug || !createdApp) return
+    createSigningKey({ slug, appId: createdApp.id })
   }
 
   function toggle(id: string) {
@@ -95,157 +119,278 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
         className="!min-w-[600px] flex flex-col h-full gap-0"
       >
         <SheetHeader>
-          <SheetTitle>Create private app</SheetTitle>
+          <SheetTitle>{step === 'details' ? 'Create private app' : 'Generate signing key'}</SheetTitle>
           <SheetDescription className="sr-only">
-            Create a private app to generate scoped access tokens for your organization.
+            {step === 'details'
+              ? 'Create a private app to generate scoped access tokens for your organization.'
+              : 'Generate a signing key for your new app.'}
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 max-h-[calc(100vh-116px)]">
-          <div className="flex flex-col gap-0">
-            {/* Basic info */}
-            <div className="px-5 sm:px-6 py-6 space-y-4">
-              <FormLayout label="App name" id="app-name">
-                <Input_Shadcn_
-                  id="app-name"
-                  placeholder="My integration"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </FormLayout>
+        {step === 'details' ? (
+          <>
+            <ScrollArea className="flex-1 max-h-[calc(100vh-116px)]">
+              <div className="flex flex-col gap-0">
+                {/* Basic info */}
+                <div className="px-5 sm:px-6 py-6 space-y-4">
+                  <FormLayout label="App name" id="app-name">
+                    <Input_Shadcn_
+                      id="app-name"
+                      placeholder="My integration"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </FormLayout>
 
-              <FormLayout label="Description" id="app-description">
-                <textarea
-                  id="app-description"
-                  placeholder="Optional description of what this app does"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-md border border-control bg-transparent px-3 py-2 text-sm placeholder:text-foreground-muted focus:outline-none focus:ring-1 focus:ring-foreground-muted resize-none"
-                />
-              </FormLayout>
-            </div>
+                  <FormLayout label="Description" id="app-description">
+                    <textarea
+                      id="app-description"
+                      placeholder="Optional description of what this app does"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-md border border-control bg-transparent px-3 py-2 text-sm placeholder:text-foreground-muted focus:outline-none focus:ring-1 focus:ring-foreground-muted resize-none"
+                    />
+                  </FormLayout>
+                </div>
 
-            <Separator />
+                <Separator />
 
-            {/* Permissions */}
-            <div className="px-5 sm:px-6 py-6 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Configure permissions</span>
-                <div className="flex items-center gap-2">
-                  {selectedPermissions.length > 0 && (
+                {/* Permissions */}
+                <div className="px-5 sm:px-6 py-6 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Configure permissions</span>
+                    <div className="flex items-center gap-2">
+                      {selectedPermissions.length > 0 && (
+                        <Button
+                          type="default"
+                          size="tiny"
+                          className="p-1"
+                          icon={<RotateCcw size={16} />}
+                          onClick={() => setSelectedPermissions([])}
+                        />
+                      )}
+                      <Popover_Shadcn_
+                        open={permissionSearchOpen}
+                        onOpenChange={setPermissionSearchOpen}
+                        modal
+                      >
+                        <PopoverTrigger_Shadcn_ asChild>
+                          <Button type="default" size="tiny" icon={<Plus size={14} />}>
+                            Add permission
+                          </Button>
+                        </PopoverTrigger_Shadcn_>
+                        <PopoverContent_Shadcn_ className="w-[400px] p-0" align="end">
+                          <Command_Shadcn_>
+                            <CommandInput_Shadcn_ placeholder="Search permissions..." />
+                            <CommandList_Shadcn_>
+                              <CommandEmpty_Shadcn_>No permissions found.</CommandEmpty_Shadcn_>
+                              <CommandGroup_Shadcn_ className="[&>div]:text-left">
+                                <div className="max-h-[210px] overflow-y-auto">
+                                  {PERMISSIONS.map((perm) => (
+                                    <CommandItem_Shadcn_
+                                      key={perm.id}
+                                      value={`${perm.id} ${perm.label}`}
+                                      onSelect={() => toggle(perm.id)}
+                                    >
+                                      <div className="flex items-center gap-3 w-full">
+                                        <Checkbox_Shadcn_
+                                          checked={selectedPermissions.includes(perm.id)}
+                                          onCheckedChange={() => toggle(perm.id)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <Key size={12} className="text-foreground-lighter" />
+                                        <div className="flex flex-col text-left flex-1">
+                                          <span className="font-medium text-foreground font-mono text-sm">
+                                            {perm.label}
+                                          </span>
+                                          <span className="text-xs text-foreground-light">
+                                            {perm.description}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </CommandItem_Shadcn_>
+                                  ))}
+                                </div>
+                              </CommandGroup_Shadcn_>
+                            </CommandList_Shadcn_>
+                          </Command_Shadcn_>
+                        </PopoverContent_Shadcn_>
+                      </Popover_Shadcn_>
+                    </div>
+                  </div>
+
+                  {selectedPermissions.length === 0 ? (
+                    <div className="text-center py-8 border border-dashed border-border rounded-lg">
+                      <p className="text-sm text-foreground-light">No permissions configured yet.</p>
+                    </div>
+                  ) : (
+                    <div className="border border-border rounded-lg">
+                      {selectedPermissions.map((id, index) => {
+                        const perm = PERMISSIONS.find((p) => p.id === id)
+                        return (
+                          <div key={id}>
+                            <div className="flex items-center gap-3 p-3">
+                              <div className="flex-1">
+                                <p className="text-sm font-mono font-medium">{perm?.label}</p>
+                                <p className="text-xs text-foreground-light">{perm?.description}</p>
+                              </div>
+                              <Button
+                                type="text"
+                                size="tiny"
+                                className="p-1"
+                                icon={<X size={16} />}
+                                onClick={() =>
+                                  setSelectedPermissions((prev) => prev.filter((p) => p !== id))
+                                }
+                              />
+                            </div>
+                            {index < selectedPermissions.length - 1 && (
+                              <div className="border-t border-border" />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  <div className="w-full flex gap-x-2 items-center">
+                    <WarningIcon />
+                    <span className="text-xs text-foreground-lighter">
+                      Once you've set these permissions, you cannot edit them.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+
+            <SheetFooter className="!justify-end w-full mt-auto py-4 border-t">
+              <div className="flex gap-2">
+                <Button type="default" onClick={handleClose} disabled={isCreatingApp}>
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  disabled={!canCreate}
+                  loading={isCreatingApp}
+                  onClick={handleCreate}
+                >
+                  Create app
+                </Button>
+              </div>
+            </SheetFooter>
+          </>
+        ) : (
+          <>
+            <ScrollArea className="flex-1 max-h-[calc(100vh-116px)]">
+              <div className="px-5 sm:px-6 py-6 space-y-6">
+                <div className="border border-border rounded-lg divide-y divide-border">
+                  <div className="flex items-center px-4 py-3 gap-4">
+                    <span className="text-sm text-foreground-light w-24 shrink-0">App name</span>
+                    <span className="text-sm font-medium">{createdApp?.name}</span>
+                  </div>
+                  <div className="flex items-center px-4 py-3 gap-4">
+                    <span className="text-sm text-foreground-light w-24 shrink-0">App ID</span>
+                    <span className="font-mono text-xs truncate">{createdApp?.id}</span>
+                  </div>
+                </div>
+
+                {generatedKey ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium">Private key</h3>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="default"
+                          size="tiny"
+                          icon={<Copy size={12} />}
+                          onClick={() => {
+                            navigator.clipboard.writeText(generatedKey.private_key)
+                            toast.success('Private key copied to clipboard')
+                          }}
+                        >
+                          Copy
+                        </Button>
+                        <Button
+                          type="default"
+                          size="tiny"
+                          icon={<Download size={12} />}
+                          onClick={() => {
+                            const blob = new Blob([generatedKey.private_key], {
+                              type: 'text/plain',
+                            })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = `${createdApp?.name.toLowerCase().replace(/\s+/g, '-')}-private-key.pem`
+                            a.click()
+                            URL.revokeObjectURL(url)
+                          }}
+                        >
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      value={generatedKey.private_key}
+                      rows={8}
+                      className="w-full rounded-md border border-control bg-surface-200 px-3 py-2 text-xs font-mono resize-none focus:outline-none"
+                    />
+                    <p className="text-xs text-foreground-lighter">
+                      Store this key securely — you won't be able to view it again.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Signing key</h3>
+                    <p className="text-sm text-foreground-light">
+                      Generate a signing key to authenticate requests made by this app. You'll only
+                      be able to view the private key once — store it securely.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            <SheetFooter className="!justify-end w-full mt-auto py-4 border-t">
+              <div className="flex gap-2">
+                {generatedKey ? (
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      onCreated(createdApp!)
+                      handleClose()
+                    }}
+                  >
+                    Done
+                  </Button>
+                ) : (
+                  <>
                     <Button
                       type="default"
-                      size="tiny"
-                      className="p-1"
-                      icon={<RotateCcw size={16} />}
-                      onClick={() => setSelectedPermissions([])}
-                    />
-                  )}
-                  <Popover_Shadcn_
-                    open={permissionSearchOpen}
-                    onOpenChange={setPermissionSearchOpen}
-                    modal
-                  >
-                    <PopoverTrigger_Shadcn_ asChild>
-                      <Button type="default" size="tiny" icon={<Plus size={14} />}>
-                        Add permission
-                      </Button>
-                    </PopoverTrigger_Shadcn_>
-                    <PopoverContent_Shadcn_ className="w-[400px] p-0" align="end">
-                      <Command_Shadcn_>
-                        <CommandInput_Shadcn_ placeholder="Search permissions..." />
-                        <CommandList_Shadcn_>
-                          <CommandEmpty_Shadcn_>No permissions found.</CommandEmpty_Shadcn_>
-                          <CommandGroup_Shadcn_ className="[&>div]:text-left">
-                            <div className="max-h-[210px] overflow-y-auto">
-                              {PERMISSIONS.map((perm) => (
-                                <CommandItem_Shadcn_
-                                  key={perm.id}
-                                  value={`${perm.id} ${perm.label}`}
-                                  onSelect={() => toggle(perm.id)}
-                                >
-                                  <div className="flex items-center gap-3 w-full">
-                                    <Checkbox_Shadcn_
-                                      checked={selectedPermissions.includes(perm.id)}
-                                      onCheckedChange={() => toggle(perm.id)}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <Key size={12} className="text-foreground-lighter" />
-                                    <div className="flex flex-col text-left flex-1">
-                                      <span className="font-medium text-foreground font-mono text-sm">
-                                        {perm.label}
-                                      </span>
-                                      <span className="text-xs text-foreground-light">
-                                        {perm.description}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </CommandItem_Shadcn_>
-                              ))}
-                            </div>
-                          </CommandGroup_Shadcn_>
-                        </CommandList_Shadcn_>
-                      </Command_Shadcn_>
-                    </PopoverContent_Shadcn_>
-                  </Popover_Shadcn_>
-                </div>
+                      disabled={isCreatingKey}
+                      onClick={() => {
+                        onCreated(createdApp!)
+                        handleClose()
+                      }}
+                    >
+                      Skip for now
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<Key size={14} />}
+                      loading={isCreatingKey}
+                      onClick={handleGenerateKey}
+                    >
+                      Generate signing key
+                    </Button>
+                  </>
+                )}
               </div>
-
-              {selectedPermissions.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-border rounded-lg">
-                  <p className="text-sm text-foreground-light">No permissions configured yet.</p>
-                </div>
-              ) : (
-                <div className="border border-border rounded-lg">
-                  {selectedPermissions.map((id, index) => {
-                    const perm = PERMISSIONS.find((p) => p.id === id)
-                    return (
-                      <div key={id}>
-                        <div className="flex items-center gap-3 p-3">
-                          <div className="flex-1">
-                            <p className="text-sm font-mono font-medium">{perm?.label}</p>
-                            <p className="text-xs text-foreground-light">{perm?.description}</p>
-                          </div>
-                          <Button
-                            type="text"
-                            size="tiny"
-                            className="p-1"
-                            icon={<X size={16} />}
-                            onClick={() =>
-                              setSelectedPermissions((prev) => prev.filter((p) => p !== id))
-                            }
-                          />
-                        </div>
-                        {index < selectedPermissions.length - 1 && (
-                          <div className="border-t border-border" />
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              <div className="w-full flex gap-x-2 items-center">
-                <WarningIcon />
-                <span className="text-xs text-foreground-lighter">
-                  Once you've set these permissions, you cannot edit them.
-                </span>
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
-
-        <SheetFooter className="!justify-end w-full mt-auto py-4 border-t">
-          <div className="flex gap-2">
-            <Button type="default" onClick={handleClose} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button type="primary" disabled={!canCreate} loading={isLoading} onClick={handleCreate}>
-              Create app
-            </Button>
-          </div>
-        </SheetFooter>
+            </SheetFooter>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   )
