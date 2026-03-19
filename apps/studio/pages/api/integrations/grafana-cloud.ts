@@ -2,7 +2,7 @@ import * as jose from 'jose'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 
-const GRAFANA_INTEGRATION_URL = 'https://grafana-dev.com/api/integrations'
+const GRAFANA_INTEGRATION_URL = 'https://grafana.com/api/integrations'
 
 const ConnectBodySchema = z.object({
   organizationSlug: z.string().min(1),
@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const token = await new jose.SignJWT({
       iss: partnerId,
-      aud: 'https://grafana-dev.com/integrations',
+      aud: 'https://grafana.com/integrations',
       iat: now,
       exp: now + 300,
       ...(!isLocalDev && organizationSlug && { organization_slug: organizationSlug }),
