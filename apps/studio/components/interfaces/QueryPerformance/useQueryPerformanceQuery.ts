@@ -122,7 +122,12 @@ export const useQueryPerformanceInfiniteQuery = (
         'projects',
         project?.ref,
         'query-performance-infinite',
-        { ...props, pageSize: safePageSize, identifier: state.selectedDatabaseId },
+        {
+          ...props,
+          pageSize: safePageSize,
+          identifier: state.selectedDatabaseId,
+          connectionString: effectiveConnectionString,
+        },
       ],
       initialPageParam: 1,
       queryFn: ({ pageParam, signal }) => {
