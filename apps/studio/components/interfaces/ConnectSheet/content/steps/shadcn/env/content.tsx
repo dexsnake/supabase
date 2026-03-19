@@ -2,7 +2,10 @@ import { MultipleCodeBlock } from 'ui-patterns/MultipleCodeBlock'
 
 import type { StepContentProps } from '@/components/interfaces/ConnectSheet/Connect.types'
 
-function getEnvFile(state: StepContentProps['state'], projectKeys: StepContentProps['projectKeys']) {
+function getEnvFile(
+  state: StepContentProps['state'],
+  projectKeys: StepContentProps['projectKeys']
+) {
   if (state.framework === 'nextjs') {
     return {
       name: '.env.local',
