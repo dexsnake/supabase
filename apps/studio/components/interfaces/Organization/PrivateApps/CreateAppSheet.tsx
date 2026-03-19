@@ -98,13 +98,11 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
     })
 
   const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [permissionSearchOpen, setPermissionSearchOpen] = useState(false)
 
   function reset() {
     setName('')
-    setDescription('')
     setSelectedPermissions([])
     setPermissionSearchOpen(false)
     setStep('details')
@@ -123,7 +121,6 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
     createApp({
       slug,
       name: name.trim(),
-      description: description.trim() || undefined,
       permissions:
         selectedPermissions as components['schemas']['CreatePlatformAppBody']['permissions'],
     })
@@ -178,16 +175,6 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                     />
                   </FormLayout>
 
-                  <FormLayout label="Description" id="app-description">
-                    <textarea
-                      id="app-description"
-                      placeholder="Optional description of what this app does"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-md border border-control bg-transparent px-3 py-2 text-sm placeholder:text-foreground-muted focus:outline-none focus:ring-1 focus:ring-foreground-muted resize-none"
-                    />
-                  </FormLayout>
                 </div>
 
                 <Separator />
@@ -420,26 +407,14 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                     Done
                   </Button>
                 ) : (
-                  <>
-                    <Button
-                      type="default"
-                      disabled={isCreatingKey}
-                      onClick={() => {
-                        onCreated(createdApp!)
-                        handleClose()
-                      }}
-                    >
-                      Skip for now
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<Key size={14} />}
-                      loading={isCreatingKey}
-                      onClick={handleGenerateKey}
-                    >
-                      Generate signing key
-                    </Button>
-                  </>
+                  <Button
+                    type="primary"
+                    icon={<Key size={14} />}
+                    loading={isCreatingKey}
+                    onClick={handleGenerateKey}
+                  >
+                    Generate signing key
+                  </Button>
                 )}
               </div>
             </SheetFooter>
