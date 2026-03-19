@@ -18,6 +18,8 @@ import {
   cn,
 } from 'ui'
 
+import { ToggleGroup, ToggleGroupItem } from 'ui/src/components/shadcn/ui/toggle-group'
+
 interface Props {
   onFilterChange: (category?: string, search?: string) => void
   view: BlogView
@@ -246,33 +248,29 @@ function BlogFilters({ onFilterChange, view, setView }: Props) {
           />
         </div>
       )}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button type="default" className="h-full p-2 text-foreground-light">
-            {isList ? (
-              <AlignJustify className="w-4 h-4 stroke-1.5" />
-            ) : (
-              <Grid className="w-4 h-4 stroke-1.5" />
+      <div className="flex items-center border border-border rounded-full p-0.5 gap-0.5 bg-surface-100">
+        {(['list', 'grid'] as BlogView[]).map((v) => (
+          <button
+            key={v}
+            onClick={() => { setView(v); localStorage.setItem(BLOG_VIEW, v) }}
+            className={cn(
+              'relative flex items-center justify-center w-7 h-7 rounded-full transition-colors',
+              view === v ? 'text-foreground' : 'text-foreground-light hover:text-foreground'
             )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="bottom" align="end">
-          <DropdownMenuItem
-            onClick={() => { setView('list'); localStorage.setItem(BLOG_VIEW, 'list') }}
-            className={cn('flex items-center gap-2', isList ? 'text-brand-600' : '')}
           >
-            <AlignJustify className="w-4 h-4" />
-            List
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => { setView('grid'); localStorage.setItem(BLOG_VIEW, 'grid') }}
-            className={cn('flex items-center gap-2', !isList ? 'text-brand-600' : '')}
-          >
-            <Grid className="w-4 h-4" />
-            Grid
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            {view === v && (
+              <motion.span
+                layoutId="blog-view-bg"
+                className="absolute inset-0 rounded-full bg-surface-300 border border-border"
+                transition={{ type: 'spring', duration: 0.3, bounce: 0.15 }}
+              />
+            )}
+            <span className="relative z-10">
+              {v === 'list' ? <AlignJustify className="w-3.5 h-3.5" /> : <Grid className="w-3.5 h-3.5" />}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

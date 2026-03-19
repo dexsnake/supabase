@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import authors from '@/lib/authors.json'
 import type PostTypes from '@/types/post'
+import AuthorAvatars from './AuthorAvatars'
 
 function FeaturedThumb(blog: PostTypes) {
   const authorArray = blog.author?.split(',').map((a) => a.trim()) || []
@@ -62,35 +63,7 @@ function renderFeaturedThumb(blog: PostTypes, author: any[]) {
         </div>
 
         <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-2">
-            {author.filter(Boolean).map((author: any, i: number) => {
-              const authorImageUrl =
-                typeof author.author_image_url === 'string'
-                  ? author.author_image_url
-                  : (author.author_image_url as { url: string })?.url || ''
-
-              return (
-                <div
-                  className="flex items-center space-x-2"
-                  key={`author-feat-${i}-${author.author}`}
-                >
-                  {authorImageUrl && (
-                    <div className="relative h-6 w-6 overflow-hidden">
-                      <Image
-                        src={authorImageUrl}
-                        alt={`${author.author} avatar`}
-                        className="rounded-full object-cover"
-                        fill
-                        sizes="30px"
-                      />
-                    </div>
-                  )}
-                  <span className="text-foreground m-0 text-sm">{author.author}</span>
-                </div>
-              )
-            })}
-          </div>
-
+          <AuthorAvatars authors={author} size="md" />
           <div className="text-foreground-lighter flex space-x-2 text-sm">
             <span>{blog.formattedDate}</span>
             <span>•</span>

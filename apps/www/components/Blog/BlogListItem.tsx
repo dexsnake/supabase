@@ -1,11 +1,11 @@
 import dayjs from 'dayjs'
-import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { Badge } from 'ui'
 
 import blogAuthors from '@/lib/authors.json'
 import type PostTypes from '@/types/post'
+import AuthorAvatars from './AuthorAvatars'
 
 interface Props {
   post: PostTypes
@@ -41,22 +41,8 @@ const BlogListItem = ({ post }: Props) => {
         <h3 className="text-foreground text-sm group-hover:underline">{post.title}</h3>
       </div>
       <div className="lg:col-span-2 xl:col-span-4 flex justify-start items-center lg:grid grid-cols-2 xl:grid-cols-3 gap-2 text-sm">
-        <div className="hidden lg:flex items-center -space-x-2">
-          {authors.map((author: any, i: number) => {
-            if (!author) return null
-            return (
-              <div className="relative ring-background w-6 h-6 rounded-full ring-2" key={i}>
-                {author.author_image_url && (
-                  <Image
-                    src={author.author_image_url}
-                    className="rounded-full object-cover border border-default w-full h-full"
-                    alt={`${author.author} avatar`}
-                    fill
-                  />
-                )}
-              </div>
-            )
-          })}
+        <div className="hidden lg:block">
+          <AuthorAvatars authors={authors} showName={false} size="md" />
         </div>
         {post.categories && (
           <div className="hidden xl:flex text-foreground-lighter group-hover:text-foreground-light">

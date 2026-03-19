@@ -28,7 +28,7 @@ function SecondarySpotlight({ post }: { post: PostTypes }) {
       prefetch={false}
       className="group flex gap-4 items-start"
     >
-      <div className="relative shrink-0 w-28 aspect-video overflow-hidden rounded-md border border-foreground/10">
+      <div className="relative shrink-0 w-36 aspect-video overflow-hidden rounded-md border border-foreground/10">
         <Image
           src={imageUrl}
           fill
@@ -210,7 +210,7 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
 
             {/* Secondary spotlights */}
             {secondaryPosts.length > 0 && (
-              <div className="mt-8 max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="mt-14 max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {secondaryPosts.map((post: PostTypes) => (
                   <SecondarySpotlight key={post.slug} post={post} />
                 ))}
