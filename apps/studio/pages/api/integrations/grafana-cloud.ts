@@ -2,7 +2,7 @@ import * as jose from 'jose'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
 
-const GRAFANA_INTEGRATION_URL = 'https://grafana.com/api/integrations'
+const GRAFANA_INTEGRATION_URL = process.env.GRAFANA_INTEGRATION_URL
 
 const ConnectBodySchema = z.object({
   organizationSlug: z.string().min(1),
@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const kid = process.env.GRAFANA_KID
   const partnerId = 'supabase'
 
-  if (!privateKeyPem || !partnerId || !kid) {
+  if (!privateKeyPem || !partnerId || !kid || !GRAFANA_INTEGRATION_URL) {
     return res.status(500).json({
       data: null,
       error: { message: 'Grafana integration is not configured' },
