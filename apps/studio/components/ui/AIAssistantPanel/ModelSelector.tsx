@@ -1,7 +1,7 @@
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useState } from 'react'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/compat/router'
 import {
   Badge,
   Button,
