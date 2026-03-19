@@ -433,7 +433,7 @@ export const TAX_IDS: TaxId[] = [
     countryIso2: 'GB',
   },
   {
-    // Isle of Man uses GB VAT numbers (confirmed by Numeral), taxCountryIso2 must be GB for Orb validation
+    // Isle of Man uses GB VAT numbers, taxCountryIso2 must be GB for Orb validation
     name: 'IM VAT',
     type: 'gb_vat',
     country: 'Isle of Man',
