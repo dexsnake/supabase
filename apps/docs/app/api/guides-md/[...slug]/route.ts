@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     return new NextResponse(content, {
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Cache-Control': 'public, max-age=86400, stale-while-revalidate',
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
       },
     })
   } catch {
