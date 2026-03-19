@@ -65,13 +65,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // For code completion, we always use the limited model
     const {
-      model,
+      modelParams,
       error: modelError,
       promptProviderOptions,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       routingKey: projectRef,
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -155,8 +155,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     })
 
     const { text } = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       stopWhen: stepCountIs(5),
       messages: coreMessages,
       tools,

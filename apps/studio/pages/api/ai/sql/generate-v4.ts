@@ -6,6 +6,7 @@ import { executeSql } from 'data/sql/execute-sql-query'
 import type { AiOptInLevel } from 'hooks/misc/useOrgOptedIntoAi'
 import { generateAssistantResponse } from 'lib/ai/generate-assistant-response'
 import { getModel } from 'lib/ai/model'
+import { ASSISTANT_MODELS } from 'lib/ai/model.utils'
 import { getOrgAIDetails } from 'lib/ai/org-ai-details'
 import { getTools } from 'lib/ai/tools'
 import apiWrapper from 'lib/api/apiWrapper'
@@ -53,7 +54,7 @@ const requestBodySchema = z.object({
   chatId: z.string().optional(),
   chatName: z.string().optional(),
   orgSlug: z.string().optional(),
-  model: z.enum(['gpt-5', 'gpt-5-mini']).optional(),
+  model: z.enum(ASSISTANT_MODELS.map((m) => m.id) as [string, ...string[]]).optional(),
 })
 
 async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: JwtPayload) {
@@ -128,16 +129,17 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
     }
   }
 
+  const assistantConfig = ASSISTANT_MODELS.find((m) => m.id === requestedModel)
   const {
-    model,
+    modelParams,
     error: modelError,
     promptProviderOptions,
-    providerOptions,
   } = await getModel({
     provider: 'openai',
-    model: requestedModel ?? 'gpt-5',
+    model: requestedModel ?? ASSISTANT_MODELS.find((m) => m.tier === 'free')!.id,
     routingKey: projectRef,
     isLimited,
+    reasoningEffort: assistantConfig?.reasoningEffort,
   })
 
   if (modelError) {
@@ -184,7 +186,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
 
     const result = await generateAssistantResponse({
       messages,
-      model,
+      ...modelParams,
       tools,
       aiOptInLevel,
       getSchemas: aiOptInLevel !== 'disabled' ? getSchemas : undefined,
@@ -197,7 +199,6 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
       planId,
       requestedModel,
       promptProviderOptions,
-      providerOptions,
       abortSignal: abortController.signal,
       onSpanCreated: (spanId) => {
         res.setHeader('x-braintrust-span-id', spanId)

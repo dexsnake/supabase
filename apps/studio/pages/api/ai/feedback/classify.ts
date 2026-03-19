@@ -29,12 +29,12 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const {
-      model,
+      modelParams,
       error: modelError,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       routingKey: 'feedback',
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -42,8 +42,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const { output } = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       output: Output.object({
         schema: z.object({
           feedback_category: z.enum(['support', 'feedback', 'unknown']),

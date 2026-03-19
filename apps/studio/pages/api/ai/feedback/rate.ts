@@ -97,13 +97,13 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const {
-      model,
+      modelParams,
       error: modelError,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       isLimited: true,
       routingKey: 'feedback',
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -111,8 +111,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const { output } = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       output: Output.object({ schema: rateMessageResponseSchema }),
       prompt: `
 Your job is to look at a Supabase Assistant conversation, which the user has given feedback on, and classify it.

@@ -36,12 +36,12 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const {
-      model,
+      modelParams,
       error: modelError,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       routingKey: 'sql',
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -63,8 +63,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }))
 
     const result = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       output: Output.object({ schema: filterGroupSchema }),
       prompt: source`
         You are an expert Postgres filter builder. Convert the user's request into structured filters.

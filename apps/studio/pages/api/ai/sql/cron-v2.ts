@@ -34,12 +34,12 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const {
-      model,
+      modelParams,
       error: modelError,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       routingKey: 'cron',
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -47,8 +47,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const result = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       output: Output.object({ schema: cronSchema }),
       prompt: source`
         You are a cron syntax expert. Your purpose is to convert natural language time descriptions into valid cron expressions for pg_cron.

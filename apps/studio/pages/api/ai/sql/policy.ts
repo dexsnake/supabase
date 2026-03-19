@@ -91,12 +91,12 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const {
-      model,
+      modelParams,
       error: modelError,
-      providerOptions,
     } = await getModel({
       provider: 'openai',
       routingKey: 'sql-policy',
+      reasoningEffort: 'none',
     })
 
     if (modelError) {
@@ -112,8 +112,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     })
 
     const { experimental_output } = await generateText({
-      model,
-      providerOptions,
+      ...modelParams,
       stopWhen: stepCountIs(5),
       prompt: source`
         You are a Postgres RLS (Row Level Security) expert.
