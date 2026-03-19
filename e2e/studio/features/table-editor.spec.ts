@@ -80,6 +80,9 @@ testRunner('table editor', () => {
       .nth(2)
       .click()
     await page.getByRole('menuitem', { name: 'Copy name' }).click()
+    // Make sure the dropdown has closed otherwise it would make the other assertions unstable
+    await expect(page.getByRole('menuitem', { name: 'Copy name' })).not.toBeVisible()
+
     await expect(async () => {
       const copiedTableResult = await page.evaluate(() => navigator.clipboard.readText())
       expect(copiedTableResult).toBe('pw_table_actions')
@@ -92,6 +95,7 @@ testRunner('table editor', () => {
       .nth(2)
       .click()
     await page.getByRole('menuitem', { name: 'Copy table schema' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Copy table schema' })).not.toBeVisible()
     await expect(async () => {
       const copiedSchemaResult = await page.evaluate(() => navigator.clipboard.readText())
       expect(copiedSchemaResult).toBe(`create table public.pw_table_actions (
@@ -109,6 +113,7 @@ testRunner('table editor', () => {
       .nth(2)
       .click()
     await page.getByRole('menuitem', { name: 'Duplicate table' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Duplicate table' })).not.toBeVisible()
     const duplicatePromise = waitForApiResponse(page, 'pg-meta', ref, 'query?key=', {
       method: 'POST',
     })

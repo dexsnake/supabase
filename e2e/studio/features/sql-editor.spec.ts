@@ -323,6 +323,8 @@ test.describe('SQL Editor', () => {
     // export as markdown
     await page.getByRole('button', { name: 'Export' }).click()
     await page.getByRole('menuitem', { name: 'Copy as markdown' }).click()
+    // Make sure the dropdown has closed otherwise it would make the other assertions unstable
+    await expect(page.getByRole('menuitem', { name: 'Copy as markdown' })).not.toBeVisible()
     await expect(async () => {
       const copiedMarkdownResult = await page.evaluate(() => navigator.clipboard.readText())
       expect(copiedMarkdownResult).toBe(`| ?column?    |
@@ -333,6 +335,7 @@ test.describe('SQL Editor', () => {
     // export as JSON
     await page.getByRole('button', { name: 'Export' }).click()
     await page.getByRole('menuitem', { name: 'Copy as JSON' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Copy as JSON' })).not.toBeVisible()
     await expect(async () => {
       const copiedJsonResult = await page.evaluate(() => navigator.clipboard.readText())
       expect(copiedJsonResult).toBe(`[
@@ -346,6 +349,7 @@ test.describe('SQL Editor', () => {
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Export' }).click()
     await page.getByRole('menuitem', { name: 'Download CSV' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Download CSV' })).not.toBeVisible()
     const download = await downloadPromise
     expect(download.suggestedFilename()).toContain('.csv')
     const downloadPath = await download.path()
