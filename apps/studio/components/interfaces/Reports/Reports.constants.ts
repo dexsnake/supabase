@@ -559,8 +559,7 @@ select
           // When filterIndexAdvisor is active we don't know how many rows will survive the
           // filter before pagination, so we fetch all rows and paginate the filtered result.
           // Otherwise limit the base CTE to exactly what we need.
-          const baseCteLimit =
-            filterIndexAdvisor && runIndexAdvisor ? null : offset + pageSize
+          const baseCteLimit = filterIndexAdvisor && runIndexAdvisor ? null : offset + pageSize
           const baseQuery = `
         -- reports-query-performance-unified
         set search_path to public, extensions;

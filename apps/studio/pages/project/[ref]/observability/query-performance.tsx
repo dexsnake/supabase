@@ -93,7 +93,16 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
       return
     }
     setQueryStates({ page: 1 })
-  }, [searchQuery, rolesKey, sourcesKey, minCalls, totalTimeKey, indexAdvisor, sortKey, setQueryStates])
+  }, [
+    searchQuery,
+    rolesKey,
+    sourcesKey,
+    minCalls,
+    totalTimeKey,
+    indexAdvisor,
+    sortKey,
+    setQueryStates,
+  ])
 
   if (!isLoadingProject && !project) {
     return (
