@@ -14,11 +14,13 @@ export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | '
 
 // Maps each known OpenAI model to the effort levels it supports.
 // Used to enforce valid combinations at compile time via assistantModel().
+// Note: newer models (e.g. gpt-5.4-nano, gpt-5.3-codex) support different sets of levels
+// (e.g. 'none'/'xhigh' may be available; 'minimal' may not). Add entries here when
+// introducing new models — check the per-model docs page and the community compatibility
+// matrix: https://community.openai.com/t/request-for-compatibility-matrix-reasoning-effort-sampling-parameters-across-gpt-5-series/1371738/2
 type ModelReasoningSupport = {
   'gpt-5': 'minimal' | 'low' | 'medium' | 'high'
   'gpt-5-mini': 'minimal' | 'low' | 'medium' | 'high'
-  'gpt-5.4-nano': 'none' | 'low' | 'medium' | 'high' | 'xhigh'
-  'gpt-5.3-codex': 'low' | 'medium' | 'high' | 'xhigh'
 }
 
 // Helper that enforces a valid reasoningEffort for the given model ID at compile time.
