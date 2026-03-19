@@ -209,6 +209,8 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, claims?: Jw
       sendReasoning: true,
       headers: { 'Content-Encoding': 'none' },
       onError: (error) => {
+        console.error('Assistant stream error:', error)
+
         if (error == null) {
           return 'unknown error'
         }
