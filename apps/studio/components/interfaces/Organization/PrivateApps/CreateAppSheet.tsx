@@ -189,7 +189,7 @@ export function CreateAppSheet({ visible, onClose, onCreated }: CreateAppSheetPr
                               <CommandEmpty_Shadcn_>No permissions found.</CommandEmpty_Shadcn_>
                               <CommandGroup_Shadcn_ className="[&>div]:text-left">
                                 <div className="max-h-[210px] overflow-y-auto">
-                                  {PERMISSIONS.map((perm) => (
+                                  {PERMISSIONS.filter((p) => p.group === 'project').map((perm) => (
                                     <CommandItem_Shadcn_
                                       key={perm.id}
                                       value={`${perm.id} ${perm.label}`}
