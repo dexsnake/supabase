@@ -1,6 +1,15 @@
 import { useOperationQueueActions } from 'components/grid/hooks/useOperationQueueActions'
 import { useTableEditorStateSnapshot } from 'state/table-editor'
-import { Button, SidePanel } from 'ui'
+import {
+  Button,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetSection,
+  SheetTitle,
+} from 'ui'
 
 import { OperationList } from './OperationList'
 import { getModKeyLabel } from '@/lib/helpers'
@@ -23,23 +32,20 @@ export const OperationQueueSidePanel = ({ visible, closePanel }: OperationQueueS
   })
 
   return (
-    <SidePanel
-      size="large"
-      visible={visible}
-      onCancel={closePanel}
-      onOpenAutoFocus={(event) => event.preventDefault()} // Prevent focus on first focussable element since it is the revert changes ButtonTooltip
-      header={
-        <div className="flex items-center justify-between w-full">
-          <div className="flex flex-col gap-1">
-            <span>Pending changes</span>
-            <span className="text-xs text-foreground-lighter">
-              {operations.length} operation{operations.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-      }
-      customFooter={
-        <div className="flex w-full justify-between border-t border-default px-3 py-4">
+    <Sheet open={visible} onOpenChange={(open) => !open && snap.closeSidePanel()}>
+      <SheetContent className="flex flex-col gap-y-0">
+        <SheetHeader>
+          <SheetTitle>Pending changes</SheetTitle>
+          <SheetDescription>
+            {operations.length} operation{operations.length !== 1 ? 's' : ''}
+          </SheetDescription>
+        </SheetHeader>
+
+        <SheetSection className="overflow-auto flex-grow p-0">
+          <OperationList operations={operations} />
+        </SheetSection>
+
+        <SheetFooter className="!justify-between">
           <Button type="default" onClick={closePanel}>
             Close
             <span className="text-foreground/40 text-[10px] ml-1.5">{modKey}.</span>
@@ -61,12 +67,8 @@ export const OperationQueueSidePanel = ({ visible, closePanel }: OperationQueueS
               <span className="text-foreground/40 text-[10px] ml-1.5">{modKey}S</span>
             </Button>
           </div>
-        </div>
-      }
-    >
-      <SidePanel.Content className="py-4 h-full">
-        <OperationList operations={operations} />
-      </SidePanel.Content>
-    </SidePanel>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
