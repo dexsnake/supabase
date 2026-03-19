@@ -37,34 +37,36 @@ export type QueryPerformanceQueryOpts = {
   pageSize?: number
 }
 
-export const useQueryPerformanceQuery = ({
+export function generateQueryPerformanceSql({
   preset,
   orderBy,
   searchQuery = '',
-  roles,
+  roles = [],
   runIndexAdvisor = false,
   minCalls,
   minTotalTime,
   filterIndexAdvisor = false,
   page = 1,
   pageSize = 20,
-}: QueryPerformanceQueryOpts) => {
+}: QueryPerformanceQueryOpts) {
   const queryPerfQueries = PRESET_CONFIG[Presets.QUERY_PERFORMANCE]
   const baseSQL = queryPerfQueries.queries[preset]
 
-  const whereSql = [
-    roles !== undefined && roles.length > 0
-      ? `auth.rolname in (${roles.map((r) => `'${r}'`).join(', ')})`
-      : '',
-    searchQuery.length > 0 ? `statements.query ~* '${searchQuery}'` : '',
-    typeof minCalls === 'number' && minCalls > 0 ? `statements.calls >= ${minCalls}` : '',
-    typeof minTotalTime === 'number' && minTotalTime > 0
-      ? `(statements.total_exec_time + statements.total_plan_time) >= ${minTotalTime}`
-      : '',
-  ]
-    .filter((x) => x.length > 0)
-    .join(' AND ')
+  const whereConditions: string[] = []
+  if (roles.length > 0) {
+    whereConditions.push(`auth.rolname in (${roles.map((r) => `'${r}'`).join(', ')})`)
+  }
+  if (searchQuery.length > 0) {
+    whereConditions.push(`statements.query ~* '${searchQuery}'`)
+  }
+  if (typeof minCalls === 'number' && minCalls > 0) {
+    whereConditions.push(`statements.calls >= ${minCalls}`)
+  }
+  if (typeof minTotalTime === 'number' && minTotalTime > 0) {
+    whereConditions.push(`(statements.total_exec_time + statements.total_plan_time) >= ${minTotalTime}`)
+  }
 
+  const whereSql = whereConditions.join(' AND ')
   const orderBySql = orderBy && `ORDER BY ${orderBy.column} ${orderBy.order}`
   const sql = baseSQL.sql(
     [],
@@ -75,10 +77,11 @@ export const useQueryPerformanceQuery = ({
     page,
     pageSize
   )
-  return useDbQuery({
-    sql,
-    params: undefined,
-    where: whereSql,
-    orderBy: orderBySql,
-  })
+
+  return { sql, whereSql, orderBySql }
+}
+
+export const useQueryPerformanceQuery = (opts: QueryPerformanceQueryOpts) => {
+  const { sql, whereSql, orderBySql } = generateQueryPerformanceSql(opts)
+  return useDbQuery({ sql, params: undefined, where: whereSql, orderBy: orderBySql })
 }

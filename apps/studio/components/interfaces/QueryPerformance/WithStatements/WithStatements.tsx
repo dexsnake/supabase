@@ -36,6 +36,8 @@ import { QueryPerformanceGrid } from '../QueryPerformanceGrid'
 import { QueryPerformanceMetrics } from '../QueryPerformanceMetrics'
 import { transformStatementDataToRows } from './WithStatements.utils'
 
+const PAGE_SIZE_OPTIONS = [20, 50, 100]
+
 interface WithStatementsProps {
   queryHitRate: PresetHookResult
   queryPerformanceQuery: DbQueryHook<any>
@@ -69,13 +71,11 @@ export const WithStatements = ({
     indexAdvisor: parseAsString.withDefault('false'),
   })
 
-  const PAGE_SIZE_OPTIONS = [20, 50, 100]
-  const [{ page, pageSize }, setPaginationState] = useQueryStates({
+  const [{ page, pageSize: rawPageSize }, setPaginationState] = useQueryStates({
     page: parseAsInteger.withDefault(1),
     pageSize: parseAsInteger.withDefault(20),
   })
-  const resolvedPage = page ?? 1
-  const resolvedPageSize = PAGE_SIZE_OPTIONS.includes(pageSize ?? 20) ? pageSize ?? 20 : 20
+  const pageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize) ? rawPageSize : 20
 
   const handleRefresh = () => {
     queryPerformanceQuery.runQuery()
@@ -215,7 +215,7 @@ export const WithStatements = ({
         <div className="flex items-center gap-x-2">
           <span className="text-xs text-foreground-light">Rows per page</span>
           <Select_Shadcn_
-            value={String(resolvedPageSize)}
+            value={String(pageSize)}
             onValueChange={(val) => setPaginationState({ page: 1, pageSize: Number(val) })}
           >
             <SelectTrigger_Shadcn_ className="h-7 w-[70px] text-xs">
@@ -231,11 +231,11 @@ export const WithStatements = ({
           </Select_Shadcn_>
         </div>
         <div className="flex items-center gap-x-3">
-          <span className="text-xs text-foreground-light">Page {resolvedPage}</span>
+          <span className="text-xs text-foreground-light">Page {page}</span>
           <Pagination
-            page={resolvedPage}
-            setPage={(setter) => setPaginationState({ page: setter(resolvedPage) })}
-            rowsPerPage={resolvedPageSize}
+            page={page}
+            setPage={(setter) => setPaginationState({ page: setter(page) })}
+            rowsPerPage={pageSize}
             currentPageRowsCount={processedData.length}
             isLoading={isLoading || isRefetching}
           />
