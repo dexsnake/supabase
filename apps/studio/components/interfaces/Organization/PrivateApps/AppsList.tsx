@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { AppWindow, MoreVertical, Plus, Trash } from 'lucide-react'
+import { AppWindow, Key, MoreVertical, Plus, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -142,12 +142,13 @@ export function AppsList({ onCreateApp }: AppsListProps) {
                         <Button
                           type="default"
                           icon={<MoreVertical size={14} />}
-                          className="px-1"
+                          className="w-7"
                         />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" side="bottom" className="w-32">
-                        <DropdownMenuItem onClick={() => setViewApp(app)}>
-                          View details
+                      <DropdownMenuContent align="end" side="bottom" className="w-44">
+                        <DropdownMenuItem className="gap-x-2" onClick={() => setViewApp(app)}>
+                          <Key size={14} />
+                          View permissions
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="!text-destructive gap-x-2"

@@ -145,10 +145,10 @@ export function InstallationsList() {
                             <Button
                               type="default"
                               icon={<MoreVertical size={14} />}
-                              className="px-1"
+                              className="w-7"
                             />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" side="bottom" className="w-40">
+                          <DropdownMenuContent align="end" side="bottom" className="w-44">
                             <DropdownMenuItem
                               className="!text-destructive gap-x-2"
                               onClick={() => setInstallationToDelete(inst)}
