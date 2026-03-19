@@ -38,7 +38,7 @@ const BlogListItem = ({ post }: Props) => {
       className="group flex flex-col lg:grid lg:grid-cols-10 xl:grid-cols-12 w-full py-2 sm:py-4 h-full hover:bg-surface-75/50 transition-colors px-6"
     >
       <div className="flex w-full lg:col-span-8 xl:col-span-8">
-        <h3 className="text-foreground text-lg group-hover:underline">{post.title}</h3>
+        <h3 className="text-foreground text-sm group-hover:underline">{post.title}</h3>
       </div>
       <div className="lg:col-span-2 xl:col-span-4 flex justify-start items-center lg:grid grid-cols-2 xl:grid-cols-3 gap-2 text-sm">
         <div className="hidden lg:flex items-center -space-x-2">

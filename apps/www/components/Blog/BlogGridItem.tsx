@@ -40,13 +40,13 @@ const BlogGridItem = ({ post }: Props) => {
       prefetch={false}
       className="group flex flex-col h-full hover:bg-surface-75/50 transition-colors p-6"
     >
-      <div className="relative w-full aspect-[1.91/1] overflow-hidden">
+      <div className="relative w-full aspect-[1.91/1] overflow-hidden rounded-md border border-foreground/10">
         <Image
           fill
           sizes="100%"
           quality={100}
           src={imageUrl}
-          className="object-cover overflow-hidden rounded-md"
+          className="object-cover"
           alt={`${post.title} thumbnail`}
         />
       </div>
