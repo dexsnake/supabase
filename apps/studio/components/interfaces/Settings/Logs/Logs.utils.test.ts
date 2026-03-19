@@ -110,5 +110,9 @@ describe('Logs.utils', () => {
     test('handles pathname with no slashes', () => {
       expect(extractEdgeFunctionName('my-function')).toBe('my-function')
     })
+
+    test('handles trailing slash', () => {
+      expect(extractEdgeFunctionName('/functions/v1/hello-world-1/')).toBe('hello-world-1')
+    })
   })
 })

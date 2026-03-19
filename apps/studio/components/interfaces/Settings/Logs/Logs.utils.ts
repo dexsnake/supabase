@@ -810,7 +810,7 @@ const LOG_TABLE_TO_SERVICE_LABEL: Record<string, string> = {
 
 export function extractEdgeFunctionName(pathname: unknown): string {
   if (typeof pathname !== 'string' || !pathname) return ''
-  const parts = pathname.split('/')
+  const parts = pathname.split('/').filter(Boolean)
   return parts[parts.length - 1] ?? ''
 }
 
