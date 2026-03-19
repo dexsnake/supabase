@@ -15,7 +15,7 @@ import { DocsButton } from 'components/ui/DocsButton'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL } from 'lib/constants'
 import { parseAsArrayOf, parseAsInteger, parseAsJson, parseAsString, useQueryStates } from 'nuqs'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { NextPageWithLayout } from 'types'
 import { Admonition } from 'ui-patterns'
 
@@ -80,6 +80,11 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
     pageSize: pageSize ?? 20,
   })
 
+  const rolesKey = useMemo(() => JSON.stringify(roles), [roles])
+  const sourcesKey = useMemo(() => JSON.stringify(sources), [sources])
+  const totalTimeKey = useMemo(() => JSON.stringify(totalTimeFilterRaw), [totalTimeFilterRaw])
+  const sortKey = useMemo(() => JSON.stringify(sortConfig), [sortConfig])
+
   // Reset to page 1 when filters or sort change
   const isInitialMount = useRef(true)
   useEffect(() => {
@@ -88,16 +93,7 @@ const QueryPerformanceReport: NextPageWithLayout = () => {
       return
     }
     setQueryStates({ page: 1 })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    searchQuery,
-    JSON.stringify(roles),
-    JSON.stringify(sources),
-    minCalls,
-    JSON.stringify(totalTimeFilterRaw),
-    indexAdvisor,
-    JSON.stringify(sortConfig),
-  ])
+  }, [searchQuery, rolesKey, sourcesKey, minCalls, totalTimeKey, indexAdvisor, sortKey, setQueryStates])
 
   if (!isLoadingProject && !project) {
     return (

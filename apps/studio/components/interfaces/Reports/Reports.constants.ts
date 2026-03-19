@@ -556,8 +556,11 @@ select
           pageSize = 20
         ) => {
           const offset = (page - 1) * pageSize
-          // Fetch enough rows for the current page plus a buffer for filterIndexAdvisor filtering
-          const baseCteLimit = offset + pageSize * 2
+          // When filterIndexAdvisor is active we don't know how many rows will survive the
+          // filter before pagination, so we fetch all rows and paginate the filtered result.
+          // Otherwise limit the base CTE to exactly what we need.
+          const baseCteLimit =
+            filterIndexAdvisor && runIndexAdvisor ? null : offset + pageSize
           const baseQuery = `
         -- reports-query-performance-unified
         set search_path to public, extensions;
@@ -597,7 +600,7 @@ select
           -- skip queries that were never actually executed
           WHERE statements.calls > 0 ${where ? where.replace(/^WHERE/, 'AND') : ''}
           ${orderBy || 'order by total_time desc'}
-          limit ${baseCteLimit}
+          ${baseCteLimit !== null ? `limit ${baseCteLimit}` : ''}
         ),
         query_results as (
           select
