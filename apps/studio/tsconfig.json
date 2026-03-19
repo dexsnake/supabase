@@ -37,6 +37,7 @@
     "**/*.jsx",
     ".next/types/**/*.ts",
     "./../../packages/ui/src/**/*.d.ts",
+    "./../../packages/platform/src/**/*.d.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "public/deno/*.ts"]

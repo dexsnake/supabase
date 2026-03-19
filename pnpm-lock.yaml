@@ -1005,6 +1005,9 @@ importers:
       pg-minify:
         specifier: ^1.6.3
         version: 1.6.3
+      platform:
+        specifier: workspace:*
+        version: link:../../packages/platform
       randombytes:
         specifier: ^2.1.0
         version: 2.1.0

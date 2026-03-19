@@ -229,13 +229,10 @@ export class SqlJsDatabaseAdapter implements DatabaseAdapter {
     this._db = db
   }
 
-  /**
-   * Create an adapter from an initialized sql.js instance.
-   * Usage:
-   *   const SQL = await initSqlJs({ locateFile: ... })
-   *   const db = new SQL.Database()
-   *   const adapter = new SqlJsDatabaseAdapter(db)
-   */
+  /** Export the database as a binary array (for persistence) */
+  export(): Uint8Array {
+    return this._db.export()
+  }
 
   private _execSync(sql: string, params?: unknown[]): QueryResult {
     try {

@@ -9,9 +9,19 @@ export function AdapterLoader({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     getAdapter()
-      .then(setAdapter)
-      .catch((err) => setError(String(err)))
+      .then((a) => {
+        if (!cancelled) setAdapter(a)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(String(err))
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (error) {

@@ -1,13 +1,10 @@
 'use client'
 
-import { QueryClientProvider } from '@tanstack/react-query'
 import {
   MonacoThemeProvider,
   SqlEditor,
   createSqlEditorState,
 } from 'platform'
-import { AdapterLoader } from '@/lib/AdapterLoader'
-import { queryClient } from '@/lib/query-client'
 import { SnippetSidebar } from '@/components/sql-editor/SnippetSidebar'
 
 const sqlState = createSqlEditorState([
@@ -44,16 +41,14 @@ ORDER BY posts.created_at DESC;
 
 export default function SqlPage() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AdapterLoader>
-        <MonacoThemeProvider />
-        <div className="flex h-full">
-          <SnippetSidebar state={sqlState} />
-          <div className="flex-1 overflow-hidden">
-            <SqlEditor state={sqlState} />
-          </div>
+    <>
+      <MonacoThemeProvider />
+      <div className="flex h-full">
+        <SnippetSidebar state={sqlState} />
+        <div className="flex-1 overflow-hidden">
+          <SqlEditor state={sqlState} />
         </div>
-      </AdapterLoader>
-    </QueryClientProvider>
+      </div>
+    </>
   )
 }
