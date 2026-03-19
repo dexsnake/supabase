@@ -80,9 +80,10 @@ testRunner('table editor', () => {
       .nth(2)
       .click()
     await page.getByRole('menuitem', { name: 'Copy name' }).click()
-    await page.waitForTimeout(500)
-    const copiedTableResult = await page.evaluate(() => navigator.clipboard.readText())
-    expect(copiedTableResult).toBe('pw_table_actions')
+    await expect(async () => {
+      const copiedTableResult = await page.evaluate(() => navigator.clipboard.readText())
+      expect(copiedTableResult).toBe('pw_table_actions')
+    }).toPass({ timeout: 2000 })
 
     // copies table schema to clipboard when copy schema option is clicked
     await page

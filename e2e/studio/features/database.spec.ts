@@ -39,13 +39,15 @@ test.describe('Database', () => {
       // copies schema definition to clipboard
       await page.getByRole('button', { name: 'Copy as SQL' }).click()
       await expect(page.getByTestId('copy-sql-ready')).toBeVisible()
-      const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
-      expect(clipboardText).toContain(`CREATE TABLE public.${databaseTableName} (
+      await expect(async () => {
+        const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
+        expect(clipboardText).toContain(`CREATE TABLE public.${databaseTableName} (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   ${databaseColumnName} text,
   CONSTRAINT ${databaseTableName}_pkey PRIMARY KEY (id)
 );`)
+      }).toPass({ timeout: 2000 })
 
       // downloads schema diagram when export is triggered
       const downloadPromise = page.waitForEvent('download')
@@ -113,9 +115,10 @@ test.describe('Database', () => {
       await page.getByText(`${databaseTableName} actions`).click()
       await expect(page.getByRole('menuitem', { name: 'Copy name' })).toBeVisible()
       await page.getByRole('menuitem', { name: 'Copy name' }).click()
-      await page.waitForTimeout(500)
-      const copiedTableResult = await page.evaluateHandle(() => navigator.clipboard.readText())
-      expect(await copiedTableResult.jsonValue()).toBe(databaseTableName)
+      await expect(async () => {
+        const copiedTableName = await page.evaluateHandle(() => navigator.clipboard.readText())
+        expect(await copiedTableName.jsonValue()).toBe(databaseTableName)
+      }).toPass({ timeout: 2000 })
 
       await page.getByText(`${databaseTableName} actions`).click()
       await expect(page.getByRole('menuitem', { name: 'View in Table Editor' })).toBeVisible()
@@ -175,9 +178,10 @@ test.describe('Database', () => {
         .click({ force: true })
       await expect(page.getByRole('menuitem', { name: 'Copy name' })).toBeVisible()
       await page.getByRole('menuitem', { name: 'Copy name' }).click()
-      await page.waitForTimeout(500)
-      const copiedTableResult = await page.evaluateHandle(() => navigator.clipboard.readText())
-      expect(await copiedTableResult.jsonValue()).toBe(databaseColumnName)
+      await expect(async () => {
+        const copiedColumnName = await page.evaluateHandle(() => navigator.clipboard.readText())
+        expect(await copiedColumnName.jsonValue()).toBe(databaseColumnName)
+      }).toPass({ timeout: 2000 })
     })
   })
 
