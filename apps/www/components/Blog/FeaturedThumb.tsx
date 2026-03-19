@@ -38,23 +38,23 @@ function renderFeaturedThumb(blog: PostTypes, author: any[]) {
         href={`${blog.path}`}
         className="group grid lg:grid-cols-12 hover:bg-surface-75/50 transition-colors"
       >
-        <div className="relative w-full aspect-[4/2.25] lg:col-span-7 overflow-hidden p-6">
-          <div className="relative w-full h-full min-h-[200px] lg:min-h-0 shadow-lg">
+        <div className="relative w-full aspect-[4/1.8] lg:col-span-7 overflow-hidden p-6">
+          <div className="relative w-full h-full min-h-[160px] lg:min-h-0 shadow-lg border border-border rounded-lg overflow-hidden">
             <Image
               src={imageUrl}
               fill
               sizes="100%"
               quality={100}
               priority
-              className="object-cover bg-alternative rounded-lg"
+              className="object-cover bg-alternative"
               alt="blog thumbnail"
             />
           </div>
         </div>
-        <div className="flex flex-col lg:col-span-5 lg:border-l lg:border-border px-6 py-8">
+        <div className="flex flex-col lg:col-span-5 px-6 py-8">
           <div className="flex-1">
-            <h2 className="h2 lg:!text-2xl xl:!text-3xl !mb-2">{blog.title}</h2>
-            <p className="p xl:text-lg">{blog.description}</p>
+            <h2 className="h2 lg:!text-xl xl:!text-2xl !mb-2">{blog.title}</h2>
+            <p className="p">{blog.description}</p>
           </div>
 
           <div className="flex items-end justify-between mt-4">

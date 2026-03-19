@@ -17,7 +17,7 @@ const SKELETON_COUNT = 6
 
 function BlogListItemSkeleton() {
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-10 xl:grid-cols-12 w-full px-6 py-2 sm:py-4 h-full border-b border-border last:border-b-0">
+    <div className="flex flex-col lg:grid lg:grid-cols-10 xl:grid-cols-12 w-full py-2 sm:py-4 h-full">
       <div className="flex w-full lg:col-span-8 xl:col-span-8">
         <div className="h-6 bg-foreground-muted/20 rounded animate-pulse w-3/4" />
       </div>
@@ -161,16 +161,16 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
 
       {/* Featured post section */}
       {featuredPost && (
-        <div className="border-b border-border">
-          <div className="mx-auto max-w-[var(--container-max-w,75rem)] border-x border-border">
+        <div>
+          <div className="mx-auto max-w-4xl px-6">
             <FeaturedThumb key={featuredPost.slug} {...featuredPost} />
           </div>
         </div>
       )}
 
       {/* Filters row */}
-      <div className="border-b border-border">
-        <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6 border-x border-border">
+      <div>
+        <div className="mx-auto max-w-[var(--container-max-w,75rem)] px-6">
           <div className="py-4">
             <BlogFilters onFilterChange={handleFilterChange} view={view} setView={setView} />
           </div>
@@ -178,7 +178,7 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
       </div>
 
       {/* Blog posts */}
-      <div className="mx-auto max-w-[var(--container-max-w,75rem)] border-x border-border">
+      <div className="mx-auto max-w-[var(--container-max-w,75rem)]">
         {isFiltering ? (
           isList ? (
             <div>
@@ -187,7 +187,7 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 [&>*]:border-b [&>*]:border-border [&>*]:sm:border-r [&>*:nth-child(2n)]:sm:border-r-0 [&>*:nth-child(2n)]:lg:border-r [&>*:nth-child(3n)]:lg:border-r-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
                 <div key={`skeleton-grid-${idx}`}>
                   <BlogGridItemSkeleton />
@@ -203,7 +203,7 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 [&>*]:border-b [&>*]:border-border [&>*]:sm:border-r [&>*:nth-child(2n)]:sm:border-r-0 [&>*:nth-child(2n)]:lg:border-r [&>*:nth-child(3n)]:lg:border-r-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {blogs.map((blog: PostTypes, idx: number) => (
                 <BlogGridItem post={blog} key={`grid-${idx}-${blog.slug}`} />
               ))}
@@ -218,7 +218,7 @@ export default function BlogClient({ initialBlogs, totalPosts }: BlogClientProps
         {hasMore && !isFiltering && (
           <div
             ref={loadMoreRef}
-            className="flex justify-center py-8 border-t border-border"
+            className="flex justify-center py-8"
             aria-hidden="true"
           >
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground-muted border-t-foreground" />
