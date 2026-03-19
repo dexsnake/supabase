@@ -50,7 +50,7 @@ export const BannerGrafana = () => {
             New
           </Badge>
           <div className="flex items-center gap-2">
-            <Grafana height={40} width={40} className="text-[#F46800]" />
+            <Grafana height={40} width={40} className="text-[#ff671d]" />
           </div>
         </div>
         <div className="flex flex-col gap-y-1 mb-2">
