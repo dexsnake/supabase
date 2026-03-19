@@ -30,7 +30,7 @@ function assistantModel<ModelId extends OpenAIModel>(config: {
   tier: 'free' | 'pro'
   reasoningEffort?: ModelId extends keyof ModelReasoningSupport
     ? ModelReasoningSupport[ModelId]
-    : ReasoningEffort
+    : never
 }) {
   return config
 }
