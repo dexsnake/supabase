@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-  '/v1/app/installations/{installation_id}/access_tokens': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Create new installation access token */
-    post: operations['v1-create-installation-access-token']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/v1/branches/{branch_id_or_ref}': {
     parameters: {
       query?: never
@@ -144,6 +127,40 @@ export interface paths {
      */
     post: operations['v1-restore-a-branch']
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/installations/{installation_id}/token': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create new installation access token */
+    post: operations['v1-create-installation-access-token']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/installations/token': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Revoke the installation access token used to authenticate this request */
+    delete: operations['v1-revoke-installation-access-token']
     options?: never
     head?: never
     patch?: never
@@ -1330,6 +1347,26 @@ export interface paths {
      * @description Only available to selected partner OAuth apps
      */
     patch: operations['v1-patch-a-migration']
+    trace?: never
+  }
+  '/v1/projects/{ref}/database/openapi': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get PostgREST OpenAPI spec
+     * @description Returns the PostgREST OpenAPI specification for the project. This is the replacement for querying `/rest/v1/` directly with the anon key.
+     */
+    get: operations['v1-get-database-openapi']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   '/v1/projects/{ref}/database/password': {
@@ -4937,31 +4974,6 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  'v1-create-installation-access-token': {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        installation_id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateInstallationAccessTokenBody']
-      }
-    }
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CreateInstallationAccessTokenResponse']
-        }
-      }
-    }
-  }
   'v1-get-a-branch-config': {
     parameters: {
       query?: never
@@ -5210,6 +5222,48 @@ export interface operations {
       }
       /** @description Failed to restore database branch */
       500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  'v1-create-installation-access-token': {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        installation_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateInstallationAccessTokenBody']
+      }
+    }
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CreateInstallationAccessTokenResponse']
+        }
+      }
+    }
+  }
+  'v1-revoke-installation-access-token': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      200: {
         headers: {
           [name: string]: unknown
         }
@@ -9904,6 +9958,59 @@ export interface operations {
         content?: never
       }
       /** @description Failed to patch database migration */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  'v1-get-database-openapi': {
+    parameters: {
+      query?: {
+        /** @description The database schema to generate the OpenAPI spec for */
+        schema?: string
+      }
+      header?: never
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': Record<string, never>
+        }
+      }
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Forbidden action */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Failed to fetch PostgREST OpenAPI spec */
       500: {
         headers: {
           [name: string]: unknown

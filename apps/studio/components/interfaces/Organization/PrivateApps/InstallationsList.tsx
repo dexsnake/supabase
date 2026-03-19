@@ -26,6 +26,8 @@ import { Installation, usePrivateApps } from './PrivateAppsContext'
 
 export function InstallationsList() {
   const { installations, apps, slug, removeInstallation } = usePrivateApps()
+  const allAppsInstalled =
+    apps.length > 0 && installations.length >= apps.length
   const { mutate: deleteInstallation, isPending: isDeleting } =
     usePlatformAppInstallationDeleteMutation({
       onSuccess: (_, vars) => {
@@ -54,7 +56,12 @@ export function InstallationsList() {
           <p className="text-sm text-foreground-light">
             Manage where private apps are installed across your organization.
           </p>
-          <Button type="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
+          <Button
+            type="primary"
+            icon={<Plus size={14} />}
+            disabled={allAppsInstalled}
+            onClick={() => setShowCreate(true)}
+          >
             Install app
           </Button>
         </div>

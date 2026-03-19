@@ -942,7 +942,8 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    /** Get organization platform app by the given id */
+    get: operations['PlatformAppsController_getPlatformApp']
     put?: never
     post?: never
     /** Delete platform app */
@@ -983,23 +984,6 @@ export interface paths {
     post?: never
     /** Delete a signing key for the given platform app */
     delete: operations['PlatformAppSigningKeysController_deletePlatformAppSigningKey']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/platform/organizations/{slug}/apps/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get organization platform app by the given id */
-    get: operations['PlatformAppsController_getPlatformApp']
-    put?: never
-    post?: never
-    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -4778,15 +4762,6 @@ export interface components {
         name: string
         slug: string
       }
-      name?: string
-      orchestrator: {
-        stripe?: {
-          account: string
-          organization?: string
-        }
-        type: string
-      }
-      scopes?: string[]
       /** @enum {string} */
       status: 'pending' | 'complete' | 'expired'
     }
@@ -5464,16 +5439,6 @@ export interface components {
       id: string
       name: string
       permissions: string[]
-      signing_key: {
-        /** Format: date-time */
-        created_at: string
-        /** Format: uuid */
-        created_by: string
-        fingerprint: string
-        /** Format: uuid */
-        id: string
-        private_key: string
-      }
       /** Format: date-time */
       updated_at: string
     }
@@ -13949,6 +13914,29 @@ export interface operations {
       }
     }
   }
+  PlatformAppsController_getPlatformApp: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        app_id: string
+        /** @description Organization slug */
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GetPlatformAppResponse']
+        }
+      }
+    }
+  }
   PlatformAppsController_deletePlatformApp: {
     parameters: {
       query?: never
@@ -14062,29 +14050,6 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
-      }
-    }
-  }
-  PlatformAppsController_getPlatformApp: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        app_id: string
-        /** @description Organization slug */
-        slug: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['GetPlatformAppResponse']
-        }
       }
     }
   }
