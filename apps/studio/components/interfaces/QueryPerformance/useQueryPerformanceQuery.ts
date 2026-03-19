@@ -109,16 +109,21 @@ export const useQueryPerformanceInfiniteQuery = (
     pageSize: safePageSize,
   })
 
-  const queryKey = [
-    'projects',
-    project?.ref,
-    'query-performance-infinite',
-    { ...props, pageSize: safePageSize, identifier: state.selectedDatabaseId },
-  ]
+  // When a read-replica is selected, require its connection string before fetching.
+  // Falling back to the primary's connection string would silently query the wrong database.
+  const isPrimarySelected = !state.selectedDatabaseId || state.selectedDatabaseId === project?.ref
+  const effectiveConnectionString = isPrimarySelected
+    ? (connectionString ?? project?.connectionString)
+    : connectionString
 
   const { data, isPending, isRefetching, isFetchingNextPage, hasNextPage, error, fetchNextPage } =
     useInfiniteQuery({
-      queryKey,
+      queryKey: [
+        'projects',
+        project?.ref,
+        'query-performance-infinite',
+        { ...props, pageSize: safePageSize, identifier: state.selectedDatabaseId },
+      ],
       initialPageParam: 1,
       queryFn: ({ pageParam, signal }) => {
         const { sql } = generateQueryPerformanceSql({
@@ -129,7 +134,7 @@ export const useQueryPerformanceInfiniteQuery = (
         return executeSql<QueryPerformanceRow[]>(
           {
             projectRef: project?.ref,
-            connectionString: connectionString || project?.connectionString,
+            connectionString: effectiveConnectionString,
             sql,
           },
           signal
@@ -138,7 +143,9 @@ export const useQueryPerformanceInfiniteQuery = (
       getNextPageParam: (lastPage, allPages) => {
         return lastPage.length < safePageSize ? undefined : allPages.length + 1
       },
-      enabled: Boolean(project?.ref),
+      // Don't run until we have a connection string for the selected database.
+      // For replicas this prevents a silent fallback to the primary before replicas load.
+      enabled: Boolean(project?.ref) && Boolean(effectiveConnectionString),
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
     })
@@ -153,7 +160,11 @@ export const useQueryPerformanceInfiniteQuery = (
     fetchNextPage,
     // Reset to page 1 instead of re-fetching all loaded pages, avoiding a burst
     // of N requests when the user clicks Refresh after scrolling through multiple pages.
-    refetch: () => queryClient.resetQueries({ queryKey }),
+    refetch: () =>
+      queryClient.resetQueries({
+        queryKey: ['projects', project?.ref, 'query-performance-infinite'],
+        exact: false,
+      }),
     resolvedSql: page1Sql,
   }
 }

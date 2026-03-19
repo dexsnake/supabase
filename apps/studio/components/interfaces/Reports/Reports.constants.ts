@@ -556,14 +556,15 @@ select
           pageSize = 20
         ) => {
           const offset = (page - 1) * pageSize
-          // When filterIndexAdvisor is active we don't know how many rows will survive the
-          // filter, so we need more rows than just the requested page. Cap at a reasonable
-          // upper bound to avoid running index_advisor() across the entire dataset.
+          // When filtering by index suggestions we need a larger scan window since we don't
+          // know how many rows will match. Cap at a reasonable upper bound to avoid running
+          // index_advisor() across the entire dataset on any code path where it's active.
           const INDEX_ADVISOR_SCAN_CAP = 500
-          const baseCteLimit =
-            filterIndexAdvisor && runIndexAdvisor
-              ? Math.min(offset + pageSize * 10, INDEX_ADVISOR_SCAN_CAP)
-              : offset + pageSize
+          const baseScanTarget =
+            filterIndexAdvisor && runIndexAdvisor ? offset + pageSize * 10 : offset + pageSize
+          const baseCteLimit = runIndexAdvisor
+            ? Math.min(baseScanTarget, INDEX_ADVISOR_SCAN_CAP)
+            : baseScanTarget
           const baseQuery = `
         -- reports-query-performance-unified
         set search_path to public, extensions;
